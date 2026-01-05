@@ -1,0 +1,5279 @@
+##############################################################################
+# INTENT: lights.on
+#----------------------------------------------------------------------------
+# User wants to turn one or more light groups on. Includes natural language, slang, and vague 'make it brighter in here' phrasing that the system may map to defaults or follow-up questions.
+#
+
+lights.on	turn on the bed lamp
+
+lights.on	switch on the birdcage light
+
+lights.on	can you turn the office lights on
+
+lights.on	put the living room lights on
+
+lights.on	turn on the main light
+
+lights.on	lights on
+
+lights.on	flip on the kitchen lights
+
+lights.on	power up the hallway light
+
+lights.on	wake up the bedroom lights
+
+lights.on	I need more light in here
+
+lights.on	yo ash, light this place up
+
+lights.on	give me some light, bro
+
+lights.on	turn on whatever light makes sense
+
+lights.on	throw the lights on in here
+
+lights.on	light it up boss
+
+lights.on	ash, gimme some glow in this room
+
+lights.on	okay brighten this dungeon up
+
+lights.on	make it not so dark in here
+
+lights.on	let there be light my guy
+
+lights.on	spin up the cozy lights
+
+##############################################################################
+# INTENT: lights.off
+#----------------------------------------------------------------------------
+# User wants to turn one or more light groups off. Includes direct phrasing and slang like 'kill it'.
+#
+
+lights.off	turn off the bed lamp
+
+lights.off	switch off the birdcage light
+
+lights.off	kill the office lights
+
+lights.off	shut the living room lights off
+
+lights.off	turn the main light off
+
+lights.off	lights off
+
+lights.off	cut the kitchen lights
+
+lights.off	power down the hallway light
+
+lights.off	kill the bedroom lights
+
+lights.off	too bright, just turn it all off
+
+lights.off	kill it
+
+lights.off	yo ash, kill the lights
+
+lights.off	nuke the lights in here
+
+lights.off	blackout mode, turn them off
+
+lights.off	shut it all down
+
+lights.off	I’m done, lights out
+
+lights.off	cut the glow in here
+
+lights.off	turn everything dark again
+
+lights.off	okay bedtime, lights off
+
+lights.off	drop the room into darkness
+
+##############################################################################
+# INTENT: lights.adjust_more
+#----------------------------------------------------------------------------
+# User wants more brightness relative to the current level. These usually imply positive deltas, not absolute targets.
+#
+
+lights.adjust_more	make it brighter
+
+lights.adjust_more	a bit brighter
+
+lights.adjust_more	little brighter
+
+lights.adjust_more	more light
+
+lights.adjust_more	turn it up
+
+lights.adjust_more	up a bit
+
+lights.adjust_more	crank it up
+
+lights.adjust_more	give me more brightness
+
+lights.adjust_more	I need it brighter
+
+lights.adjust_more	bump the lights up a notch
+
+##############################################################################
+# INTENT: lights.adjust_less
+#----------------------------------------------------------------------------
+# User wants less brightness relative to the current level. These usually imply negative deltas, not absolute targets.
+#
+
+lights.adjust_less	make it dimmer
+
+lights.adjust_less	a bit darker
+
+lights.adjust_less	little darker
+
+lights.adjust_less	less light
+
+lights.adjust_less	turn it down
+
+lights.adjust_less	down a bit
+
+lights.adjust_less	take it down a notch
+
+lights.adjust_less	tone the brightness down
+
+lights.adjust_less	it’s too bright, reduce it
+
+lights.adjust_less	can you dim the lights a little
+
+##############################################################################
+# INTENT: lights.set_absolute
+#----------------------------------------------------------------------------
+# User specifies an absolute brightness level in percent. These should set the brightness directly to mapped 0–1000 value.
+#
+
+lights.set_absolute	set the lights to 30 percent
+
+lights.set_absolute	set bed lamp to 40%
+
+lights.set_absolute	make the living room lights 75 percent
+
+lights.set_absolute	set the brightness to 10 percent
+
+lights.set_absolute	put the hallway at 60% brightness
+
+lights.set_absolute	set bedroom lights to 25 percent please
+
+lights.set_absolute	set the main light to 90%
+
+lights.set_absolute	I want the lights at 50 percent
+
+lights.set_absolute	set my office lights to thirty percent
+
+lights.set_absolute	put the birdcage light at 15 percent
+
+##############################################################################
+# INTENT: lights.adjust_percent_delta
+#----------------------------------------------------------------------------
+# User specifies a relative adjustment in percent of the full 0–1000 range. These should be interpreted as deltas, not absolute targets.
+#
+
+lights.adjust_percent_delta	make it 30 percent brighter
+
+lights.adjust_percent_delta	drop it 20 percent
+
+lights.adjust_percent_delta	dim the lights by 40 percent
+
+lights.adjust_percent_delta	increase brightness by 15 percent
+
+lights.adjust_percent_delta	can you lower it by 10 percent
+
+lights.adjust_percent_delta	raise the lights 25%
+
+lights.adjust_percent_delta	knock the brightness down 35 percent
+
+lights.adjust_percent_delta	boost the brightness by 30 percent
+
+lights.adjust_percent_delta	take it down another 20 percent
+
+lights.adjust_percent_delta	give me 10 percent more light
+
+##############################################################################
+# INTENT: comfort.too_cold
+#----------------------------------------------------------------------------
+# User complains about being cold or the room being too cold. These should trigger a comfort session aimed at increasing temperature slightly.
+#
+
+comfort.too_cold	I’m cold
+
+comfort.too_cold	it’s freezing in here
+
+comfort.too_cold	can you make it warmer
+
+comfort.too_cold	turn the heat up
+
+comfort.too_cold	warm this room up a bit
+
+comfort.too_cold	I’m shivering man
+
+comfort.too_cold	it feels chilly in here
+
+comfort.too_cold	can we bump the heat
+
+comfort.too_cold	my hands are cold, make it warmer
+
+comfort.too_cold	give me a bit more warmth
+
+##############################################################################
+# INTENT: comfort.too_hot
+#----------------------------------------------------------------------------
+# User complains about being hot or the room being too hot. These should trigger a comfort session aimed at decreasing temperature slightly.
+#
+
+comfort.too_hot	I’m too hot
+
+comfort.too_hot	it’s boiling in here
+
+comfort.too_hot	can you make it cooler
+
+comfort.too_hot	turn the heat down
+
+comfort.too_hot	cool this room down a bit
+
+comfort.too_hot	I’m sweating like crazy
+
+comfort.too_hot	feels stuffy in here
+
+comfort.too_hot	can we drop the temperature
+
+comfort.too_hot	make it less warm please
+
+comfort.too_hot	give me some cooler air
+
+##############################################################################
+# INTENT: comfort.set_temp
+#----------------------------------------------------------------------------
+# User requests a specific target temperature in degrees. May or may not explicitly say 'degrees' or 'celsius'.
+#
+
+comfort.set_temp	set the temperature to 21
+
+comfort.set_temp	set the thermostat to 19 degrees
+
+comfort.set_temp	make it 23 in here
+
+comfort.set_temp	put the temp at 20
+
+comfort.set_temp	set room temperature to 18
+
+comfort.set_temp	change thermostat to 22
+
+comfort.set_temp	set the heat to 25 degrees
+
+comfort.set_temp	aim for 21 degrees please
+
+comfort.set_temp	keep it at 19 for now
+
+comfort.set_temp	lock the temp to 20 degrees
+
+##############################################################################
+# INTENT: comfort.ack
+#----------------------------------------------------------------------------
+# User acknowledges that the temperature change feels good. These can be used to close a comfort session or store preferences.
+#
+
+comfort.ack	yeah that feels better
+
+comfort.ack	perfect temperature now
+
+comfort.ack	that’s much nicer
+
+comfort.ack	okay that works
+
+comfort.ack	this is comfortable
+
+comfort.ack	that’s good, leave it
+
+comfort.ack	nice, feels way better
+
+comfort.ack	perfect, don’t change it
+
+comfort.ack	good now, thanks
+
+comfort.ack	alright that’s comfy
+
+##############################################################################
+# INTENT: plugs.on
+#----------------------------------------------------------------------------
+# User wants a smart plug or outlet turned on.
+#
+
+plugs.on	turn on the desk plug
+
+plugs.on	power on the office fan
+
+plugs.on	switch on the coffee machine plug
+
+plugs.on	turn on the lamp plug
+
+plugs.on	enable the TV plug
+
+plugs.on	wake the router plug up
+
+plugs.on	turn on the bedroom outlet
+
+plugs.on	start the humidifier plug
+
+plugs.on	power up the computer plug
+
+plugs.on	switch on that smart plug by the bed
+
+##############################################################################
+# INTENT: plugs.off
+#----------------------------------------------------------------------------
+# User wants a smart plug or outlet turned off.
+#
+
+plugs.off	turn off the desk plug
+
+plugs.off	power off the office fan
+
+plugs.off	switch off the coffee machine plug
+
+plugs.off	turn off the lamp plug
+
+plugs.off	disable the TV plug
+
+plugs.off	shut the router plug down
+
+plugs.off	turn off the bedroom outlet
+
+plugs.off	stop the humidifier plug
+
+plugs.off	power down the computer plug
+
+plugs.off	switch off that smart plug by the bed
+
+##############################################################################
+# INTENT: chat.greeting
+#----------------------------------------------------------------------------
+# User greets Ashby or checks if the assistant is available.
+#
+
+chat.greeting	yo ash
+
+chat.greeting	hey ash
+
+chat.greeting	what’s up ash
+
+chat.greeting	good morning ash
+
+chat.greeting	good night ash
+
+chat.greeting	hey man
+
+chat.greeting	sup bro
+
+chat.greeting	yo bro
+
+chat.greeting	hello ashby
+
+chat.greeting	ash, you there
+
+##############################################################################
+# INTENT: chat.thanks
+#----------------------------------------------------------------------------
+# User expresses gratitude or satisfaction with the last action.
+#
+
+chat.thanks	thanks ash
+
+chat.thanks	appreciate it man
+
+chat.thanks	thank you
+
+chat.thanks	cheers bro
+
+chat.thanks	beauty thanks
+
+chat.thanks	sweet, thanks
+
+chat.thanks	you’re the best
+
+chat.thanks	legend, appreciate it
+
+chat.thanks	good shit, thank you
+
+chat.thanks	nice one, thanks
+
+##############################################################################
+# INTENT: meta.help
+#----------------------------------------------------------------------------
+# User asks for help, capabilities, or examples of what the system can do.
+#
+
+meta.help	what can you do
+
+meta.help	help me out ash
+
+meta.help	show me commands
+
+meta.help	how do I control the lights
+
+meta.help	how do I change the temperature
+
+meta.help	what can ashby control
+
+meta.help	give me a list of things you handle
+
+meta.help	explain how to talk to you
+
+meta.help	show me examples of commands
+
+meta.help	how do I use this system
+
+##############################################################################
+# INTENT: lights.on
+#----------------------------------------------------------------------------
+# Expanded synthetic variants for lights.on, combining prefixes/suffixes to cover more real-world phrasing.
+#
+
+lights.on	turn on the bed lamp
+
+lights.on	turn on the bed lamp please
+
+lights.on	turn on the bed lamp man
+
+lights.on	turn on the bed lamp bro
+
+lights.on	turn on the bed lamp for me
+
+lights.on	turn on the bed lamp right now
+
+lights.on	turn on the bed lamp if you can
+
+lights.on	turn on the bed lamp when you get a sec
+
+lights.on	hey ash turn on the bed lamp
+
+lights.on	hey ash turn on the bed lamp please
+
+lights.on	hey ash turn on the bed lamp man
+
+lights.on	hey ash turn on the bed lamp bro
+
+lights.on	hey ash turn on the bed lamp for me
+
+lights.on	hey ash turn on the bed lamp right now
+
+lights.on	hey ash turn on the bed lamp if you can
+
+lights.on	hey ash turn on the bed lamp when you get a sec
+
+lights.on	yo ash turn on the bed lamp
+
+lights.on	yo ash turn on the bed lamp please
+
+lights.on	yo ash turn on the bed lamp man
+
+lights.on	yo ash turn on the bed lamp bro
+
+lights.on	yo ash turn on the bed lamp for me
+
+lights.on	yo ash turn on the bed lamp right now
+
+lights.on	yo ash turn on the bed lamp if you can
+
+lights.on	yo ash turn on the bed lamp when you get a sec
+
+lights.on	okay turn on the bed lamp
+
+lights.on	okay turn on the bed lamp please
+
+lights.on	okay turn on the bed lamp man
+
+lights.on	okay turn on the bed lamp bro
+
+lights.on	okay turn on the bed lamp for me
+
+lights.on	okay turn on the bed lamp right now
+
+lights.on	okay turn on the bed lamp if you can
+
+lights.on	okay turn on the bed lamp when you get a sec
+
+lights.on	please turn on the bed lamp
+
+lights.on	please turn on the bed lamp please
+
+lights.on	please turn on the bed lamp man
+
+lights.on	please turn on the bed lamp bro
+
+lights.on	please turn on the bed lamp for me
+
+lights.on	please turn on the bed lamp right now
+
+lights.on	please turn on the bed lamp if you can
+
+lights.on	please turn on the bed lamp when you get a sec
+
+lights.on	bro turn on the bed lamp
+
+lights.on	bro turn on the bed lamp please
+
+lights.on	bro turn on the bed lamp man
+
+lights.on	bro turn on the bed lamp bro
+
+lights.on	bro turn on the bed lamp for me
+
+lights.on	bro turn on the bed lamp right now
+
+lights.on	bro turn on the bed lamp if you can
+
+lights.on	bro turn on the bed lamp when you get a sec
+
+lights.on	ash turn on the bed lamp
+
+lights.on	ash turn on the bed lamp please
+
+lights.on	ash turn on the bed lamp man
+
+lights.on	ash turn on the bed lamp bro
+
+lights.on	ash turn on the bed lamp for me
+
+lights.on	ash turn on the bed lamp right now
+
+lights.on	ash turn on the bed lamp if you can
+
+lights.on	ash turn on the bed lamp when you get a sec
+
+lights.on	listen turn on the bed lamp
+
+lights.on	listen turn on the bed lamp please
+
+lights.on	listen turn on the bed lamp man
+
+lights.on	listen turn on the bed lamp bro
+
+lights.on	listen turn on the bed lamp for me
+
+lights.on	listen turn on the bed lamp right now
+
+lights.on	listen turn on the bed lamp if you can
+
+lights.on	listen turn on the bed lamp when you get a sec
+
+lights.on	quick one turn on the bed lamp
+
+lights.on	quick one turn on the bed lamp please
+
+lights.on	quick one turn on the bed lamp man
+
+lights.on	quick one turn on the bed lamp bro
+
+lights.on	quick one turn on the bed lamp for me
+
+lights.on	quick one turn on the bed lamp right now
+
+lights.on	quick one turn on the bed lamp if you can
+
+lights.on	quick one turn on the bed lamp when you get a sec
+
+lights.on	real quick turn on the bed lamp
+
+lights.on	real quick turn on the bed lamp please
+
+lights.on	real quick turn on the bed lamp man
+
+lights.on	real quick turn on the bed lamp bro
+
+lights.on	real quick turn on the bed lamp for me
+
+lights.on	real quick turn on the bed lamp right now
+
+lights.on	real quick turn on the bed lamp if you can
+
+lights.on	real quick turn on the bed lamp when you get a sec
+
+lights.on	switch on the birdcage light
+
+lights.on	switch on the birdcage light please
+
+lights.on	switch on the birdcage light man
+
+lights.on	switch on the birdcage light bro
+
+lights.on	switch on the birdcage light for me
+
+lights.on	switch on the birdcage light right now
+
+lights.on	switch on the birdcage light if you can
+
+lights.on	switch on the birdcage light when you get a sec
+
+lights.on	hey ash switch on the birdcage light
+
+lights.on	hey ash switch on the birdcage light please
+
+lights.on	hey ash switch on the birdcage light man
+
+lights.on	hey ash switch on the birdcage light bro
+
+lights.on	hey ash switch on the birdcage light for me
+
+lights.on	hey ash switch on the birdcage light right now
+
+lights.on	hey ash switch on the birdcage light if you can
+
+lights.on	hey ash switch on the birdcage light when you get a sec
+
+lights.on	yo ash switch on the birdcage light
+
+lights.on	yo ash switch on the birdcage light please
+
+lights.on	yo ash switch on the birdcage light man
+
+lights.on	yo ash switch on the birdcage light bro
+
+lights.on	yo ash switch on the birdcage light for me
+
+lights.on	yo ash switch on the birdcage light right now
+
+lights.on	yo ash switch on the birdcage light if you can
+
+lights.on	yo ash switch on the birdcage light when you get a sec
+
+lights.on	okay switch on the birdcage light
+
+lights.on	okay switch on the birdcage light please
+
+lights.on	okay switch on the birdcage light man
+
+lights.on	okay switch on the birdcage light bro
+
+lights.on	okay switch on the birdcage light for me
+
+lights.on	okay switch on the birdcage light right now
+
+lights.on	okay switch on the birdcage light if you can
+
+lights.on	okay switch on the birdcage light when you get a sec
+
+lights.on	please switch on the birdcage light
+
+lights.on	please switch on the birdcage light please
+
+lights.on	please switch on the birdcage light man
+
+lights.on	please switch on the birdcage light bro
+
+lights.on	please switch on the birdcage light for me
+
+lights.on	please switch on the birdcage light right now
+
+lights.on	please switch on the birdcage light if you can
+
+lights.on	please switch on the birdcage light when you get a sec
+
+lights.on	bro switch on the birdcage light
+
+lights.on	bro switch on the birdcage light please
+
+lights.on	bro switch on the birdcage light man
+
+lights.on	bro switch on the birdcage light bro
+
+lights.on	bro switch on the birdcage light for me
+
+lights.on	bro switch on the birdcage light right now
+
+lights.on	bro switch on the birdcage light if you can
+
+lights.on	bro switch on the birdcage light when you get a sec
+
+lights.on	ash switch on the birdcage light
+
+lights.on	ash switch on the birdcage light please
+
+lights.on	ash switch on the birdcage light man
+
+lights.on	ash switch on the birdcage light bro
+
+lights.on	ash switch on the birdcage light for me
+
+lights.on	ash switch on the birdcage light right now
+
+lights.on	ash switch on the birdcage light if you can
+
+lights.on	ash switch on the birdcage light when you get a sec
+
+lights.on	listen switch on the birdcage light
+
+lights.on	listen switch on the birdcage light please
+
+lights.on	listen switch on the birdcage light man
+
+lights.on	listen switch on the birdcage light bro
+
+lights.on	listen switch on the birdcage light for me
+
+lights.on	listen switch on the birdcage light right now
+
+lights.on	listen switch on the birdcage light if you can
+
+lights.on	listen switch on the birdcage light when you get a sec
+
+lights.on	quick one switch on the birdcage light
+
+lights.on	quick one switch on the birdcage light please
+
+lights.on	quick one switch on the birdcage light man
+
+lights.on	quick one switch on the birdcage light bro
+
+lights.on	quick one switch on the birdcage light for me
+
+lights.on	quick one switch on the birdcage light right now
+
+lights.on	quick one switch on the birdcage light if you can
+
+lights.on	quick one switch on the birdcage light when you get a sec
+
+lights.on	real quick switch on the birdcage light
+
+lights.on	real quick switch on the birdcage light please
+
+lights.on	real quick switch on the birdcage light man
+
+lights.on	real quick switch on the birdcage light bro
+
+lights.on	real quick switch on the birdcage light for me
+
+lights.on	real quick switch on the birdcage light right now
+
+lights.on	real quick switch on the birdcage light if you can
+
+lights.on	real quick switch on the birdcage light when you get a sec
+
+lights.on	can you turn the office lights on
+
+lights.on	can you turn the office lights on please
+
+lights.on	can you turn the office lights on man
+
+lights.on	can you turn the office lights on bro
+
+lights.on	can you turn the office lights on for me
+
+lights.on	can you turn the office lights on right now
+
+lights.on	can you turn the office lights on if you can
+
+lights.on	can you turn the office lights on when you get a sec
+
+lights.on	hey ash can you turn the office lights on
+
+lights.on	hey ash can you turn the office lights on please
+
+lights.on	hey ash can you turn the office lights on man
+
+lights.on	hey ash can you turn the office lights on bro
+
+lights.on	hey ash can you turn the office lights on for me
+
+lights.on	hey ash can you turn the office lights on right now
+
+lights.on	hey ash can you turn the office lights on if you can
+
+lights.on	hey ash can you turn the office lights on when you get a sec
+
+lights.on	yo ash can you turn the office lights on
+
+lights.on	yo ash can you turn the office lights on please
+
+lights.on	yo ash can you turn the office lights on man
+
+lights.on	yo ash can you turn the office lights on bro
+
+lights.on	yo ash can you turn the office lights on for me
+
+lights.on	yo ash can you turn the office lights on right now
+
+lights.on	yo ash can you turn the office lights on if you can
+
+lights.on	yo ash can you turn the office lights on when you get a sec
+
+lights.on	okay can you turn the office lights on
+
+lights.on	okay can you turn the office lights on please
+
+lights.on	okay can you turn the office lights on man
+
+lights.on	okay can you turn the office lights on bro
+
+lights.on	okay can you turn the office lights on for me
+
+lights.on	okay can you turn the office lights on right now
+
+lights.on	okay can you turn the office lights on if you can
+
+lights.on	okay can you turn the office lights on when you get a sec
+
+lights.on	please can you turn the office lights on
+
+lights.on	please can you turn the office lights on please
+
+lights.on	please can you turn the office lights on man
+
+lights.on	please can you turn the office lights on bro
+
+lights.on	please can you turn the office lights on for me
+
+lights.on	please can you turn the office lights on right now
+
+lights.on	please can you turn the office lights on if you can
+
+lights.on	please can you turn the office lights on when you get a sec
+
+lights.on	bro can you turn the office lights on
+
+lights.on	bro can you turn the office lights on please
+
+lights.on	bro can you turn the office lights on man
+
+lights.on	bro can you turn the office lights on bro
+
+lights.on	bro can you turn the office lights on for me
+
+lights.on	bro can you turn the office lights on right now
+
+lights.on	bro can you turn the office lights on if you can
+
+lights.on	bro can you turn the office lights on when you get a sec
+
+lights.on	ash can you turn the office lights on
+
+lights.on	ash can you turn the office lights on please
+
+lights.on	ash can you turn the office lights on man
+
+lights.on	ash can you turn the office lights on bro
+
+lights.on	ash can you turn the office lights on for me
+
+lights.on	ash can you turn the office lights on right now
+
+lights.on	ash can you turn the office lights on if you can
+
+lights.on	ash can you turn the office lights on when you get a sec
+
+lights.on	listen can you turn the office lights on
+
+lights.on	listen can you turn the office lights on please
+
+lights.on	listen can you turn the office lights on man
+
+lights.on	listen can you turn the office lights on bro
+
+lights.on	listen can you turn the office lights on for me
+
+lights.on	listen can you turn the office lights on right now
+
+lights.on	listen can you turn the office lights on if you can
+
+lights.on	listen can you turn the office lights on when you get a sec
+
+lights.on	quick one can you turn the office lights on
+
+lights.on	quick one can you turn the office lights on please
+
+lights.on	quick one can you turn the office lights on man
+
+lights.on	quick one can you turn the office lights on bro
+
+lights.on	quick one can you turn the office lights on for me
+
+lights.on	quick one can you turn the office lights on right now
+
+lights.on	quick one can you turn the office lights on if you can
+
+lights.on	quick one can you turn the office lights on when you get a sec
+
+lights.on	real quick can you turn the office lights on
+
+lights.on	real quick can you turn the office lights on please
+
+lights.on	real quick can you turn the office lights on man
+
+lights.on	real quick can you turn the office lights on bro
+
+lights.on	real quick can you turn the office lights on for me
+
+lights.on	real quick can you turn the office lights on right now
+
+lights.on	real quick can you turn the office lights on if you can
+
+lights.on	real quick can you turn the office lights on when you get a sec
+
+lights.on	put the living room lights on
+
+lights.on	put the living room lights on please
+
+lights.on	put the living room lights on man
+
+lights.on	put the living room lights on bro
+
+lights.on	put the living room lights on for me
+
+lights.on	put the living room lights on right now
+
+lights.on	put the living room lights on if you can
+
+lights.on	put the living room lights on when you get a sec
+
+lights.on	hey ash put the living room lights on
+
+lights.on	hey ash put the living room lights on please
+
+lights.on	hey ash put the living room lights on man
+
+lights.on	hey ash put the living room lights on bro
+
+lights.on	hey ash put the living room lights on for me
+
+lights.on	hey ash put the living room lights on right now
+
+lights.on	hey ash put the living room lights on if you can
+
+lights.on	hey ash put the living room lights on when you get a sec
+
+lights.on	yo ash put the living room lights on
+
+lights.on	yo ash put the living room lights on please
+
+lights.on	yo ash put the living room lights on man
+
+lights.on	yo ash put the living room lights on bro
+
+lights.on	yo ash put the living room lights on for me
+
+lights.on	yo ash put the living room lights on right now
+
+lights.on	yo ash put the living room lights on if you can
+
+lights.on	yo ash put the living room lights on when you get a sec
+
+lights.on	okay put the living room lights on
+
+lights.on	okay put the living room lights on please
+
+lights.on	okay put the living room lights on man
+
+lights.on	okay put the living room lights on bro
+
+lights.on	okay put the living room lights on for me
+
+lights.on	okay put the living room lights on right now
+
+lights.on	okay put the living room lights on if you can
+
+lights.on	okay put the living room lights on when you get a sec
+
+lights.on	please put the living room lights on
+
+lights.on	please put the living room lights on please
+
+lights.on	please put the living room lights on man
+
+lights.on	please put the living room lights on bro
+
+lights.on	please put the living room lights on for me
+
+lights.on	please put the living room lights on right now
+
+lights.on	please put the living room lights on if you can
+
+lights.on	please put the living room lights on when you get a sec
+
+lights.on	bro put the living room lights on
+
+lights.on	bro put the living room lights on please
+
+lights.on	bro put the living room lights on man
+
+lights.on	bro put the living room lights on bro
+
+lights.on	bro put the living room lights on for me
+
+lights.on	bro put the living room lights on right now
+
+lights.on	bro put the living room lights on if you can
+
+lights.on	bro put the living room lights on when you get a sec
+
+lights.on	ash put the living room lights on
+
+lights.on	ash put the living room lights on please
+
+lights.on	ash put the living room lights on man
+
+lights.on	ash put the living room lights on bro
+
+lights.on	ash put the living room lights on for me
+
+lights.on	ash put the living room lights on right now
+
+lights.on	ash put the living room lights on if you can
+
+lights.on	ash put the living room lights on when you get a sec
+
+lights.on	listen put the living room lights on
+
+lights.on	listen put the living room lights on please
+
+lights.on	listen put the living room lights on man
+
+lights.on	listen put the living room lights on bro
+
+lights.on	listen put the living room lights on for me
+
+lights.on	listen put the living room lights on right now
+
+lights.on	listen put the living room lights on if you can
+
+lights.on	listen put the living room lights on when you get a sec
+
+lights.on	quick one put the living room lights on
+
+lights.on	quick one put the living room lights on please
+
+lights.on	quick one put the living room lights on man
+
+lights.on	quick one put the living room lights on bro
+
+lights.on	quick one put the living room lights on for me
+
+lights.on	quick one put the living room lights on right now
+
+lights.on	quick one put the living room lights on if you can
+
+lights.on	quick one put the living room lights on when you get a sec
+
+lights.on	real quick put the living room lights on
+
+lights.on	real quick put the living room lights on please
+
+lights.on	real quick put the living room lights on man
+
+lights.on	real quick put the living room lights on bro
+
+lights.on	real quick put the living room lights on for me
+
+lights.on	real quick put the living room lights on right now
+
+lights.on	real quick put the living room lights on if you can
+
+lights.on	real quick put the living room lights on when you get a sec
+
+lights.on	turn on the main light
+
+lights.on	turn on the main light please
+
+lights.on	turn on the main light man
+
+lights.on	turn on the main light bro
+
+lights.on	turn on the main light for me
+
+lights.on	turn on the main light right now
+
+lights.on	turn on the main light if you can
+
+lights.on	turn on the main light when you get a sec
+
+lights.on	hey ash turn on the main light
+
+lights.on	hey ash turn on the main light please
+
+lights.on	hey ash turn on the main light man
+
+lights.on	hey ash turn on the main light bro
+
+lights.on	hey ash turn on the main light for me
+
+lights.on	hey ash turn on the main light right now
+
+lights.on	hey ash turn on the main light if you can
+
+lights.on	hey ash turn on the main light when you get a sec
+
+lights.on	yo ash turn on the main light
+
+lights.on	yo ash turn on the main light please
+
+lights.on	yo ash turn on the main light man
+
+lights.on	yo ash turn on the main light bro
+
+lights.on	yo ash turn on the main light for me
+
+lights.on	yo ash turn on the main light right now
+
+lights.on	yo ash turn on the main light if you can
+
+lights.on	yo ash turn on the main light when you get a sec
+
+lights.on	okay turn on the main light
+
+lights.on	okay turn on the main light please
+
+lights.on	okay turn on the main light man
+
+lights.on	okay turn on the main light bro
+
+lights.on	okay turn on the main light for me
+
+lights.on	okay turn on the main light right now
+
+lights.on	okay turn on the main light if you can
+
+lights.on	okay turn on the main light when you get a sec
+
+lights.on	please turn on the main light
+
+lights.on	please turn on the main light please
+
+lights.on	please turn on the main light man
+
+lights.on	please turn on the main light bro
+
+lights.on	please turn on the main light for me
+
+lights.on	please turn on the main light right now
+
+lights.on	please turn on the main light if you can
+
+lights.on	please turn on the main light when you get a sec
+
+lights.on	bro turn on the main light
+
+lights.on	bro turn on the main light please
+
+lights.on	bro turn on the main light man
+
+lights.on	bro turn on the main light bro
+
+lights.on	bro turn on the main light for me
+
+lights.on	bro turn on the main light right now
+
+lights.on	bro turn on the main light if you can
+
+lights.on	bro turn on the main light when you get a sec
+
+lights.on	ash turn on the main light
+
+lights.on	ash turn on the main light please
+
+lights.on	ash turn on the main light man
+
+lights.on	ash turn on the main light bro
+
+lights.on	ash turn on the main light for me
+
+lights.on	ash turn on the main light right now
+
+lights.on	ash turn on the main light if you can
+
+lights.on	ash turn on the main light when you get a sec
+
+lights.on	listen turn on the main light
+
+lights.on	listen turn on the main light please
+
+lights.on	listen turn on the main light man
+
+lights.on	listen turn on the main light bro
+
+lights.on	listen turn on the main light for me
+
+lights.on	listen turn on the main light right now
+
+lights.on	listen turn on the main light if you can
+
+lights.on	listen turn on the main light when you get a sec
+
+lights.on	quick one turn on the main light
+
+lights.on	quick one turn on the main light please
+
+lights.on	quick one turn on the main light man
+
+lights.on	quick one turn on the main light bro
+
+lights.on	quick one turn on the main light for me
+
+lights.on	quick one turn on the main light right now
+
+lights.on	quick one turn on the main light if you can
+
+lights.on	quick one turn on the main light when you get a sec
+
+lights.on	real quick turn on the main light
+
+lights.on	real quick turn on the main light please
+
+lights.on	real quick turn on the main light man
+
+lights.on	real quick turn on the main light bro
+
+lights.on	real quick turn on the main light for me
+
+lights.on	real quick turn on the main light right now
+
+lights.on	real quick turn on the main light if you can
+
+lights.on	real quick turn on the main light when you get a sec
+
+lights.on	lights on
+
+lights.on	lights on please
+
+lights.on	lights on man
+
+lights.on	lights on bro
+
+lights.on	lights on for me
+
+lights.on	lights on right now
+
+lights.on	lights on if you can
+
+lights.on	lights on when you get a sec
+
+lights.on	hey ash lights on
+
+lights.on	hey ash lights on please
+
+lights.on	hey ash lights on man
+
+lights.on	hey ash lights on bro
+
+lights.on	hey ash lights on for me
+
+lights.on	hey ash lights on right now
+
+lights.on	hey ash lights on if you can
+
+lights.on	hey ash lights on when you get a sec
+
+lights.on	yo ash lights on
+
+lights.on	yo ash lights on please
+
+lights.on	yo ash lights on man
+
+lights.on	yo ash lights on bro
+
+lights.on	yo ash lights on for me
+
+lights.on	yo ash lights on right now
+
+lights.on	yo ash lights on if you can
+
+lights.on	yo ash lights on when you get a sec
+
+lights.on	okay lights on
+
+lights.on	okay lights on please
+
+lights.on	okay lights on man
+
+lights.on	okay lights on bro
+
+lights.on	okay lights on for me
+
+lights.on	okay lights on right now
+
+lights.on	okay lights on if you can
+
+lights.on	okay lights on when you get a sec
+
+lights.on	please lights on
+
+lights.on	please lights on please
+
+lights.on	please lights on man
+
+lights.on	please lights on bro
+
+lights.on	please lights on for me
+
+lights.on	please lights on right now
+
+lights.on	please lights on if you can
+
+lights.on	please lights on when you get a sec
+
+lights.on	bro lights on
+
+lights.on	bro lights on please
+
+lights.on	bro lights on man
+
+lights.on	bro lights on bro
+
+lights.on	bro lights on for me
+
+lights.on	bro lights on right now
+
+lights.on	bro lights on if you can
+
+lights.on	bro lights on when you get a sec
+
+lights.on	ash lights on
+
+lights.on	ash lights on please
+
+lights.on	ash lights on man
+
+lights.on	ash lights on bro
+
+lights.on	ash lights on for me
+
+lights.on	ash lights on right now
+
+lights.on	ash lights on if you can
+
+lights.on	ash lights on when you get a sec
+
+lights.on	listen lights on
+
+lights.on	listen lights on please
+
+lights.on	listen lights on man
+
+lights.on	listen lights on bro
+
+lights.on	listen lights on for me
+
+lights.on	listen lights on right now
+
+lights.on	listen lights on if you can
+
+lights.on	listen lights on when you get a sec
+
+lights.on	quick one lights on
+
+lights.on	quick one lights on please
+
+lights.on	quick one lights on man
+
+lights.on	quick one lights on bro
+
+lights.on	quick one lights on for me
+
+lights.on	quick one lights on right now
+
+lights.on	quick one lights on if you can
+
+lights.on	quick one lights on when you get a sec
+
+lights.on	real quick lights on
+
+lights.on	real quick lights on please
+
+lights.on	real quick lights on man
+
+lights.on	real quick lights on bro
+
+lights.on	real quick lights on for me
+
+lights.on	real quick lights on right now
+
+lights.on	real quick lights on if you can
+
+lights.on	real quick lights on when you get a sec
+
+lights.on	flip on the kitchen lights
+
+lights.on	flip on the kitchen lights please
+
+lights.on	flip on the kitchen lights man
+
+lights.on	flip on the kitchen lights bro
+
+lights.on	flip on the kitchen lights for me
+
+lights.on	flip on the kitchen lights right now
+
+lights.on	flip on the kitchen lights if you can
+
+lights.on	flip on the kitchen lights when you get a sec
+
+lights.on	hey ash flip on the kitchen lights
+
+lights.on	hey ash flip on the kitchen lights please
+
+lights.on	hey ash flip on the kitchen lights man
+
+lights.on	hey ash flip on the kitchen lights bro
+
+lights.on	hey ash flip on the kitchen lights for me
+
+lights.on	hey ash flip on the kitchen lights right now
+
+lights.on	hey ash flip on the kitchen lights if you can
+
+lights.on	hey ash flip on the kitchen lights when you get a sec
+
+lights.on	yo ash flip on the kitchen lights
+
+lights.on	yo ash flip on the kitchen lights please
+
+lights.on	yo ash flip on the kitchen lights man
+
+lights.on	yo ash flip on the kitchen lights bro
+
+lights.on	yo ash flip on the kitchen lights for me
+
+lights.on	yo ash flip on the kitchen lights right now
+
+lights.on	yo ash flip on the kitchen lights if you can
+
+lights.on	yo ash flip on the kitchen lights when you get a sec
+
+lights.on	okay flip on the kitchen lights
+
+lights.on	okay flip on the kitchen lights please
+
+lights.on	okay flip on the kitchen lights man
+
+lights.on	okay flip on the kitchen lights bro
+
+lights.on	okay flip on the kitchen lights for me
+
+lights.on	okay flip on the kitchen lights right now
+
+lights.on	okay flip on the kitchen lights if you can
+
+lights.on	okay flip on the kitchen lights when you get a sec
+
+lights.on	please flip on the kitchen lights
+
+lights.on	please flip on the kitchen lights please
+
+lights.on	please flip on the kitchen lights man
+
+lights.on	please flip on the kitchen lights bro
+
+lights.on	please flip on the kitchen lights for me
+
+lights.on	please flip on the kitchen lights right now
+
+lights.on	please flip on the kitchen lights if you can
+
+lights.on	please flip on the kitchen lights when you get a sec
+
+lights.on	bro flip on the kitchen lights
+
+lights.on	bro flip on the kitchen lights please
+
+lights.on	bro flip on the kitchen lights man
+
+lights.on	bro flip on the kitchen lights bro
+
+lights.on	bro flip on the kitchen lights for me
+
+lights.on	bro flip on the kitchen lights right now
+
+lights.on	bro flip on the kitchen lights if you can
+
+lights.on	bro flip on the kitchen lights when you get a sec
+
+lights.on	ash flip on the kitchen lights
+
+lights.on	ash flip on the kitchen lights please
+
+lights.on	ash flip on the kitchen lights man
+
+lights.on	ash flip on the kitchen lights bro
+
+lights.on	ash flip on the kitchen lights for me
+
+lights.on	ash flip on the kitchen lights right now
+
+lights.on	ash flip on the kitchen lights if you can
+
+lights.on	ash flip on the kitchen lights when you get a sec
+
+lights.on	listen flip on the kitchen lights
+
+lights.on	listen flip on the kitchen lights please
+
+lights.on	listen flip on the kitchen lights man
+
+lights.on	listen flip on the kitchen lights bro
+
+lights.on	listen flip on the kitchen lights for me
+
+lights.on	listen flip on the kitchen lights right now
+
+lights.on	listen flip on the kitchen lights if you can
+
+lights.on	listen flip on the kitchen lights when you get a sec
+
+lights.on	quick one flip on the kitchen lights
+
+lights.on	quick one flip on the kitchen lights please
+
+lights.on	quick one flip on the kitchen lights man
+
+lights.on	quick one flip on the kitchen lights bro
+
+lights.on	quick one flip on the kitchen lights for me
+
+lights.on	quick one flip on the kitchen lights right now
+
+lights.on	quick one flip on the kitchen lights if you can
+
+lights.on	quick one flip on the kitchen lights when you get a sec
+
+lights.on	real quick flip on the kitchen lights
+
+lights.on	real quick flip on the kitchen lights please
+
+lights.on	real quick flip on the kitchen lights man
+
+lights.on	real quick flip on the kitchen lights bro
+
+lights.on	real quick flip on the kitchen lights for me
+
+lights.on	real quick flip on the kitchen lights right now
+
+lights.on	real quick flip on the kitchen lights if you can
+
+lights.on	real quick flip on the kitchen lights when you get a sec
+
+lights.on	power up the hallway light
+
+lights.on	power up the hallway light please
+
+lights.on	power up the hallway light man
+
+lights.on	power up the hallway light bro
+
+lights.on	power up the hallway light for me
+
+lights.on	power up the hallway light right now
+
+lights.on	power up the hallway light if you can
+
+lights.on	power up the hallway light when you get a sec
+
+lights.on	hey ash power up the hallway light
+
+lights.on	hey ash power up the hallway light please
+
+lights.on	hey ash power up the hallway light man
+
+lights.on	hey ash power up the hallway light bro
+
+lights.on	hey ash power up the hallway light for me
+
+lights.on	hey ash power up the hallway light right now
+
+lights.on	hey ash power up the hallway light if you can
+
+lights.on	hey ash power up the hallway light when you get a sec
+
+lights.on	yo ash power up the hallway light
+
+lights.on	yo ash power up the hallway light please
+
+lights.on	yo ash power up the hallway light man
+
+lights.on	yo ash power up the hallway light bro
+
+lights.on	yo ash power up the hallway light for me
+
+lights.on	yo ash power up the hallway light right now
+
+lights.on	yo ash power up the hallway light if you can
+
+lights.on	yo ash power up the hallway light when you get a sec
+
+lights.on	okay power up the hallway light
+
+lights.on	okay power up the hallway light please
+
+lights.on	okay power up the hallway light man
+
+lights.on	okay power up the hallway light bro
+
+lights.on	okay power up the hallway light for me
+
+lights.on	okay power up the hallway light right now
+
+lights.on	okay power up the hallway light if you can
+
+lights.on	okay power up the hallway light when you get a sec
+
+lights.on	please power up the hallway light
+
+lights.on	please power up the hallway light please
+
+lights.on	please power up the hallway light man
+
+lights.on	please power up the hallway light bro
+
+lights.on	please power up the hallway light for me
+
+lights.on	please power up the hallway light right now
+
+lights.on	please power up the hallway light if you can
+
+lights.on	please power up the hallway light when you get a sec
+
+lights.on	bro power up the hallway light
+
+lights.on	bro power up the hallway light please
+
+lights.on	bro power up the hallway light man
+
+lights.on	bro power up the hallway light bro
+
+lights.on	bro power up the hallway light for me
+
+lights.on	bro power up the hallway light right now
+
+lights.on	bro power up the hallway light if you can
+
+lights.on	bro power up the hallway light when you get a sec
+
+lights.on	ash power up the hallway light
+
+lights.on	ash power up the hallway light please
+
+lights.on	ash power up the hallway light man
+
+lights.on	ash power up the hallway light bro
+
+lights.on	ash power up the hallway light for me
+
+lights.on	ash power up the hallway light right now
+
+lights.on	ash power up the hallway light if you can
+
+lights.on	ash power up the hallway light when you get a sec
+
+lights.on	listen power up the hallway light
+
+lights.on	listen power up the hallway light please
+
+lights.on	listen power up the hallway light man
+
+lights.on	listen power up the hallway light bro
+
+lights.on	listen power up the hallway light for me
+
+lights.on	listen power up the hallway light right now
+
+lights.on	listen power up the hallway light if you can
+
+lights.on	listen power up the hallway light when you get a sec
+
+lights.on	quick one power up the hallway light
+
+lights.on	quick one power up the hallway light please
+
+lights.on	quick one power up the hallway light man
+
+lights.on	quick one power up the hallway light bro
+
+lights.on	quick one power up the hallway light for me
+
+lights.on	quick one power up the hallway light right now
+
+lights.on	quick one power up the hallway light if you can
+
+lights.on	quick one power up the hallway light when you get a sec
+
+lights.on	real quick power up the hallway light
+
+lights.on	real quick power up the hallway light please
+
+lights.on	real quick power up the hallway light man
+
+lights.on	real quick power up the hallway light bro
+
+lights.on	real quick power up the hallway light for me
+
+lights.on	real quick power up the hallway light right now
+
+lights.on	real quick power up the hallway light if you can
+
+lights.on	real quick power up the hallway light when you get a sec
+
+lights.on	wake up the bedroom lights
+
+lights.on	wake up the bedroom lights please
+
+lights.on	wake up the bedroom lights man
+
+lights.on	wake up the bedroom lights bro
+
+lights.on	wake up the bedroom lights for me
+
+lights.on	wake up the bedroom lights right now
+
+lights.on	wake up the bedroom lights if you can
+
+lights.on	wake up the bedroom lights when you get a sec
+
+lights.on	hey ash wake up the bedroom lights
+
+lights.on	hey ash wake up the bedroom lights please
+
+lights.on	hey ash wake up the bedroom lights man
+
+lights.on	hey ash wake up the bedroom lights bro
+
+lights.on	hey ash wake up the bedroom lights for me
+
+lights.on	hey ash wake up the bedroom lights right now
+
+lights.on	hey ash wake up the bedroom lights if you can
+
+lights.on	hey ash wake up the bedroom lights when you get a sec
+
+lights.on	yo ash wake up the bedroom lights
+
+lights.on	yo ash wake up the bedroom lights please
+
+lights.on	yo ash wake up the bedroom lights man
+
+lights.on	yo ash wake up the bedroom lights bro
+
+lights.on	yo ash wake up the bedroom lights for me
+
+lights.on	yo ash wake up the bedroom lights right now
+
+lights.on	yo ash wake up the bedroom lights if you can
+
+lights.on	yo ash wake up the bedroom lights when you get a sec
+
+lights.on	okay wake up the bedroom lights
+
+lights.on	okay wake up the bedroom lights please
+
+lights.on	okay wake up the bedroom lights man
+
+lights.on	okay wake up the bedroom lights bro
+
+lights.on	okay wake up the bedroom lights for me
+
+lights.on	okay wake up the bedroom lights right now
+
+lights.on	okay wake up the bedroom lights if you can
+
+lights.on	okay wake up the bedroom lights when you get a sec
+
+lights.on	please wake up the bedroom lights
+
+lights.on	please wake up the bedroom lights please
+
+lights.on	please wake up the bedroom lights man
+
+lights.on	please wake up the bedroom lights bro
+
+lights.on	please wake up the bedroom lights for me
+
+lights.on	please wake up the bedroom lights right now
+
+lights.on	please wake up the bedroom lights if you can
+
+lights.on	please wake up the bedroom lights when you get a sec
+
+lights.on	bro wake up the bedroom lights
+
+lights.on	bro wake up the bedroom lights please
+
+lights.on	bro wake up the bedroom lights man
+
+lights.on	bro wake up the bedroom lights bro
+
+lights.on	bro wake up the bedroom lights for me
+
+lights.on	bro wake up the bedroom lights right now
+
+lights.on	bro wake up the bedroom lights if you can
+
+lights.on	bro wake up the bedroom lights when you get a sec
+
+lights.on	ash wake up the bedroom lights
+
+lights.on	ash wake up the bedroom lights please
+
+lights.on	ash wake up the bedroom lights man
+
+lights.on	ash wake up the bedroom lights bro
+
+lights.on	ash wake up the bedroom lights for me
+
+lights.on	ash wake up the bedroom lights right now
+
+lights.on	ash wake up the bedroom lights if you can
+
+lights.on	ash wake up the bedroom lights when you get a sec
+
+lights.on	listen wake up the bedroom lights
+
+lights.on	listen wake up the bedroom lights please
+
+lights.on	listen wake up the bedroom lights man
+
+lights.on	listen wake up the bedroom lights bro
+
+lights.on	listen wake up the bedroom lights for me
+
+lights.on	listen wake up the bedroom lights right now
+
+lights.on	listen wake up the bedroom lights if you can
+
+lights.on	listen wake up the bedroom lights when you get a sec
+
+lights.on	quick one wake up the bedroom lights
+
+lights.on	quick one wake up the bedroom lights please
+
+lights.on	quick one wake up the bedroom lights man
+
+lights.on	quick one wake up the bedroom lights bro
+
+lights.on	quick one wake up the bedroom lights for me
+
+lights.on	quick one wake up the bedroom lights right now
+
+lights.on	quick one wake up the bedroom lights if you can
+
+lights.on	quick one wake up the bedroom lights when you get a sec
+
+lights.on	real quick wake up the bedroom lights
+
+lights.on	real quick wake up the bedroom lights please
+
+lights.on	real quick wake up the bedroom lights man
+
+lights.on	real quick wake up the bedroom lights bro
+
+lights.on	real quick wake up the bedroom lights for me
+
+lights.on	real quick wake up the bedroom lights right now
+
+lights.on	real quick wake up the bedroom lights if you can
+
+lights.on	real quick wake up the bedroom lights when you get a sec
+
+lights.on	I need more light in here
+
+lights.on	I need more light in here please
+
+lights.on	I need more light in here man
+
+lights.on	I need more light in here bro
+
+lights.on	I need more light in here for me
+
+lights.on	I need more light in here right now
+
+lights.on	I need more light in here if you can
+
+lights.on	I need more light in here when you get a sec
+
+lights.on	hey ash I need more light in here
+
+lights.on	hey ash I need more light in here please
+
+lights.on	hey ash I need more light in here man
+
+lights.on	hey ash I need more light in here bro
+
+lights.on	hey ash I need more light in here for me
+
+lights.on	hey ash I need more light in here right now
+
+lights.on	hey ash I need more light in here if you can
+
+lights.on	hey ash I need more light in here when you get a sec
+
+lights.on	yo ash I need more light in here
+
+lights.on	yo ash I need more light in here please
+
+lights.on	yo ash I need more light in here man
+
+lights.on	yo ash I need more light in here bro
+
+lights.on	yo ash I need more light in here for me
+
+lights.on	yo ash I need more light in here right now
+
+lights.on	yo ash I need more light in here if you can
+
+lights.on	yo ash I need more light in here when you get a sec
+
+lights.on	okay I need more light in here
+
+lights.on	okay I need more light in here please
+
+lights.on	okay I need more light in here man
+
+lights.on	okay I need more light in here bro
+
+lights.on	okay I need more light in here for me
+
+lights.on	okay I need more light in here right now
+
+lights.on	okay I need more light in here if you can
+
+lights.on	okay I need more light in here when you get a sec
+
+lights.on	please I need more light in here
+
+lights.on	please I need more light in here please
+
+lights.on	please I need more light in here man
+
+lights.on	please I need more light in here bro
+
+lights.on	please I need more light in here for me
+
+lights.on	please I need more light in here right now
+
+lights.on	please I need more light in here if you can
+
+lights.on	please I need more light in here when you get a sec
+
+lights.on	bro I need more light in here
+
+lights.on	bro I need more light in here please
+
+lights.on	bro I need more light in here man
+
+lights.on	bro I need more light in here bro
+
+lights.on	bro I need more light in here for me
+
+lights.on	bro I need more light in here right now
+
+lights.on	bro I need more light in here if you can
+
+lights.on	bro I need more light in here when you get a sec
+
+lights.on	ash I need more light in here
+
+lights.on	ash I need more light in here please
+
+lights.on	ash I need more light in here man
+
+lights.on	ash I need more light in here bro
+
+lights.on	ash I need more light in here for me
+
+lights.on	ash I need more light in here right now
+
+lights.on	ash I need more light in here if you can
+
+lights.on	ash I need more light in here when you get a sec
+
+lights.on	listen I need more light in here
+
+lights.on	listen I need more light in here please
+
+lights.on	listen I need more light in here man
+
+lights.on	listen I need more light in here bro
+
+lights.on	listen I need more light in here for me
+
+lights.on	listen I need more light in here right now
+
+lights.on	listen I need more light in here if you can
+
+lights.on	listen I need more light in here when you get a sec
+
+lights.on	quick one I need more light in here
+
+lights.on	quick one I need more light in here please
+
+lights.on	quick one I need more light in here man
+
+lights.on	quick one I need more light in here bro
+
+lights.on	quick one I need more light in here for me
+
+lights.on	quick one I need more light in here right now
+
+lights.on	quick one I need more light in here if you can
+
+lights.on	quick one I need more light in here when you get a sec
+
+lights.on	real quick I need more light in here
+
+lights.on	real quick I need more light in here please
+
+lights.on	real quick I need more light in here man
+
+lights.on	real quick I need more light in here bro
+
+lights.on	real quick I need more light in here for me
+
+lights.on	real quick I need more light in here right now
+
+lights.on	real quick I need more light in here if you can
+
+lights.on	real quick I need more light in here when you get a sec
+
+##############################################################################
+# INTENT: comfort.too_hot
+#----------------------------------------------------------------------------
+# Expanded variants for too_hot, mixing greetings and politeness markers.
+#
+
+comfort.too_hot	I’m too hot
+
+comfort.too_hot	I’m too hot please
+
+comfort.too_hot	I’m too hot man
+
+comfort.too_hot	I’m too hot bro
+
+comfort.too_hot	I’m too hot for me
+
+comfort.too_hot	I’m too hot right now
+
+comfort.too_hot	I’m too hot if you can
+
+comfort.too_hot	I’m too hot when you get a sec
+
+comfort.too_hot	hey ash I’m too hot
+
+comfort.too_hot	hey ash I’m too hot please
+
+comfort.too_hot	hey ash I’m too hot man
+
+comfort.too_hot	hey ash I’m too hot bro
+
+comfort.too_hot	hey ash I’m too hot for me
+
+comfort.too_hot	hey ash I’m too hot right now
+
+comfort.too_hot	hey ash I’m too hot if you can
+
+comfort.too_hot	hey ash I’m too hot when you get a sec
+
+comfort.too_hot	yo ash I’m too hot
+
+comfort.too_hot	yo ash I’m too hot please
+
+comfort.too_hot	yo ash I’m too hot man
+
+comfort.too_hot	yo ash I’m too hot bro
+
+comfort.too_hot	yo ash I’m too hot for me
+
+comfort.too_hot	yo ash I’m too hot right now
+
+comfort.too_hot	yo ash I’m too hot if you can
+
+comfort.too_hot	yo ash I’m too hot when you get a sec
+
+comfort.too_hot	okay I’m too hot
+
+comfort.too_hot	okay I’m too hot please
+
+comfort.too_hot	okay I’m too hot man
+
+comfort.too_hot	okay I’m too hot bro
+
+comfort.too_hot	okay I’m too hot for me
+
+comfort.too_hot	okay I’m too hot right now
+
+comfort.too_hot	okay I’m too hot if you can
+
+comfort.too_hot	okay I’m too hot when you get a sec
+
+comfort.too_hot	please I’m too hot
+
+comfort.too_hot	please I’m too hot please
+
+comfort.too_hot	please I’m too hot man
+
+comfort.too_hot	please I’m too hot bro
+
+comfort.too_hot	please I’m too hot for me
+
+comfort.too_hot	please I’m too hot right now
+
+comfort.too_hot	please I’m too hot if you can
+
+comfort.too_hot	please I’m too hot when you get a sec
+
+comfort.too_hot	bro I’m too hot
+
+comfort.too_hot	bro I’m too hot please
+
+comfort.too_hot	bro I’m too hot man
+
+comfort.too_hot	bro I’m too hot bro
+
+comfort.too_hot	bro I’m too hot for me
+
+comfort.too_hot	bro I’m too hot right now
+
+comfort.too_hot	bro I’m too hot if you can
+
+comfort.too_hot	bro I’m too hot when you get a sec
+
+comfort.too_hot	ash I’m too hot
+
+comfort.too_hot	ash I’m too hot please
+
+comfort.too_hot	ash I’m too hot man
+
+comfort.too_hot	ash I’m too hot bro
+
+comfort.too_hot	ash I’m too hot for me
+
+comfort.too_hot	ash I’m too hot right now
+
+comfort.too_hot	ash I’m too hot if you can
+
+comfort.too_hot	ash I’m too hot when you get a sec
+
+comfort.too_hot	listen I’m too hot
+
+comfort.too_hot	listen I’m too hot please
+
+comfort.too_hot	listen I’m too hot man
+
+comfort.too_hot	listen I’m too hot bro
+
+comfort.too_hot	listen I’m too hot for me
+
+comfort.too_hot	listen I’m too hot right now
+
+comfort.too_hot	listen I’m too hot if you can
+
+comfort.too_hot	listen I’m too hot when you get a sec
+
+comfort.too_hot	quick one I’m too hot
+
+comfort.too_hot	quick one I’m too hot please
+
+comfort.too_hot	quick one I’m too hot man
+
+comfort.too_hot	quick one I’m too hot bro
+
+comfort.too_hot	quick one I’m too hot for me
+
+comfort.too_hot	quick one I’m too hot right now
+
+comfort.too_hot	quick one I’m too hot if you can
+
+comfort.too_hot	quick one I’m too hot when you get a sec
+
+comfort.too_hot	real quick I’m too hot
+
+comfort.too_hot	real quick I’m too hot please
+
+comfort.too_hot	real quick I’m too hot man
+
+comfort.too_hot	real quick I’m too hot bro
+
+comfort.too_hot	real quick I’m too hot for me
+
+comfort.too_hot	real quick I’m too hot right now
+
+comfort.too_hot	real quick I’m too hot if you can
+
+comfort.too_hot	real quick I’m too hot when you get a sec
+
+comfort.too_hot	it’s boiling in here
+
+comfort.too_hot	it’s boiling in here please
+
+comfort.too_hot	it’s boiling in here man
+
+comfort.too_hot	it’s boiling in here bro
+
+comfort.too_hot	it’s boiling in here for me
+
+comfort.too_hot	it’s boiling in here right now
+
+comfort.too_hot	it’s boiling in here if you can
+
+comfort.too_hot	it’s boiling in here when you get a sec
+
+comfort.too_hot	hey ash it’s boiling in here
+
+comfort.too_hot	hey ash it’s boiling in here please
+
+comfort.too_hot	hey ash it’s boiling in here man
+
+comfort.too_hot	hey ash it’s boiling in here bro
+
+comfort.too_hot	hey ash it’s boiling in here for me
+
+comfort.too_hot	hey ash it’s boiling in here right now
+
+comfort.too_hot	hey ash it’s boiling in here if you can
+
+comfort.too_hot	hey ash it’s boiling in here when you get a sec
+
+comfort.too_hot	yo ash it’s boiling in here
+
+comfort.too_hot	yo ash it’s boiling in here please
+
+comfort.too_hot	yo ash it’s boiling in here man
+
+comfort.too_hot	yo ash it’s boiling in here bro
+
+comfort.too_hot	yo ash it’s boiling in here for me
+
+comfort.too_hot	yo ash it’s boiling in here right now
+
+comfort.too_hot	yo ash it’s boiling in here if you can
+
+comfort.too_hot	yo ash it’s boiling in here when you get a sec
+
+comfort.too_hot	okay it’s boiling in here
+
+comfort.too_hot	okay it’s boiling in here please
+
+comfort.too_hot	okay it’s boiling in here man
+
+comfort.too_hot	okay it’s boiling in here bro
+
+comfort.too_hot	okay it’s boiling in here for me
+
+comfort.too_hot	okay it’s boiling in here right now
+
+comfort.too_hot	okay it’s boiling in here if you can
+
+comfort.too_hot	okay it’s boiling in here when you get a sec
+
+comfort.too_hot	please it’s boiling in here
+
+comfort.too_hot	please it’s boiling in here please
+
+comfort.too_hot	please it’s boiling in here man
+
+comfort.too_hot	please it’s boiling in here bro
+
+comfort.too_hot	please it’s boiling in here for me
+
+comfort.too_hot	please it’s boiling in here right now
+
+comfort.too_hot	please it’s boiling in here if you can
+
+comfort.too_hot	please it’s boiling in here when you get a sec
+
+comfort.too_hot	bro it’s boiling in here
+
+comfort.too_hot	bro it’s boiling in here please
+
+comfort.too_hot	bro it’s boiling in here man
+
+comfort.too_hot	bro it’s boiling in here bro
+
+comfort.too_hot	bro it’s boiling in here for me
+
+comfort.too_hot	bro it’s boiling in here right now
+
+comfort.too_hot	bro it’s boiling in here if you can
+
+comfort.too_hot	bro it’s boiling in here when you get a sec
+
+comfort.too_hot	ash it’s boiling in here
+
+comfort.too_hot	ash it’s boiling in here please
+
+comfort.too_hot	ash it’s boiling in here man
+
+comfort.too_hot	ash it’s boiling in here bro
+
+comfort.too_hot	ash it’s boiling in here for me
+
+comfort.too_hot	ash it’s boiling in here right now
+
+comfort.too_hot	ash it’s boiling in here if you can
+
+comfort.too_hot	ash it’s boiling in here when you get a sec
+
+comfort.too_hot	listen it’s boiling in here
+
+comfort.too_hot	listen it’s boiling in here please
+
+comfort.too_hot	listen it’s boiling in here man
+
+comfort.too_hot	listen it’s boiling in here bro
+
+comfort.too_hot	listen it’s boiling in here for me
+
+comfort.too_hot	listen it’s boiling in here right now
+
+comfort.too_hot	listen it’s boiling in here if you can
+
+comfort.too_hot	listen it’s boiling in here when you get a sec
+
+comfort.too_hot	quick one it’s boiling in here
+
+comfort.too_hot	quick one it’s boiling in here please
+
+comfort.too_hot	quick one it’s boiling in here man
+
+comfort.too_hot	quick one it’s boiling in here bro
+
+comfort.too_hot	quick one it’s boiling in here for me
+
+comfort.too_hot	quick one it’s boiling in here right now
+
+comfort.too_hot	quick one it’s boiling in here if you can
+
+comfort.too_hot	quick one it’s boiling in here when you get a sec
+
+comfort.too_hot	real quick it’s boiling in here
+
+comfort.too_hot	real quick it’s boiling in here please
+
+comfort.too_hot	real quick it’s boiling in here man
+
+comfort.too_hot	real quick it’s boiling in here bro
+
+comfort.too_hot	real quick it’s boiling in here for me
+
+comfort.too_hot	real quick it’s boiling in here right now
+
+comfort.too_hot	real quick it’s boiling in here if you can
+
+comfort.too_hot	real quick it’s boiling in here when you get a sec
+
+comfort.too_hot	can you make it cooler
+
+comfort.too_hot	can you make it cooler please
+
+comfort.too_hot	can you make it cooler man
+
+comfort.too_hot	can you make it cooler bro
+
+comfort.too_hot	can you make it cooler for me
+
+comfort.too_hot	can you make it cooler right now
+
+comfort.too_hot	can you make it cooler if you can
+
+comfort.too_hot	can you make it cooler when you get a sec
+
+comfort.too_hot	hey ash can you make it cooler
+
+comfort.too_hot	hey ash can you make it cooler please
+
+comfort.too_hot	hey ash can you make it cooler man
+
+comfort.too_hot	hey ash can you make it cooler bro
+
+comfort.too_hot	hey ash can you make it cooler for me
+
+comfort.too_hot	hey ash can you make it cooler right now
+
+comfort.too_hot	hey ash can you make it cooler if you can
+
+comfort.too_hot	hey ash can you make it cooler when you get a sec
+
+comfort.too_hot	yo ash can you make it cooler
+
+comfort.too_hot	yo ash can you make it cooler please
+
+comfort.too_hot	yo ash can you make it cooler man
+
+comfort.too_hot	yo ash can you make it cooler bro
+
+comfort.too_hot	yo ash can you make it cooler for me
+
+comfort.too_hot	yo ash can you make it cooler right now
+
+comfort.too_hot	yo ash can you make it cooler if you can
+
+comfort.too_hot	yo ash can you make it cooler when you get a sec
+
+comfort.too_hot	okay can you make it cooler
+
+comfort.too_hot	okay can you make it cooler please
+
+comfort.too_hot	okay can you make it cooler man
+
+comfort.too_hot	okay can you make it cooler bro
+
+comfort.too_hot	okay can you make it cooler for me
+
+comfort.too_hot	okay can you make it cooler right now
+
+comfort.too_hot	okay can you make it cooler if you can
+
+comfort.too_hot	okay can you make it cooler when you get a sec
+
+comfort.too_hot	please can you make it cooler
+
+comfort.too_hot	please can you make it cooler please
+
+comfort.too_hot	please can you make it cooler man
+
+comfort.too_hot	please can you make it cooler bro
+
+comfort.too_hot	please can you make it cooler for me
+
+comfort.too_hot	please can you make it cooler right now
+
+comfort.too_hot	please can you make it cooler if you can
+
+comfort.too_hot	please can you make it cooler when you get a sec
+
+comfort.too_hot	bro can you make it cooler
+
+comfort.too_hot	bro can you make it cooler please
+
+comfort.too_hot	bro can you make it cooler man
+
+comfort.too_hot	bro can you make it cooler bro
+
+comfort.too_hot	bro can you make it cooler for me
+
+comfort.too_hot	bro can you make it cooler right now
+
+comfort.too_hot	bro can you make it cooler if you can
+
+comfort.too_hot	bro can you make it cooler when you get a sec
+
+comfort.too_hot	ash can you make it cooler
+
+comfort.too_hot	ash can you make it cooler please
+
+comfort.too_hot	ash can you make it cooler man
+
+comfort.too_hot	ash can you make it cooler bro
+
+comfort.too_hot	ash can you make it cooler for me
+
+comfort.too_hot	ash can you make it cooler right now
+
+comfort.too_hot	ash can you make it cooler if you can
+
+comfort.too_hot	ash can you make it cooler when you get a sec
+
+comfort.too_hot	listen can you make it cooler
+
+comfort.too_hot	listen can you make it cooler please
+
+comfort.too_hot	listen can you make it cooler man
+
+comfort.too_hot	listen can you make it cooler bro
+
+comfort.too_hot	listen can you make it cooler for me
+
+comfort.too_hot	listen can you make it cooler right now
+
+comfort.too_hot	listen can you make it cooler if you can
+
+comfort.too_hot	listen can you make it cooler when you get a sec
+
+comfort.too_hot	quick one can you make it cooler
+
+comfort.too_hot	quick one can you make it cooler please
+
+comfort.too_hot	quick one can you make it cooler man
+
+comfort.too_hot	quick one can you make it cooler bro
+
+comfort.too_hot	quick one can you make it cooler for me
+
+comfort.too_hot	quick one can you make it cooler right now
+
+comfort.too_hot	quick one can you make it cooler if you can
+
+comfort.too_hot	quick one can you make it cooler when you get a sec
+
+comfort.too_hot	real quick can you make it cooler
+
+comfort.too_hot	real quick can you make it cooler please
+
+comfort.too_hot	real quick can you make it cooler man
+
+comfort.too_hot	real quick can you make it cooler bro
+
+comfort.too_hot	real quick can you make it cooler for me
+
+comfort.too_hot	real quick can you make it cooler right now
+
+comfort.too_hot	real quick can you make it cooler if you can
+
+comfort.too_hot	real quick can you make it cooler when you get a sec
+
+comfort.too_hot	turn the heat down
+
+comfort.too_hot	turn the heat down please
+
+comfort.too_hot	turn the heat down man
+
+comfort.too_hot	turn the heat down bro
+
+comfort.too_hot	turn the heat down for me
+
+comfort.too_hot	turn the heat down right now
+
+comfort.too_hot	turn the heat down if you can
+
+comfort.too_hot	turn the heat down when you get a sec
+
+comfort.too_hot	hey ash turn the heat down
+
+comfort.too_hot	hey ash turn the heat down please
+
+comfort.too_hot	hey ash turn the heat down man
+
+comfort.too_hot	hey ash turn the heat down bro
+
+comfort.too_hot	hey ash turn the heat down for me
+
+comfort.too_hot	hey ash turn the heat down right now
+
+comfort.too_hot	hey ash turn the heat down if you can
+
+comfort.too_hot	hey ash turn the heat down when you get a sec
+
+comfort.too_hot	yo ash turn the heat down
+
+comfort.too_hot	yo ash turn the heat down please
+
+comfort.too_hot	yo ash turn the heat down man
+
+comfort.too_hot	yo ash turn the heat down bro
+
+comfort.too_hot	yo ash turn the heat down for me
+
+comfort.too_hot	yo ash turn the heat down right now
+
+comfort.too_hot	yo ash turn the heat down if you can
+
+comfort.too_hot	yo ash turn the heat down when you get a sec
+
+comfort.too_hot	okay turn the heat down
+
+comfort.too_hot	okay turn the heat down please
+
+comfort.too_hot	okay turn the heat down man
+
+comfort.too_hot	okay turn the heat down bro
+
+comfort.too_hot	okay turn the heat down for me
+
+comfort.too_hot	okay turn the heat down right now
+
+comfort.too_hot	okay turn the heat down if you can
+
+comfort.too_hot	okay turn the heat down when you get a sec
+
+comfort.too_hot	please turn the heat down
+
+comfort.too_hot	please turn the heat down please
+
+comfort.too_hot	please turn the heat down man
+
+comfort.too_hot	please turn the heat down bro
+
+comfort.too_hot	please turn the heat down for me
+
+comfort.too_hot	please turn the heat down right now
+
+comfort.too_hot	please turn the heat down if you can
+
+comfort.too_hot	please turn the heat down when you get a sec
+
+comfort.too_hot	bro turn the heat down
+
+comfort.too_hot	bro turn the heat down please
+
+comfort.too_hot	bro turn the heat down man
+
+comfort.too_hot	bro turn the heat down bro
+
+comfort.too_hot	bro turn the heat down for me
+
+comfort.too_hot	bro turn the heat down right now
+
+comfort.too_hot	bro turn the heat down if you can
+
+comfort.too_hot	bro turn the heat down when you get a sec
+
+comfort.too_hot	ash turn the heat down
+
+comfort.too_hot	ash turn the heat down please
+
+comfort.too_hot	ash turn the heat down man
+
+comfort.too_hot	ash turn the heat down bro
+
+comfort.too_hot	ash turn the heat down for me
+
+comfort.too_hot	ash turn the heat down right now
+
+comfort.too_hot	ash turn the heat down if you can
+
+comfort.too_hot	ash turn the heat down when you get a sec
+
+comfort.too_hot	listen turn the heat down
+
+comfort.too_hot	listen turn the heat down please
+
+comfort.too_hot	listen turn the heat down man
+
+comfort.too_hot	listen turn the heat down bro
+
+comfort.too_hot	listen turn the heat down for me
+
+comfort.too_hot	listen turn the heat down right now
+
+comfort.too_hot	listen turn the heat down if you can
+
+comfort.too_hot	listen turn the heat down when you get a sec
+
+comfort.too_hot	quick one turn the heat down
+
+comfort.too_hot	quick one turn the heat down please
+
+comfort.too_hot	quick one turn the heat down man
+
+comfort.too_hot	quick one turn the heat down bro
+
+comfort.too_hot	quick one turn the heat down for me
+
+comfort.too_hot	quick one turn the heat down right now
+
+comfort.too_hot	quick one turn the heat down if you can
+
+comfort.too_hot	quick one turn the heat down when you get a sec
+
+comfort.too_hot	real quick turn the heat down
+
+comfort.too_hot	real quick turn the heat down please
+
+comfort.too_hot	real quick turn the heat down man
+
+comfort.too_hot	real quick turn the heat down bro
+
+comfort.too_hot	real quick turn the heat down for me
+
+comfort.too_hot	real quick turn the heat down right now
+
+comfort.too_hot	real quick turn the heat down if you can
+
+comfort.too_hot	real quick turn the heat down when you get a sec
+
+comfort.too_hot	cool this room down a bit
+
+comfort.too_hot	cool this room down a bit please
+
+comfort.too_hot	cool this room down a bit man
+
+comfort.too_hot	cool this room down a bit bro
+
+comfort.too_hot	cool this room down a bit for me
+
+comfort.too_hot	cool this room down a bit right now
+
+comfort.too_hot	cool this room down a bit if you can
+
+comfort.too_hot	cool this room down a bit when you get a sec
+
+comfort.too_hot	hey ash cool this room down a bit
+
+comfort.too_hot	hey ash cool this room down a bit please
+
+comfort.too_hot	hey ash cool this room down a bit man
+
+comfort.too_hot	hey ash cool this room down a bit bro
+
+comfort.too_hot	hey ash cool this room down a bit for me
+
+comfort.too_hot	hey ash cool this room down a bit right now
+
+comfort.too_hot	hey ash cool this room down a bit if you can
+
+comfort.too_hot	hey ash cool this room down a bit when you get a sec
+
+comfort.too_hot	yo ash cool this room down a bit
+
+comfort.too_hot	yo ash cool this room down a bit please
+
+comfort.too_hot	yo ash cool this room down a bit man
+
+comfort.too_hot	yo ash cool this room down a bit bro
+
+comfort.too_hot	yo ash cool this room down a bit for me
+
+comfort.too_hot	yo ash cool this room down a bit right now
+
+comfort.too_hot	yo ash cool this room down a bit if you can
+
+comfort.too_hot	yo ash cool this room down a bit when you get a sec
+
+comfort.too_hot	okay cool this room down a bit
+
+comfort.too_hot	okay cool this room down a bit please
+
+comfort.too_hot	okay cool this room down a bit man
+
+comfort.too_hot	okay cool this room down a bit bro
+
+comfort.too_hot	okay cool this room down a bit for me
+
+comfort.too_hot	okay cool this room down a bit right now
+
+comfort.too_hot	okay cool this room down a bit if you can
+
+comfort.too_hot	okay cool this room down a bit when you get a sec
+
+comfort.too_hot	please cool this room down a bit
+
+comfort.too_hot	please cool this room down a bit please
+
+comfort.too_hot	please cool this room down a bit man
+
+comfort.too_hot	please cool this room down a bit bro
+
+comfort.too_hot	please cool this room down a bit for me
+
+comfort.too_hot	please cool this room down a bit right now
+
+comfort.too_hot	please cool this room down a bit if you can
+
+comfort.too_hot	please cool this room down a bit when you get a sec
+
+comfort.too_hot	bro cool this room down a bit
+
+comfort.too_hot	bro cool this room down a bit please
+
+comfort.too_hot	bro cool this room down a bit man
+
+comfort.too_hot	bro cool this room down a bit bro
+
+comfort.too_hot	bro cool this room down a bit for me
+
+comfort.too_hot	bro cool this room down a bit right now
+
+comfort.too_hot	bro cool this room down a bit if you can
+
+comfort.too_hot	bro cool this room down a bit when you get a sec
+
+comfort.too_hot	ash cool this room down a bit
+
+comfort.too_hot	ash cool this room down a bit please
+
+comfort.too_hot	ash cool this room down a bit man
+
+comfort.too_hot	ash cool this room down a bit bro
+
+comfort.too_hot	ash cool this room down a bit for me
+
+comfort.too_hot	ash cool this room down a bit right now
+
+comfort.too_hot	ash cool this room down a bit if you can
+
+comfort.too_hot	ash cool this room down a bit when you get a sec
+
+comfort.too_hot	listen cool this room down a bit
+
+comfort.too_hot	listen cool this room down a bit please
+
+comfort.too_hot	listen cool this room down a bit man
+
+comfort.too_hot	listen cool this room down a bit bro
+
+comfort.too_hot	listen cool this room down a bit for me
+
+comfort.too_hot	listen cool this room down a bit right now
+
+comfort.too_hot	listen cool this room down a bit if you can
+
+comfort.too_hot	listen cool this room down a bit when you get a sec
+
+comfort.too_hot	quick one cool this room down a bit
+
+comfort.too_hot	quick one cool this room down a bit please
+
+comfort.too_hot	quick one cool this room down a bit man
+
+comfort.too_hot	quick one cool this room down a bit bro
+
+comfort.too_hot	quick one cool this room down a bit for me
+
+comfort.too_hot	quick one cool this room down a bit right now
+
+comfort.too_hot	quick one cool this room down a bit if you can
+
+comfort.too_hot	quick one cool this room down a bit when you get a sec
+
+comfort.too_hot	real quick cool this room down a bit
+
+comfort.too_hot	real quick cool this room down a bit please
+
+comfort.too_hot	real quick cool this room down a bit man
+
+comfort.too_hot	real quick cool this room down a bit bro
+
+comfort.too_hot	real quick cool this room down a bit for me
+
+comfort.too_hot	real quick cool this room down a bit right now
+
+comfort.too_hot	real quick cool this room down a bit if you can
+
+comfort.too_hot	real quick cool this room down a bit when you get a sec
+
+comfort.too_hot	I’m sweating like crazy
+
+comfort.too_hot	I’m sweating like crazy please
+
+comfort.too_hot	I’m sweating like crazy man
+
+comfort.too_hot	I’m sweating like crazy bro
+
+comfort.too_hot	I’m sweating like crazy for me
+
+comfort.too_hot	I’m sweating like crazy right now
+
+comfort.too_hot	I’m sweating like crazy if you can
+
+comfort.too_hot	I’m sweating like crazy when you get a sec
+
+comfort.too_hot	hey ash I’m sweating like crazy
+
+comfort.too_hot	hey ash I’m sweating like crazy please
+
+comfort.too_hot	hey ash I’m sweating like crazy man
+
+comfort.too_hot	hey ash I’m sweating like crazy bro
+
+comfort.too_hot	hey ash I’m sweating like crazy for me
+
+comfort.too_hot	hey ash I’m sweating like crazy right now
+
+comfort.too_hot	hey ash I’m sweating like crazy if you can
+
+comfort.too_hot	hey ash I’m sweating like crazy when you get a sec
+
+comfort.too_hot	yo ash I’m sweating like crazy
+
+comfort.too_hot	yo ash I’m sweating like crazy please
+
+comfort.too_hot	yo ash I’m sweating like crazy man
+
+comfort.too_hot	yo ash I’m sweating like crazy bro
+
+comfort.too_hot	yo ash I’m sweating like crazy for me
+
+comfort.too_hot	yo ash I’m sweating like crazy right now
+
+comfort.too_hot	yo ash I’m sweating like crazy if you can
+
+comfort.too_hot	yo ash I’m sweating like crazy when you get a sec
+
+comfort.too_hot	okay I’m sweating like crazy
+
+comfort.too_hot	okay I’m sweating like crazy please
+
+comfort.too_hot	okay I’m sweating like crazy man
+
+comfort.too_hot	okay I’m sweating like crazy bro
+
+comfort.too_hot	okay I’m sweating like crazy for me
+
+comfort.too_hot	okay I’m sweating like crazy right now
+
+comfort.too_hot	okay I’m sweating like crazy if you can
+
+comfort.too_hot	okay I’m sweating like crazy when you get a sec
+
+comfort.too_hot	please I’m sweating like crazy
+
+comfort.too_hot	please I’m sweating like crazy please
+
+comfort.too_hot	please I’m sweating like crazy man
+
+comfort.too_hot	please I’m sweating like crazy bro
+
+comfort.too_hot	please I’m sweating like crazy for me
+
+comfort.too_hot	please I’m sweating like crazy right now
+
+comfort.too_hot	please I’m sweating like crazy if you can
+
+comfort.too_hot	please I’m sweating like crazy when you get a sec
+
+comfort.too_hot	bro I’m sweating like crazy
+
+comfort.too_hot	bro I’m sweating like crazy please
+
+comfort.too_hot	bro I’m sweating like crazy man
+
+comfort.too_hot	bro I’m sweating like crazy bro
+
+comfort.too_hot	bro I’m sweating like crazy for me
+
+comfort.too_hot	bro I’m sweating like crazy right now
+
+comfort.too_hot	bro I’m sweating like crazy if you can
+
+comfort.too_hot	bro I’m sweating like crazy when you get a sec
+
+comfort.too_hot	ash I’m sweating like crazy
+
+comfort.too_hot	ash I’m sweating like crazy please
+
+comfort.too_hot	ash I’m sweating like crazy man
+
+comfort.too_hot	ash I’m sweating like crazy bro
+
+comfort.too_hot	ash I’m sweating like crazy for me
+
+comfort.too_hot	ash I’m sweating like crazy right now
+
+comfort.too_hot	ash I’m sweating like crazy if you can
+
+comfort.too_hot	ash I’m sweating like crazy when you get a sec
+
+comfort.too_hot	listen I’m sweating like crazy
+
+comfort.too_hot	listen I’m sweating like crazy please
+
+comfort.too_hot	listen I’m sweating like crazy man
+
+comfort.too_hot	listen I’m sweating like crazy bro
+
+comfort.too_hot	listen I’m sweating like crazy for me
+
+comfort.too_hot	listen I’m sweating like crazy right now
+
+comfort.too_hot	listen I’m sweating like crazy if you can
+
+comfort.too_hot	listen I’m sweating like crazy when you get a sec
+
+comfort.too_hot	quick one I’m sweating like crazy
+
+comfort.too_hot	quick one I’m sweating like crazy please
+
+comfort.too_hot	quick one I’m sweating like crazy man
+
+comfort.too_hot	quick one I’m sweating like crazy bro
+
+comfort.too_hot	quick one I’m sweating like crazy for me
+
+comfort.too_hot	quick one I’m sweating like crazy right now
+
+comfort.too_hot	quick one I’m sweating like crazy if you can
+
+comfort.too_hot	quick one I’m sweating like crazy when you get a sec
+
+comfort.too_hot	real quick I’m sweating like crazy
+
+comfort.too_hot	real quick I’m sweating like crazy please
+
+comfort.too_hot	real quick I’m sweating like crazy man
+
+comfort.too_hot	real quick I’m sweating like crazy bro
+
+comfort.too_hot	real quick I’m sweating like crazy for me
+
+comfort.too_hot	real quick I’m sweating like crazy right now
+
+comfort.too_hot	real quick I’m sweating like crazy if you can
+
+comfort.too_hot	real quick I’m sweating like crazy when you get a sec
+
+comfort.too_hot	feels stuffy in here
+
+comfort.too_hot	feels stuffy in here please
+
+comfort.too_hot	feels stuffy in here man
+
+comfort.too_hot	feels stuffy in here bro
+
+comfort.too_hot	feels stuffy in here for me
+
+comfort.too_hot	feels stuffy in here right now
+
+comfort.too_hot	feels stuffy in here if you can
+
+comfort.too_hot	feels stuffy in here when you get a sec
+
+comfort.too_hot	hey ash feels stuffy in here
+
+comfort.too_hot	hey ash feels stuffy in here please
+
+comfort.too_hot	hey ash feels stuffy in here man
+
+comfort.too_hot	hey ash feels stuffy in here bro
+
+comfort.too_hot	hey ash feels stuffy in here for me
+
+comfort.too_hot	hey ash feels stuffy in here right now
+
+comfort.too_hot	hey ash feels stuffy in here if you can
+
+comfort.too_hot	hey ash feels stuffy in here when you get a sec
+
+comfort.too_hot	yo ash feels stuffy in here
+
+comfort.too_hot	yo ash feels stuffy in here please
+
+comfort.too_hot	yo ash feels stuffy in here man
+
+comfort.too_hot	yo ash feels stuffy in here bro
+
+comfort.too_hot	yo ash feels stuffy in here for me
+
+comfort.too_hot	yo ash feels stuffy in here right now
+
+comfort.too_hot	yo ash feels stuffy in here if you can
+
+comfort.too_hot	yo ash feels stuffy in here when you get a sec
+
+comfort.too_hot	okay feels stuffy in here
+
+comfort.too_hot	okay feels stuffy in here please
+
+comfort.too_hot	okay feels stuffy in here man
+
+comfort.too_hot	okay feels stuffy in here bro
+
+comfort.too_hot	okay feels stuffy in here for me
+
+comfort.too_hot	okay feels stuffy in here right now
+
+comfort.too_hot	okay feels stuffy in here if you can
+
+comfort.too_hot	okay feels stuffy in here when you get a sec
+
+comfort.too_hot	please feels stuffy in here
+
+comfort.too_hot	please feels stuffy in here please
+
+comfort.too_hot	please feels stuffy in here man
+
+comfort.too_hot	please feels stuffy in here bro
+
+comfort.too_hot	please feels stuffy in here for me
+
+comfort.too_hot	please feels stuffy in here right now
+
+comfort.too_hot	please feels stuffy in here if you can
+
+comfort.too_hot	please feels stuffy in here when you get a sec
+
+comfort.too_hot	bro feels stuffy in here
+
+comfort.too_hot	bro feels stuffy in here please
+
+comfort.too_hot	bro feels stuffy in here man
+
+comfort.too_hot	bro feels stuffy in here bro
+
+comfort.too_hot	bro feels stuffy in here for me
+
+comfort.too_hot	bro feels stuffy in here right now
+
+comfort.too_hot	bro feels stuffy in here if you can
+
+comfort.too_hot	bro feels stuffy in here when you get a sec
+
+comfort.too_hot	ash feels stuffy in here
+
+comfort.too_hot	ash feels stuffy in here please
+
+comfort.too_hot	ash feels stuffy in here man
+
+comfort.too_hot	ash feels stuffy in here bro
+
+comfort.too_hot	ash feels stuffy in here for me
+
+comfort.too_hot	ash feels stuffy in here right now
+
+comfort.too_hot	ash feels stuffy in here if you can
+
+comfort.too_hot	ash feels stuffy in here when you get a sec
+
+comfort.too_hot	listen feels stuffy in here
+
+comfort.too_hot	listen feels stuffy in here please
+
+comfort.too_hot	listen feels stuffy in here man
+
+comfort.too_hot	listen feels stuffy in here bro
+
+comfort.too_hot	listen feels stuffy in here for me
+
+comfort.too_hot	listen feels stuffy in here right now
+
+comfort.too_hot	listen feels stuffy in here if you can
+
+comfort.too_hot	listen feels stuffy in here when you get a sec
+
+comfort.too_hot	quick one feels stuffy in here
+
+comfort.too_hot	quick one feels stuffy in here please
+
+comfort.too_hot	quick one feels stuffy in here man
+
+comfort.too_hot	quick one feels stuffy in here bro
+
+comfort.too_hot	quick one feels stuffy in here for me
+
+comfort.too_hot	quick one feels stuffy in here right now
+
+comfort.too_hot	quick one feels stuffy in here if you can
+
+comfort.too_hot	quick one feels stuffy in here when you get a sec
+
+comfort.too_hot	real quick feels stuffy in here
+
+comfort.too_hot	real quick feels stuffy in here please
+
+comfort.too_hot	real quick feels stuffy in here man
+
+comfort.too_hot	real quick feels stuffy in here bro
+
+comfort.too_hot	real quick feels stuffy in here for me
+
+comfort.too_hot	real quick feels stuffy in here right now
+
+comfort.too_hot	real quick feels stuffy in here if you can
+
+comfort.too_hot	real quick feels stuffy in here when you get a sec
+
+comfort.too_hot	can we drop the temperature
+
+comfort.too_hot	can we drop the temperature please
+
+comfort.too_hot	can we drop the temperature man
+
+comfort.too_hot	can we drop the temperature bro
+
+comfort.too_hot	can we drop the temperature for me
+
+comfort.too_hot	can we drop the temperature right now
+
+comfort.too_hot	can we drop the temperature if you can
+
+comfort.too_hot	can we drop the temperature when you get a sec
+
+comfort.too_hot	hey ash can we drop the temperature
+
+comfort.too_hot	hey ash can we drop the temperature please
+
+comfort.too_hot	hey ash can we drop the temperature man
+
+comfort.too_hot	hey ash can we drop the temperature bro
+
+comfort.too_hot	hey ash can we drop the temperature for me
+
+comfort.too_hot	hey ash can we drop the temperature right now
+
+comfort.too_hot	hey ash can we drop the temperature if you can
+
+comfort.too_hot	hey ash can we drop the temperature when you get a sec
+
+comfort.too_hot	yo ash can we drop the temperature
+
+comfort.too_hot	yo ash can we drop the temperature please
+
+comfort.too_hot	yo ash can we drop the temperature man
+
+comfort.too_hot	yo ash can we drop the temperature bro
+
+comfort.too_hot	yo ash can we drop the temperature for me
+
+comfort.too_hot	yo ash can we drop the temperature right now
+
+comfort.too_hot	yo ash can we drop the temperature if you can
+
+comfort.too_hot	yo ash can we drop the temperature when you get a sec
+
+comfort.too_hot	okay can we drop the temperature
+
+comfort.too_hot	okay can we drop the temperature please
+
+comfort.too_hot	okay can we drop the temperature man
+
+comfort.too_hot	okay can we drop the temperature bro
+
+comfort.too_hot	okay can we drop the temperature for me
+
+comfort.too_hot	okay can we drop the temperature right now
+
+comfort.too_hot	okay can we drop the temperature if you can
+
+comfort.too_hot	okay can we drop the temperature when you get a sec
+
+comfort.too_hot	please can we drop the temperature
+
+comfort.too_hot	please can we drop the temperature please
+
+comfort.too_hot	please can we drop the temperature man
+
+comfort.too_hot	please can we drop the temperature bro
+
+comfort.too_hot	please can we drop the temperature for me
+
+comfort.too_hot	please can we drop the temperature right now
+
+comfort.too_hot	please can we drop the temperature if you can
+
+comfort.too_hot	please can we drop the temperature when you get a sec
+
+comfort.too_hot	bro can we drop the temperature
+
+comfort.too_hot	bro can we drop the temperature please
+
+comfort.too_hot	bro can we drop the temperature man
+
+comfort.too_hot	bro can we drop the temperature bro
+
+comfort.too_hot	bro can we drop the temperature for me
+
+comfort.too_hot	bro can we drop the temperature right now
+
+comfort.too_hot	bro can we drop the temperature if you can
+
+comfort.too_hot	bro can we drop the temperature when you get a sec
+
+comfort.too_hot	ash can we drop the temperature
+
+comfort.too_hot	ash can we drop the temperature please
+
+comfort.too_hot	ash can we drop the temperature man
+
+comfort.too_hot	ash can we drop the temperature bro
+
+comfort.too_hot	ash can we drop the temperature for me
+
+comfort.too_hot	ash can we drop the temperature right now
+
+comfort.too_hot	ash can we drop the temperature if you can
+
+comfort.too_hot	ash can we drop the temperature when you get a sec
+
+comfort.too_hot	listen can we drop the temperature
+
+comfort.too_hot	listen can we drop the temperature please
+
+comfort.too_hot	listen can we drop the temperature man
+
+comfort.too_hot	listen can we drop the temperature bro
+
+comfort.too_hot	listen can we drop the temperature for me
+
+comfort.too_hot	listen can we drop the temperature right now
+
+comfort.too_hot	listen can we drop the temperature if you can
+
+comfort.too_hot	listen can we drop the temperature when you get a sec
+
+comfort.too_hot	quick one can we drop the temperature
+
+comfort.too_hot	quick one can we drop the temperature please
+
+comfort.too_hot	quick one can we drop the temperature man
+
+comfort.too_hot	quick one can we drop the temperature bro
+
+comfort.too_hot	quick one can we drop the temperature for me
+
+comfort.too_hot	quick one can we drop the temperature right now
+
+comfort.too_hot	quick one can we drop the temperature if you can
+
+comfort.too_hot	quick one can we drop the temperature when you get a sec
+
+comfort.too_hot	real quick can we drop the temperature
+
+comfort.too_hot	real quick can we drop the temperature please
+
+comfort.too_hot	real quick can we drop the temperature man
+
+comfort.too_hot	real quick can we drop the temperature bro
+
+comfort.too_hot	real quick can we drop the temperature for me
+
+comfort.too_hot	real quick can we drop the temperature right now
+
+comfort.too_hot	real quick can we drop the temperature if you can
+
+comfort.too_hot	real quick can we drop the temperature when you get a sec
+
+comfort.too_hot	make it less warm please
+
+comfort.too_hot	make it less warm please please
+
+comfort.too_hot	make it less warm please man
+
+comfort.too_hot	make it less warm please bro
+
+comfort.too_hot	make it less warm please for me
+
+comfort.too_hot	make it less warm please right now
+
+comfort.too_hot	make it less warm please if you can
+
+comfort.too_hot	make it less warm please when you get a sec
+
+comfort.too_hot	hey ash make it less warm please
+
+comfort.too_hot	hey ash make it less warm please please
+
+comfort.too_hot	hey ash make it less warm please man
+
+comfort.too_hot	hey ash make it less warm please bro
+
+comfort.too_hot	hey ash make it less warm please for me
+
+comfort.too_hot	hey ash make it less warm please right now
+
+comfort.too_hot	hey ash make it less warm please if you can
+
+comfort.too_hot	hey ash make it less warm please when you get a sec
+
+comfort.too_hot	yo ash make it less warm please
+
+comfort.too_hot	yo ash make it less warm please please
+
+comfort.too_hot	yo ash make it less warm please man
+
+comfort.too_hot	yo ash make it less warm please bro
+
+comfort.too_hot	yo ash make it less warm please for me
+
+comfort.too_hot	yo ash make it less warm please right now
+
+comfort.too_hot	yo ash make it less warm please if you can
+
+comfort.too_hot	yo ash make it less warm please when you get a sec
+
+comfort.too_hot	okay make it less warm please
+
+comfort.too_hot	okay make it less warm please please
+
+comfort.too_hot	okay make it less warm please man
+
+comfort.too_hot	okay make it less warm please bro
+
+comfort.too_hot	okay make it less warm please for me
+
+comfort.too_hot	okay make it less warm please right now
+
+comfort.too_hot	okay make it less warm please if you can
+
+comfort.too_hot	okay make it less warm please when you get a sec
+
+comfort.too_hot	please make it less warm please
+
+comfort.too_hot	please make it less warm please please
+
+comfort.too_hot	please make it less warm please man
+
+comfort.too_hot	please make it less warm please bro
+
+comfort.too_hot	please make it less warm please for me
+
+comfort.too_hot	please make it less warm please right now
+
+comfort.too_hot	please make it less warm please if you can
+
+comfort.too_hot	please make it less warm please when you get a sec
+
+comfort.too_hot	bro make it less warm please
+
+comfort.too_hot	bro make it less warm please please
+
+comfort.too_hot	bro make it less warm please man
+
+comfort.too_hot	bro make it less warm please bro
+
+comfort.too_hot	bro make it less warm please for me
+
+comfort.too_hot	bro make it less warm please right now
+
+comfort.too_hot	bro make it less warm please if you can
+
+comfort.too_hot	bro make it less warm please when you get a sec
+
+comfort.too_hot	ash make it less warm please
+
+comfort.too_hot	ash make it less warm please please
+
+comfort.too_hot	ash make it less warm please man
+
+comfort.too_hot	ash make it less warm please bro
+
+comfort.too_hot	ash make it less warm please for me
+
+comfort.too_hot	ash make it less warm please right now
+
+comfort.too_hot	ash make it less warm please if you can
+
+comfort.too_hot	ash make it less warm please when you get a sec
+
+comfort.too_hot	listen make it less warm please
+
+comfort.too_hot	listen make it less warm please please
+
+comfort.too_hot	listen make it less warm please man
+
+comfort.too_hot	listen make it less warm please bro
+
+comfort.too_hot	listen make it less warm please for me
+
+comfort.too_hot	listen make it less warm please right now
+
+comfort.too_hot	listen make it less warm please if you can
+
+comfort.too_hot	listen make it less warm please when you get a sec
+
+comfort.too_hot	quick one make it less warm please
+
+comfort.too_hot	quick one make it less warm please please
+
+comfort.too_hot	quick one make it less warm please man
+
+comfort.too_hot	quick one make it less warm please bro
+
+comfort.too_hot	quick one make it less warm please for me
+
+comfort.too_hot	quick one make it less warm please right now
+
+comfort.too_hot	quick one make it less warm please if you can
+
+comfort.too_hot	quick one make it less warm please when you get a sec
+
+comfort.too_hot	real quick make it less warm please
+
+comfort.too_hot	real quick make it less warm please please
+
+comfort.too_hot	real quick make it less warm please man
+
+comfort.too_hot	real quick make it less warm please bro
+
+comfort.too_hot	real quick make it less warm please for me
+
+comfort.too_hot	real quick make it less warm please right now
+
+comfort.too_hot	real quick make it less warm please if you can
+
+comfort.too_hot	real quick make it less warm please when you get a sec
+
+comfort.too_hot	give me some cooler air
+
+comfort.too_hot	give me some cooler air please
+
+comfort.too_hot	give me some cooler air man
+
+comfort.too_hot	give me some cooler air bro
+
+comfort.too_hot	give me some cooler air for me
+
+comfort.too_hot	give me some cooler air right now
+
+comfort.too_hot	give me some cooler air if you can
+
+comfort.too_hot	give me some cooler air when you get a sec
+
+comfort.too_hot	hey ash give me some cooler air
+
+comfort.too_hot	hey ash give me some cooler air please
+
+comfort.too_hot	hey ash give me some cooler air man
+
+comfort.too_hot	hey ash give me some cooler air bro
+
+comfort.too_hot	hey ash give me some cooler air for me
+
+comfort.too_hot	hey ash give me some cooler air right now
+
+comfort.too_hot	hey ash give me some cooler air if you can
+
+comfort.too_hot	hey ash give me some cooler air when you get a sec
+
+comfort.too_hot	yo ash give me some cooler air
+
+comfort.too_hot	yo ash give me some cooler air please
+
+comfort.too_hot	yo ash give me some cooler air man
+
+comfort.too_hot	yo ash give me some cooler air bro
+
+comfort.too_hot	yo ash give me some cooler air for me
+
+comfort.too_hot	yo ash give me some cooler air right now
+
+comfort.too_hot	yo ash give me some cooler air if you can
+
+comfort.too_hot	yo ash give me some cooler air when you get a sec
+
+comfort.too_hot	okay give me some cooler air
+
+comfort.too_hot	okay give me some cooler air please
+
+comfort.too_hot	okay give me some cooler air man
+
+comfort.too_hot	okay give me some cooler air bro
+
+comfort.too_hot	okay give me some cooler air for me
+
+comfort.too_hot	okay give me some cooler air right now
+
+comfort.too_hot	okay give me some cooler air if you can
+
+comfort.too_hot	okay give me some cooler air when you get a sec
+
+comfort.too_hot	please give me some cooler air
+
+comfort.too_hot	please give me some cooler air please
+
+comfort.too_hot	please give me some cooler air man
+
+comfort.too_hot	please give me some cooler air bro
+
+comfort.too_hot	please give me some cooler air for me
+
+comfort.too_hot	please give me some cooler air right now
+
+comfort.too_hot	please give me some cooler air if you can
+
+comfort.too_hot	please give me some cooler air when you get a sec
+
+comfort.too_hot	bro give me some cooler air
+
+comfort.too_hot	bro give me some cooler air please
+
+comfort.too_hot	bro give me some cooler air man
+
+comfort.too_hot	bro give me some cooler air bro
+
+comfort.too_hot	bro give me some cooler air for me
+
+comfort.too_hot	bro give me some cooler air right now
+
+comfort.too_hot	bro give me some cooler air if you can
+
+comfort.too_hot	bro give me some cooler air when you get a sec
+
+comfort.too_hot	ash give me some cooler air
+
+comfort.too_hot	ash give me some cooler air please
+
+comfort.too_hot	ash give me some cooler air man
+
+comfort.too_hot	ash give me some cooler air bro
+
+comfort.too_hot	ash give me some cooler air for me
+
+comfort.too_hot	ash give me some cooler air right now
+
+comfort.too_hot	ash give me some cooler air if you can
+
+comfort.too_hot	ash give me some cooler air when you get a sec
+
+comfort.too_hot	listen give me some cooler air
+
+comfort.too_hot	listen give me some cooler air please
+
+comfort.too_hot	listen give me some cooler air man
+
+comfort.too_hot	listen give me some cooler air bro
+
+comfort.too_hot	listen give me some cooler air for me
+
+comfort.too_hot	listen give me some cooler air right now
+
+comfort.too_hot	listen give me some cooler air if you can
+
+comfort.too_hot	listen give me some cooler air when you get a sec
+
+comfort.too_hot	quick one give me some cooler air
+
+comfort.too_hot	quick one give me some cooler air please
+
+comfort.too_hot	quick one give me some cooler air man
+
+comfort.too_hot	quick one give me some cooler air bro
+
+comfort.too_hot	quick one give me some cooler air for me
+
+comfort.too_hot	quick one give me some cooler air right now
+
+comfort.too_hot	quick one give me some cooler air if you can
+
+comfort.too_hot	quick one give me some cooler air when you get a sec
+
+comfort.too_hot	real quick give me some cooler air
+
+comfort.too_hot	real quick give me some cooler air please
+
+comfort.too_hot	real quick give me some cooler air man
+
+comfort.too_hot	real quick give me some cooler air bro
+
+comfort.too_hot	real quick give me some cooler air for me
+
+comfort.too_hot	real quick give me some cooler air right now
+
+comfort.too_hot	real quick give me some cooler air if you can
+
+comfort.too_hot	real quick give me some cooler air when you get a sec
+
+##############################################################################
+# INTENT: comfort.too_cold
+#----------------------------------------------------------------------------
+# Expanded variants for too_cold, mixing greetings and politeness markers.
+#
+
+comfort.too_cold	I’m cold
+
+comfort.too_cold	I’m cold please
+
+comfort.too_cold	I’m cold man
+
+comfort.too_cold	I’m cold bro
+
+comfort.too_cold	I’m cold for me
+
+comfort.too_cold	I’m cold right now
+
+comfort.too_cold	I’m cold if you can
+
+comfort.too_cold	I’m cold when you get a sec
+
+comfort.too_cold	hey ash I’m cold
+
+comfort.too_cold	hey ash I’m cold please
+
+comfort.too_cold	hey ash I’m cold man
+
+comfort.too_cold	hey ash I’m cold bro
+
+comfort.too_cold	hey ash I’m cold for me
+
+comfort.too_cold	hey ash I’m cold right now
+
+comfort.too_cold	hey ash I’m cold if you can
+
+comfort.too_cold	hey ash I’m cold when you get a sec
+
+comfort.too_cold	yo ash I’m cold
+
+comfort.too_cold	yo ash I’m cold please
+
+comfort.too_cold	yo ash I’m cold man
+
+comfort.too_cold	yo ash I’m cold bro
+
+comfort.too_cold	yo ash I’m cold for me
+
+comfort.too_cold	yo ash I’m cold right now
+
+comfort.too_cold	yo ash I’m cold if you can
+
+comfort.too_cold	yo ash I’m cold when you get a sec
+
+comfort.too_cold	okay I’m cold
+
+comfort.too_cold	okay I’m cold please
+
+comfort.too_cold	okay I’m cold man
+
+comfort.too_cold	okay I’m cold bro
+
+comfort.too_cold	okay I’m cold for me
+
+comfort.too_cold	okay I’m cold right now
+
+comfort.too_cold	okay I’m cold if you can
+
+comfort.too_cold	okay I’m cold when you get a sec
+
+comfort.too_cold	please I’m cold
+
+comfort.too_cold	please I’m cold please
+
+comfort.too_cold	please I’m cold man
+
+comfort.too_cold	please I’m cold bro
+
+comfort.too_cold	please I’m cold for me
+
+comfort.too_cold	please I’m cold right now
+
+comfort.too_cold	please I’m cold if you can
+
+comfort.too_cold	please I’m cold when you get a sec
+
+comfort.too_cold	bro I’m cold
+
+comfort.too_cold	bro I’m cold please
+
+comfort.too_cold	bro I’m cold man
+
+comfort.too_cold	bro I’m cold bro
+
+comfort.too_cold	bro I’m cold for me
+
+comfort.too_cold	bro I’m cold right now
+
+comfort.too_cold	bro I’m cold if you can
+
+comfort.too_cold	bro I’m cold when you get a sec
+
+comfort.too_cold	ash I’m cold
+
+comfort.too_cold	ash I’m cold please
+
+comfort.too_cold	ash I’m cold man
+
+comfort.too_cold	ash I’m cold bro
+
+comfort.too_cold	ash I’m cold for me
+
+comfort.too_cold	ash I’m cold right now
+
+comfort.too_cold	ash I’m cold if you can
+
+comfort.too_cold	ash I’m cold when you get a sec
+
+comfort.too_cold	listen I’m cold
+
+comfort.too_cold	listen I’m cold please
+
+comfort.too_cold	listen I’m cold man
+
+comfort.too_cold	listen I’m cold bro
+
+comfort.too_cold	listen I’m cold for me
+
+comfort.too_cold	listen I’m cold right now
+
+comfort.too_cold	listen I’m cold if you can
+
+comfort.too_cold	listen I’m cold when you get a sec
+
+comfort.too_cold	quick one I’m cold
+
+comfort.too_cold	quick one I’m cold please
+
+comfort.too_cold	quick one I’m cold man
+
+comfort.too_cold	quick one I’m cold bro
+
+comfort.too_cold	quick one I’m cold for me
+
+comfort.too_cold	quick one I’m cold right now
+
+comfort.too_cold	quick one I’m cold if you can
+
+comfort.too_cold	quick one I’m cold when you get a sec
+
+comfort.too_cold	real quick I’m cold
+
+comfort.too_cold	real quick I’m cold please
+
+comfort.too_cold	real quick I’m cold man
+
+comfort.too_cold	real quick I’m cold bro
+
+comfort.too_cold	real quick I’m cold for me
+
+comfort.too_cold	real quick I’m cold right now
+
+comfort.too_cold	real quick I’m cold if you can
+
+comfort.too_cold	real quick I’m cold when you get a sec
+
+comfort.too_cold	it’s freezing in here
+
+comfort.too_cold	it’s freezing in here please
+
+comfort.too_cold	it’s freezing in here man
+
+comfort.too_cold	it’s freezing in here bro
+
+comfort.too_cold	it’s freezing in here for me
+
+comfort.too_cold	it’s freezing in here right now
+
+comfort.too_cold	it’s freezing in here if you can
+
+comfort.too_cold	it’s freezing in here when you get a sec
+
+comfort.too_cold	hey ash it’s freezing in here
+
+comfort.too_cold	hey ash it’s freezing in here please
+
+comfort.too_cold	hey ash it’s freezing in here man
+
+comfort.too_cold	hey ash it’s freezing in here bro
+
+comfort.too_cold	hey ash it’s freezing in here for me
+
+comfort.too_cold	hey ash it’s freezing in here right now
+
+comfort.too_cold	hey ash it’s freezing in here if you can
+
+comfort.too_cold	hey ash it’s freezing in here when you get a sec
+
+comfort.too_cold	yo ash it’s freezing in here
+
+comfort.too_cold	yo ash it’s freezing in here please
+
+comfort.too_cold	yo ash it’s freezing in here man
+
+comfort.too_cold	yo ash it’s freezing in here bro
+
+comfort.too_cold	yo ash it’s freezing in here for me
+
+comfort.too_cold	yo ash it’s freezing in here right now
+
+comfort.too_cold	yo ash it’s freezing in here if you can
+
+comfort.too_cold	yo ash it’s freezing in here when you get a sec
+
+comfort.too_cold	okay it’s freezing in here
+
+comfort.too_cold	okay it’s freezing in here please
+
+comfort.too_cold	okay it’s freezing in here man
+
+comfort.too_cold	okay it’s freezing in here bro
+
+comfort.too_cold	okay it’s freezing in here for me
+
+comfort.too_cold	okay it’s freezing in here right now
+
+comfort.too_cold	okay it’s freezing in here if you can
+
+comfort.too_cold	okay it’s freezing in here when you get a sec
+
+comfort.too_cold	please it’s freezing in here
+
+comfort.too_cold	please it’s freezing in here please
+
+comfort.too_cold	please it’s freezing in here man
+
+comfort.too_cold	please it’s freezing in here bro
+
+comfort.too_cold	please it’s freezing in here for me
+
+comfort.too_cold	please it’s freezing in here right now
+
+comfort.too_cold	please it’s freezing in here if you can
+
+comfort.too_cold	please it’s freezing in here when you get a sec
+
+comfort.too_cold	bro it’s freezing in here
+
+comfort.too_cold	bro it’s freezing in here please
+
+comfort.too_cold	bro it’s freezing in here man
+
+comfort.too_cold	bro it’s freezing in here bro
+
+comfort.too_cold	bro it’s freezing in here for me
+
+comfort.too_cold	bro it’s freezing in here right now
+
+comfort.too_cold	bro it’s freezing in here if you can
+
+comfort.too_cold	bro it’s freezing in here when you get a sec
+
+comfort.too_cold	ash it’s freezing in here
+
+comfort.too_cold	ash it’s freezing in here please
+
+comfort.too_cold	ash it’s freezing in here man
+
+comfort.too_cold	ash it’s freezing in here bro
+
+comfort.too_cold	ash it’s freezing in here for me
+
+comfort.too_cold	ash it’s freezing in here right now
+
+comfort.too_cold	ash it’s freezing in here if you can
+
+comfort.too_cold	ash it’s freezing in here when you get a sec
+
+comfort.too_cold	listen it’s freezing in here
+
+comfort.too_cold	listen it’s freezing in here please
+
+comfort.too_cold	listen it’s freezing in here man
+
+comfort.too_cold	listen it’s freezing in here bro
+
+comfort.too_cold	listen it’s freezing in here for me
+
+comfort.too_cold	listen it’s freezing in here right now
+
+comfort.too_cold	listen it’s freezing in here if you can
+
+comfort.too_cold	listen it’s freezing in here when you get a sec
+
+comfort.too_cold	quick one it’s freezing in here
+
+comfort.too_cold	quick one it’s freezing in here please
+
+comfort.too_cold	quick one it’s freezing in here man
+
+comfort.too_cold	quick one it’s freezing in here bro
+
+comfort.too_cold	quick one it’s freezing in here for me
+
+comfort.too_cold	quick one it’s freezing in here right now
+
+comfort.too_cold	quick one it’s freezing in here if you can
+
+comfort.too_cold	quick one it’s freezing in here when you get a sec
+
+comfort.too_cold	real quick it’s freezing in here
+
+comfort.too_cold	real quick it’s freezing in here please
+
+comfort.too_cold	real quick it’s freezing in here man
+
+comfort.too_cold	real quick it’s freezing in here bro
+
+comfort.too_cold	real quick it’s freezing in here for me
+
+comfort.too_cold	real quick it’s freezing in here right now
+
+comfort.too_cold	real quick it’s freezing in here if you can
+
+comfort.too_cold	real quick it’s freezing in here when you get a sec
+
+comfort.too_cold	can you make it warmer
+
+comfort.too_cold	can you make it warmer please
+
+comfort.too_cold	can you make it warmer man
+
+comfort.too_cold	can you make it warmer bro
+
+comfort.too_cold	can you make it warmer for me
+
+comfort.too_cold	can you make it warmer right now
+
+comfort.too_cold	can you make it warmer if you can
+
+comfort.too_cold	can you make it warmer when you get a sec
+
+comfort.too_cold	hey ash can you make it warmer
+
+comfort.too_cold	hey ash can you make it warmer please
+
+comfort.too_cold	hey ash can you make it warmer man
+
+comfort.too_cold	hey ash can you make it warmer bro
+
+comfort.too_cold	hey ash can you make it warmer for me
+
+comfort.too_cold	hey ash can you make it warmer right now
+
+comfort.too_cold	hey ash can you make it warmer if you can
+
+comfort.too_cold	hey ash can you make it warmer when you get a sec
+
+comfort.too_cold	yo ash can you make it warmer
+
+comfort.too_cold	yo ash can you make it warmer please
+
+comfort.too_cold	yo ash can you make it warmer man
+
+comfort.too_cold	yo ash can you make it warmer bro
+
+comfort.too_cold	yo ash can you make it warmer for me
+
+comfort.too_cold	yo ash can you make it warmer right now
+
+comfort.too_cold	yo ash can you make it warmer if you can
+
+comfort.too_cold	yo ash can you make it warmer when you get a sec
+
+comfort.too_cold	okay can you make it warmer
+
+comfort.too_cold	okay can you make it warmer please
+
+comfort.too_cold	okay can you make it warmer man
+
+comfort.too_cold	okay can you make it warmer bro
+
+comfort.too_cold	okay can you make it warmer for me
+
+comfort.too_cold	okay can you make it warmer right now
+
+comfort.too_cold	okay can you make it warmer if you can
+
+comfort.too_cold	okay can you make it warmer when you get a sec
+
+comfort.too_cold	please can you make it warmer
+
+comfort.too_cold	please can you make it warmer please
+
+comfort.too_cold	please can you make it warmer man
+
+comfort.too_cold	please can you make it warmer bro
+
+comfort.too_cold	please can you make it warmer for me
+
+comfort.too_cold	please can you make it warmer right now
+
+comfort.too_cold	please can you make it warmer if you can
+
+comfort.too_cold	please can you make it warmer when you get a sec
+
+comfort.too_cold	bro can you make it warmer
+
+comfort.too_cold	bro can you make it warmer please
+
+comfort.too_cold	bro can you make it warmer man
+
+comfort.too_cold	bro can you make it warmer bro
+
+comfort.too_cold	bro can you make it warmer for me
+
+comfort.too_cold	bro can you make it warmer right now
+
+comfort.too_cold	bro can you make it warmer if you can
+
+comfort.too_cold	bro can you make it warmer when you get a sec
+
+comfort.too_cold	ash can you make it warmer
+
+comfort.too_cold	ash can you make it warmer please
+
+comfort.too_cold	ash can you make it warmer man
+
+comfort.too_cold	ash can you make it warmer bro
+
+comfort.too_cold	ash can you make it warmer for me
+
+comfort.too_cold	ash can you make it warmer right now
+
+comfort.too_cold	ash can you make it warmer if you can
+
+comfort.too_cold	ash can you make it warmer when you get a sec
+
+comfort.too_cold	listen can you make it warmer
+
+comfort.too_cold	listen can you make it warmer please
+
+comfort.too_cold	listen can you make it warmer man
+
+comfort.too_cold	listen can you make it warmer bro
+
+comfort.too_cold	listen can you make it warmer for me
+
+comfort.too_cold	listen can you make it warmer right now
+
+comfort.too_cold	listen can you make it warmer if you can
+
+comfort.too_cold	listen can you make it warmer when you get a sec
+
+comfort.too_cold	quick one can you make it warmer
+
+comfort.too_cold	quick one can you make it warmer please
+
+comfort.too_cold	quick one can you make it warmer man
+
+comfort.too_cold	quick one can you make it warmer bro
+
+comfort.too_cold	quick one can you make it warmer for me
+
+comfort.too_cold	quick one can you make it warmer right now
+
+comfort.too_cold	quick one can you make it warmer if you can
+
+comfort.too_cold	quick one can you make it warmer when you get a sec
+
+comfort.too_cold	real quick can you make it warmer
+
+comfort.too_cold	real quick can you make it warmer please
+
+comfort.too_cold	real quick can you make it warmer man
+
+comfort.too_cold	real quick can you make it warmer bro
+
+comfort.too_cold	real quick can you make it warmer for me
+
+comfort.too_cold	real quick can you make it warmer right now
+
+comfort.too_cold	real quick can you make it warmer if you can
+
+comfort.too_cold	real quick can you make it warmer when you get a sec
+
+comfort.too_cold	turn the heat up
+
+comfort.too_cold	turn the heat up please
+
+comfort.too_cold	turn the heat up man
+
+comfort.too_cold	turn the heat up bro
+
+comfort.too_cold	turn the heat up for me
+
+comfort.too_cold	turn the heat up right now
+
+comfort.too_cold	turn the heat up if you can
+
+comfort.too_cold	turn the heat up when you get a sec
+
+comfort.too_cold	hey ash turn the heat up
+
+comfort.too_cold	hey ash turn the heat up please
+
+comfort.too_cold	hey ash turn the heat up man
+
+comfort.too_cold	hey ash turn the heat up bro
+
+comfort.too_cold	hey ash turn the heat up for me
+
+comfort.too_cold	hey ash turn the heat up right now
+
+comfort.too_cold	hey ash turn the heat up if you can
+
+comfort.too_cold	hey ash turn the heat up when you get a sec
+
+comfort.too_cold	yo ash turn the heat up
+
+comfort.too_cold	yo ash turn the heat up please
+
+comfort.too_cold	yo ash turn the heat up man
+
+comfort.too_cold	yo ash turn the heat up bro
+
+comfort.too_cold	yo ash turn the heat up for me
+
+comfort.too_cold	yo ash turn the heat up right now
+
+comfort.too_cold	yo ash turn the heat up if you can
+
+comfort.too_cold	yo ash turn the heat up when you get a sec
+
+comfort.too_cold	okay turn the heat up
+
+comfort.too_cold	okay turn the heat up please
+
+comfort.too_cold	okay turn the heat up man
+
+comfort.too_cold	okay turn the heat up bro
+
+comfort.too_cold	okay turn the heat up for me
+
+comfort.too_cold	okay turn the heat up right now
+
+comfort.too_cold	okay turn the heat up if you can
+
+comfort.too_cold	okay turn the heat up when you get a sec
+
+comfort.too_cold	please turn the heat up
+
+comfort.too_cold	please turn the heat up please
+
+comfort.too_cold	please turn the heat up man
+
+comfort.too_cold	please turn the heat up bro
+
+comfort.too_cold	please turn the heat up for me
+
+comfort.too_cold	please turn the heat up right now
+
+comfort.too_cold	please turn the heat up if you can
+
+comfort.too_cold	please turn the heat up when you get a sec
+
+comfort.too_cold	bro turn the heat up
+
+comfort.too_cold	bro turn the heat up please
+
+comfort.too_cold	bro turn the heat up man
+
+comfort.too_cold	bro turn the heat up bro
+
+comfort.too_cold	bro turn the heat up for me
+
+comfort.too_cold	bro turn the heat up right now
+
+comfort.too_cold	bro turn the heat up if you can
+
+comfort.too_cold	bro turn the heat up when you get a sec
+
+comfort.too_cold	ash turn the heat up
+
+comfort.too_cold	ash turn the heat up please
+
+comfort.too_cold	ash turn the heat up man
+
+comfort.too_cold	ash turn the heat up bro
+
+comfort.too_cold	ash turn the heat up for me
+
+comfort.too_cold	ash turn the heat up right now
+
+comfort.too_cold	ash turn the heat up if you can
+
+comfort.too_cold	ash turn the heat up when you get a sec
+
+comfort.too_cold	listen turn the heat up
+
+comfort.too_cold	listen turn the heat up please
+
+comfort.too_cold	listen turn the heat up man
+
+comfort.too_cold	listen turn the heat up bro
+
+comfort.too_cold	listen turn the heat up for me
+
+comfort.too_cold	listen turn the heat up right now
+
+comfort.too_cold	listen turn the heat up if you can
+
+comfort.too_cold	listen turn the heat up when you get a sec
+
+comfort.too_cold	quick one turn the heat up
+
+comfort.too_cold	quick one turn the heat up please
+
+comfort.too_cold	quick one turn the heat up man
+
+comfort.too_cold	quick one turn the heat up bro
+
+comfort.too_cold	quick one turn the heat up for me
+
+comfort.too_cold	quick one turn the heat up right now
+
+comfort.too_cold	quick one turn the heat up if you can
+
+comfort.too_cold	quick one turn the heat up when you get a sec
+
+comfort.too_cold	real quick turn the heat up
+
+comfort.too_cold	real quick turn the heat up please
+
+comfort.too_cold	real quick turn the heat up man
+
+comfort.too_cold	real quick turn the heat up bro
+
+comfort.too_cold	real quick turn the heat up for me
+
+comfort.too_cold	real quick turn the heat up right now
+
+comfort.too_cold	real quick turn the heat up if you can
+
+comfort.too_cold	real quick turn the heat up when you get a sec
+
+comfort.too_cold	warm this room up a bit
+
+comfort.too_cold	warm this room up a bit please
+
+comfort.too_cold	warm this room up a bit man
+
+comfort.too_cold	warm this room up a bit bro
+
+comfort.too_cold	warm this room up a bit for me
+
+comfort.too_cold	warm this room up a bit right now
+
+comfort.too_cold	warm this room up a bit if you can
+
+comfort.too_cold	warm this room up a bit when you get a sec
+
+comfort.too_cold	hey ash warm this room up a bit
+
+comfort.too_cold	hey ash warm this room up a bit please
+
+comfort.too_cold	hey ash warm this room up a bit man
+
+comfort.too_cold	hey ash warm this room up a bit bro
+
+comfort.too_cold	hey ash warm this room up a bit for me
+
+comfort.too_cold	hey ash warm this room up a bit right now
+
+comfort.too_cold	hey ash warm this room up a bit if you can
+
+comfort.too_cold	hey ash warm this room up a bit when you get a sec
+
+comfort.too_cold	yo ash warm this room up a bit
+
+comfort.too_cold	yo ash warm this room up a bit please
+
+comfort.too_cold	yo ash warm this room up a bit man
+
+comfort.too_cold	yo ash warm this room up a bit bro
+
+comfort.too_cold	yo ash warm this room up a bit for me
+
+comfort.too_cold	yo ash warm this room up a bit right now
+
+comfort.too_cold	yo ash warm this room up a bit if you can
+
+comfort.too_cold	yo ash warm this room up a bit when you get a sec
+
+comfort.too_cold	okay warm this room up a bit
+
+comfort.too_cold	okay warm this room up a bit please
+
+comfort.too_cold	okay warm this room up a bit man
+
+comfort.too_cold	okay warm this room up a bit bro
+
+comfort.too_cold	okay warm this room up a bit for me
+
+comfort.too_cold	okay warm this room up a bit right now
+
+comfort.too_cold	okay warm this room up a bit if you can
+
+comfort.too_cold	okay warm this room up a bit when you get a sec
+
+comfort.too_cold	please warm this room up a bit
+
+comfort.too_cold	please warm this room up a bit please
+
+comfort.too_cold	please warm this room up a bit man
+
+comfort.too_cold	please warm this room up a bit bro
+
+comfort.too_cold	please warm this room up a bit for me
+
+comfort.too_cold	please warm this room up a bit right now
+
+comfort.too_cold	please warm this room up a bit if you can
+
+comfort.too_cold	please warm this room up a bit when you get a sec
+
+comfort.too_cold	bro warm this room up a bit
+
+comfort.too_cold	bro warm this room up a bit please
+
+comfort.too_cold	bro warm this room up a bit man
+
+comfort.too_cold	bro warm this room up a bit bro
+
+comfort.too_cold	bro warm this room up a bit for me
+
+comfort.too_cold	bro warm this room up a bit right now
+
+comfort.too_cold	bro warm this room up a bit if you can
+
+comfort.too_cold	bro warm this room up a bit when you get a sec
+
+comfort.too_cold	ash warm this room up a bit
+
+comfort.too_cold	ash warm this room up a bit please
+
+comfort.too_cold	ash warm this room up a bit man
+
+comfort.too_cold	ash warm this room up a bit bro
+
+comfort.too_cold	ash warm this room up a bit for me
+
+comfort.too_cold	ash warm this room up a bit right now
+
+comfort.too_cold	ash warm this room up a bit if you can
+
+comfort.too_cold	ash warm this room up a bit when you get a sec
+
+comfort.too_cold	listen warm this room up a bit
+
+comfort.too_cold	listen warm this room up a bit please
+
+comfort.too_cold	listen warm this room up a bit man
+
+comfort.too_cold	listen warm this room up a bit bro
+
+comfort.too_cold	listen warm this room up a bit for me
+
+comfort.too_cold	listen warm this room up a bit right now
+
+comfort.too_cold	listen warm this room up a bit if you can
+
+comfort.too_cold	listen warm this room up a bit when you get a sec
+
+comfort.too_cold	quick one warm this room up a bit
+
+comfort.too_cold	quick one warm this room up a bit please
+
+comfort.too_cold	quick one warm this room up a bit man
+
+comfort.too_cold	quick one warm this room up a bit bro
+
+comfort.too_cold	quick one warm this room up a bit for me
+
+comfort.too_cold	quick one warm this room up a bit right now
+
+comfort.too_cold	quick one warm this room up a bit if you can
+
+comfort.too_cold	quick one warm this room up a bit when you get a sec
+
+comfort.too_cold	real quick warm this room up a bit
+
+comfort.too_cold	real quick warm this room up a bit please
+
+comfort.too_cold	real quick warm this room up a bit man
+
+comfort.too_cold	real quick warm this room up a bit bro
+
+comfort.too_cold	real quick warm this room up a bit for me
+
+comfort.too_cold	real quick warm this room up a bit right now
+
+comfort.too_cold	real quick warm this room up a bit if you can
+
+comfort.too_cold	real quick warm this room up a bit when you get a sec
+
+comfort.too_cold	I’m shivering man
+
+comfort.too_cold	I’m shivering man please
+
+comfort.too_cold	I’m shivering man man
+
+comfort.too_cold	I’m shivering man bro
+
+comfort.too_cold	I’m shivering man for me
+
+comfort.too_cold	I’m shivering man right now
+
+comfort.too_cold	I’m shivering man if you can
+
+comfort.too_cold	I’m shivering man when you get a sec
+
+comfort.too_cold	hey ash I’m shivering man
+
+comfort.too_cold	hey ash I’m shivering man please
+
+comfort.too_cold	hey ash I’m shivering man man
+
+comfort.too_cold	hey ash I’m shivering man bro
+
+comfort.too_cold	hey ash I’m shivering man for me
+
+comfort.too_cold	hey ash I’m shivering man right now
+
+comfort.too_cold	hey ash I’m shivering man if you can
+
+comfort.too_cold	hey ash I’m shivering man when you get a sec
+
+comfort.too_cold	yo ash I’m shivering man
+
+comfort.too_cold	yo ash I’m shivering man please
+
+comfort.too_cold	yo ash I’m shivering man man
+
+comfort.too_cold	yo ash I’m shivering man bro
+
+comfort.too_cold	yo ash I’m shivering man for me
+
+comfort.too_cold	yo ash I’m shivering man right now
+
+comfort.too_cold	yo ash I’m shivering man if you can
+
+comfort.too_cold	yo ash I’m shivering man when you get a sec
+
+comfort.too_cold	okay I’m shivering man
+
+comfort.too_cold	okay I’m shivering man please
+
+comfort.too_cold	okay I’m shivering man man
+
+comfort.too_cold	okay I’m shivering man bro
+
+comfort.too_cold	okay I’m shivering man for me
+
+comfort.too_cold	okay I’m shivering man right now
+
+comfort.too_cold	okay I’m shivering man if you can
+
+comfort.too_cold	okay I’m shivering man when you get a sec
+
+comfort.too_cold	please I’m shivering man
+
+comfort.too_cold	please I’m shivering man please
+
+comfort.too_cold	please I’m shivering man man
+
+comfort.too_cold	please I’m shivering man bro
+
+comfort.too_cold	please I’m shivering man for me
+
+comfort.too_cold	please I’m shivering man right now
+
+comfort.too_cold	please I’m shivering man if you can
+
+comfort.too_cold	please I’m shivering man when you get a sec
+
+comfort.too_cold	bro I’m shivering man
+
+comfort.too_cold	bro I’m shivering man please
+
+comfort.too_cold	bro I’m shivering man man
+
+comfort.too_cold	bro I’m shivering man bro
+
+comfort.too_cold	bro I’m shivering man for me
+
+comfort.too_cold	bro I’m shivering man right now
+
+comfort.too_cold	bro I’m shivering man if you can
+
+comfort.too_cold	bro I’m shivering man when you get a sec
+
+comfort.too_cold	ash I’m shivering man
+
+comfort.too_cold	ash I’m shivering man please
+
+comfort.too_cold	ash I’m shivering man man
+
+comfort.too_cold	ash I’m shivering man bro
+
+comfort.too_cold	ash I’m shivering man for me
+
+comfort.too_cold	ash I’m shivering man right now
+
+comfort.too_cold	ash I’m shivering man if you can
+
+comfort.too_cold	ash I’m shivering man when you get a sec
+
+comfort.too_cold	listen I’m shivering man
+
+comfort.too_cold	listen I’m shivering man please
+
+comfort.too_cold	listen I’m shivering man man
+
+comfort.too_cold	listen I’m shivering man bro
+
+comfort.too_cold	listen I’m shivering man for me
+
+comfort.too_cold	listen I’m shivering man right now
+
+comfort.too_cold	listen I’m shivering man if you can
+
+comfort.too_cold	listen I’m shivering man when you get a sec
+
+comfort.too_cold	quick one I’m shivering man
+
+comfort.too_cold	quick one I’m shivering man please
+
+comfort.too_cold	quick one I’m shivering man man
+
+comfort.too_cold	quick one I’m shivering man bro
+
+comfort.too_cold	quick one I’m shivering man for me
+
+comfort.too_cold	quick one I’m shivering man right now
+
+comfort.too_cold	quick one I’m shivering man if you can
+
+comfort.too_cold	quick one I’m shivering man when you get a sec
+
+comfort.too_cold	real quick I’m shivering man
+
+comfort.too_cold	real quick I’m shivering man please
+
+comfort.too_cold	real quick I’m shivering man man
+
+comfort.too_cold	real quick I’m shivering man bro
+
+comfort.too_cold	real quick I’m shivering man for me
+
+comfort.too_cold	real quick I’m shivering man right now
+
+comfort.too_cold	real quick I’m shivering man if you can
+
+comfort.too_cold	real quick I’m shivering man when you get a sec
+
+comfort.too_cold	it feels chilly in here
+
+comfort.too_cold	it feels chilly in here please
+
+comfort.too_cold	it feels chilly in here man
+
+comfort.too_cold	it feels chilly in here bro
+
+comfort.too_cold	it feels chilly in here for me
+
+comfort.too_cold	it feels chilly in here right now
+
+comfort.too_cold	it feels chilly in here if you can
+
+comfort.too_cold	it feels chilly in here when you get a sec
+
+comfort.too_cold	hey ash it feels chilly in here
+
+comfort.too_cold	hey ash it feels chilly in here please
+
+comfort.too_cold	hey ash it feels chilly in here man
+
+comfort.too_cold	hey ash it feels chilly in here bro
+
+comfort.too_cold	hey ash it feels chilly in here for me
+
+comfort.too_cold	hey ash it feels chilly in here right now
+
+comfort.too_cold	hey ash it feels chilly in here if you can
+
+comfort.too_cold	hey ash it feels chilly in here when you get a sec
+
+comfort.too_cold	yo ash it feels chilly in here
+
+comfort.too_cold	yo ash it feels chilly in here please
+
+comfort.too_cold	yo ash it feels chilly in here man
+
+comfort.too_cold	yo ash it feels chilly in here bro
+
+comfort.too_cold	yo ash it feels chilly in here for me
+
+comfort.too_cold	yo ash it feels chilly in here right now
+
+comfort.too_cold	yo ash it feels chilly in here if you can
+
+comfort.too_cold	yo ash it feels chilly in here when you get a sec
+
+comfort.too_cold	okay it feels chilly in here
+
+comfort.too_cold	okay it feels chilly in here please
+
+comfort.too_cold	okay it feels chilly in here man
+
+comfort.too_cold	okay it feels chilly in here bro
+
+comfort.too_cold	okay it feels chilly in here for me
+
+comfort.too_cold	okay it feels chilly in here right now
+
+comfort.too_cold	okay it feels chilly in here if you can
+
+comfort.too_cold	okay it feels chilly in here when you get a sec
+
+comfort.too_cold	please it feels chilly in here
+
+comfort.too_cold	please it feels chilly in here please
+
+comfort.too_cold	please it feels chilly in here man
+
+comfort.too_cold	please it feels chilly in here bro
+
+comfort.too_cold	please it feels chilly in here for me
+
+comfort.too_cold	please it feels chilly in here right now
+
+comfort.too_cold	please it feels chilly in here if you can
+
+comfort.too_cold	please it feels chilly in here when you get a sec
+
+comfort.too_cold	bro it feels chilly in here
+
+comfort.too_cold	bro it feels chilly in here please
+
+comfort.too_cold	bro it feels chilly in here man
+
+comfort.too_cold	bro it feels chilly in here bro
+
+comfort.too_cold	bro it feels chilly in here for me
+
+comfort.too_cold	bro it feels chilly in here right now
+
+comfort.too_cold	bro it feels chilly in here if you can
+
+comfort.too_cold	bro it feels chilly in here when you get a sec
+
+comfort.too_cold	ash it feels chilly in here
+
+comfort.too_cold	ash it feels chilly in here please
+
+comfort.too_cold	ash it feels chilly in here man
+
+comfort.too_cold	ash it feels chilly in here bro
+
+comfort.too_cold	ash it feels chilly in here for me
+
+comfort.too_cold	ash it feels chilly in here right now
+
+comfort.too_cold	ash it feels chilly in here if you can
+
+comfort.too_cold	ash it feels chilly in here when you get a sec
+
+comfort.too_cold	listen it feels chilly in here
+
+comfort.too_cold	listen it feels chilly in here please
+
+comfort.too_cold	listen it feels chilly in here man
+
+comfort.too_cold	listen it feels chilly in here bro
+
+comfort.too_cold	listen it feels chilly in here for me
+
+comfort.too_cold	listen it feels chilly in here right now
+
+comfort.too_cold	listen it feels chilly in here if you can
+
+comfort.too_cold	listen it feels chilly in here when you get a sec
+
+comfort.too_cold	quick one it feels chilly in here
+
+comfort.too_cold	quick one it feels chilly in here please
+
+comfort.too_cold	quick one it feels chilly in here man
+
+comfort.too_cold	quick one it feels chilly in here bro
+
+comfort.too_cold	quick one it feels chilly in here for me
+
+comfort.too_cold	quick one it feels chilly in here right now
+
+comfort.too_cold	quick one it feels chilly in here if you can
+
+comfort.too_cold	quick one it feels chilly in here when you get a sec
+
+comfort.too_cold	real quick it feels chilly in here
+
+comfort.too_cold	real quick it feels chilly in here please
+
+comfort.too_cold	real quick it feels chilly in here man
+
+comfort.too_cold	real quick it feels chilly in here bro
+
+comfort.too_cold	real quick it feels chilly in here for me
+
+comfort.too_cold	real quick it feels chilly in here right now
+
+comfort.too_cold	real quick it feels chilly in here if you can
+
+comfort.too_cold	real quick it feels chilly in here when you get a sec
+
+comfort.too_cold	can we bump the heat
+
+comfort.too_cold	can we bump the heat please
+
+comfort.too_cold	can we bump the heat man
+
+comfort.too_cold	can we bump the heat bro
+
+comfort.too_cold	can we bump the heat for me
+
+comfort.too_cold	can we bump the heat right now
+
+comfort.too_cold	can we bump the heat if you can
+
+comfort.too_cold	can we bump the heat when you get a sec
+
+comfort.too_cold	hey ash can we bump the heat
+
+comfort.too_cold	hey ash can we bump the heat please
+
+comfort.too_cold	hey ash can we bump the heat man
+
+comfort.too_cold	hey ash can we bump the heat bro
+
+comfort.too_cold	hey ash can we bump the heat for me
+
+comfort.too_cold	hey ash can we bump the heat right now
+
+comfort.too_cold	hey ash can we bump the heat if you can
+
+comfort.too_cold	hey ash can we bump the heat when you get a sec
+
+comfort.too_cold	yo ash can we bump the heat
+
+comfort.too_cold	yo ash can we bump the heat please
+
+comfort.too_cold	yo ash can we bump the heat man
+
+comfort.too_cold	yo ash can we bump the heat bro
+
+comfort.too_cold	yo ash can we bump the heat for me
+
+comfort.too_cold	yo ash can we bump the heat right now
+
+comfort.too_cold	yo ash can we bump the heat if you can
+
+comfort.too_cold	yo ash can we bump the heat when you get a sec
+
+comfort.too_cold	okay can we bump the heat
+
+comfort.too_cold	okay can we bump the heat please
+
+comfort.too_cold	okay can we bump the heat man
+
+comfort.too_cold	okay can we bump the heat bro
+
+comfort.too_cold	okay can we bump the heat for me
+
+comfort.too_cold	okay can we bump the heat right now
+
+comfort.too_cold	okay can we bump the heat if you can
+
+comfort.too_cold	okay can we bump the heat when you get a sec
+
+comfort.too_cold	please can we bump the heat
+
+comfort.too_cold	please can we bump the heat please
+
+comfort.too_cold	please can we bump the heat man
+
+comfort.too_cold	please can we bump the heat bro
+
+comfort.too_cold	please can we bump the heat for me
+
+comfort.too_cold	please can we bump the heat right now
+
+comfort.too_cold	please can we bump the heat if you can
+
+comfort.too_cold	please can we bump the heat when you get a sec
+
+comfort.too_cold	bro can we bump the heat
+
+comfort.too_cold	bro can we bump the heat please
+
+comfort.too_cold	bro can we bump the heat man
+
+comfort.too_cold	bro can we bump the heat bro
+
+comfort.too_cold	bro can we bump the heat for me
+
+comfort.too_cold	bro can we bump the heat right now
+
+comfort.too_cold	bro can we bump the heat if you can
+
+comfort.too_cold	bro can we bump the heat when you get a sec
+
+comfort.too_cold	ash can we bump the heat
+
+comfort.too_cold	ash can we bump the heat please
+
+comfort.too_cold	ash can we bump the heat man
+
+comfort.too_cold	ash can we bump the heat bro
+
+comfort.too_cold	ash can we bump the heat for me
+
+comfort.too_cold	ash can we bump the heat right now
+
+comfort.too_cold	ash can we bump the heat if you can
+
+comfort.too_cold	ash can we bump the heat when you get a sec
+
+comfort.too_cold	listen can we bump the heat
+
+comfort.too_cold	listen can we bump the heat please
+
+comfort.too_cold	listen can we bump the heat man
+
+comfort.too_cold	listen can we bump the heat bro
+
+comfort.too_cold	listen can we bump the heat for me
+
+comfort.too_cold	listen can we bump the heat right now
+
+comfort.too_cold	listen can we bump the heat if you can
+
+comfort.too_cold	listen can we bump the heat when you get a sec
+
+comfort.too_cold	quick one can we bump the heat
+
+comfort.too_cold	quick one can we bump the heat please
+
+comfort.too_cold	quick one can we bump the heat man
+
+comfort.too_cold	quick one can we bump the heat bro
+
+comfort.too_cold	quick one can we bump the heat for me
+
+comfort.too_cold	quick one can we bump the heat right now
+
+comfort.too_cold	quick one can we bump the heat if you can
+
+comfort.too_cold	quick one can we bump the heat when you get a sec
+
+comfort.too_cold	real quick can we bump the heat
+
+comfort.too_cold	real quick can we bump the heat please
+
+comfort.too_cold	real quick can we bump the heat man
+
+comfort.too_cold	real quick can we bump the heat bro
+
+comfort.too_cold	real quick can we bump the heat for me
+
+comfort.too_cold	real quick can we bump the heat right now
+
+comfort.too_cold	real quick can we bump the heat if you can
+
+comfort.too_cold	real quick can we bump the heat when you get a sec
+
+comfort.too_cold	my hands are cold, make it warmer
+
+comfort.too_cold	my hands are cold, make it warmer please
+
+comfort.too_cold	my hands are cold, make it warmer man
+
+comfort.too_cold	my hands are cold, make it warmer bro
+
+comfort.too_cold	my hands are cold, make it warmer for me
+
+comfort.too_cold	my hands are cold, make it warmer right now
+
+comfort.too_cold	my hands are cold, make it warmer if you can
+
+comfort.too_cold	my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	hey ash my hands are cold, make it warmer
+
+comfort.too_cold	hey ash my hands are cold, make it warmer please
+
+comfort.too_cold	hey ash my hands are cold, make it warmer man
+
+comfort.too_cold	hey ash my hands are cold, make it warmer bro
+
+comfort.too_cold	hey ash my hands are cold, make it warmer for me
+
+comfort.too_cold	hey ash my hands are cold, make it warmer right now
+
+comfort.too_cold	hey ash my hands are cold, make it warmer if you can
+
+comfort.too_cold	hey ash my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	yo ash my hands are cold, make it warmer
+
+comfort.too_cold	yo ash my hands are cold, make it warmer please
+
+comfort.too_cold	yo ash my hands are cold, make it warmer man
+
+comfort.too_cold	yo ash my hands are cold, make it warmer bro
+
+comfort.too_cold	yo ash my hands are cold, make it warmer for me
+
+comfort.too_cold	yo ash my hands are cold, make it warmer right now
+
+comfort.too_cold	yo ash my hands are cold, make it warmer if you can
+
+comfort.too_cold	yo ash my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	okay my hands are cold, make it warmer
+
+comfort.too_cold	okay my hands are cold, make it warmer please
+
+comfort.too_cold	okay my hands are cold, make it warmer man
+
+comfort.too_cold	okay my hands are cold, make it warmer bro
+
+comfort.too_cold	okay my hands are cold, make it warmer for me
+
+comfort.too_cold	okay my hands are cold, make it warmer right now
+
+comfort.too_cold	okay my hands are cold, make it warmer if you can
+
+comfort.too_cold	okay my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	please my hands are cold, make it warmer
+
+comfort.too_cold	please my hands are cold, make it warmer please
+
+comfort.too_cold	please my hands are cold, make it warmer man
+
+comfort.too_cold	please my hands are cold, make it warmer bro
+
+comfort.too_cold	please my hands are cold, make it warmer for me
+
+comfort.too_cold	please my hands are cold, make it warmer right now
+
+comfort.too_cold	please my hands are cold, make it warmer if you can
+
+comfort.too_cold	please my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	bro my hands are cold, make it warmer
+
+comfort.too_cold	bro my hands are cold, make it warmer please
+
+comfort.too_cold	bro my hands are cold, make it warmer man
+
+comfort.too_cold	bro my hands are cold, make it warmer bro
+
+comfort.too_cold	bro my hands are cold, make it warmer for me
+
+comfort.too_cold	bro my hands are cold, make it warmer right now
+
+comfort.too_cold	bro my hands are cold, make it warmer if you can
+
+comfort.too_cold	bro my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	ash my hands are cold, make it warmer
+
+comfort.too_cold	ash my hands are cold, make it warmer please
+
+comfort.too_cold	ash my hands are cold, make it warmer man
+
+comfort.too_cold	ash my hands are cold, make it warmer bro
+
+comfort.too_cold	ash my hands are cold, make it warmer for me
+
+comfort.too_cold	ash my hands are cold, make it warmer right now
+
+comfort.too_cold	ash my hands are cold, make it warmer if you can
+
+comfort.too_cold	ash my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	listen my hands are cold, make it warmer
+
+comfort.too_cold	listen my hands are cold, make it warmer please
+
+comfort.too_cold	listen my hands are cold, make it warmer man
+
+comfort.too_cold	listen my hands are cold, make it warmer bro
+
+comfort.too_cold	listen my hands are cold, make it warmer for me
+
+comfort.too_cold	listen my hands are cold, make it warmer right now
+
+comfort.too_cold	listen my hands are cold, make it warmer if you can
+
+comfort.too_cold	listen my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	quick one my hands are cold, make it warmer
+
+comfort.too_cold	quick one my hands are cold, make it warmer please
+
+comfort.too_cold	quick one my hands are cold, make it warmer man
+
+comfort.too_cold	quick one my hands are cold, make it warmer bro
+
+comfort.too_cold	quick one my hands are cold, make it warmer for me
+
+comfort.too_cold	quick one my hands are cold, make it warmer right now
+
+comfort.too_cold	quick one my hands are cold, make it warmer if you can
+
+comfort.too_cold	quick one my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	real quick my hands are cold, make it warmer
+
+comfort.too_cold	real quick my hands are cold, make it warmer please
+
+comfort.too_cold	real quick my hands are cold, make it warmer man
+
+comfort.too_cold	real quick my hands are cold, make it warmer bro
+
+comfort.too_cold	real quick my hands are cold, make it warmer for me
+
+comfort.too_cold	real quick my hands are cold, make it warmer right now
+
+comfort.too_cold	real quick my hands are cold, make it warmer if you can
+
+comfort.too_cold	real quick my hands are cold, make it warmer when you get a sec
+
+comfort.too_cold	give me a bit more warmth
+
+comfort.too_cold	give me a bit more warmth please
+
+comfort.too_cold	give me a bit more warmth man
+
+comfort.too_cold	give me a bit more warmth bro
+
+comfort.too_cold	give me a bit more warmth for me
+
+comfort.too_cold	give me a bit more warmth right now
+
+comfort.too_cold	give me a bit more warmth if you can
+
+comfort.too_cold	give me a bit more warmth when you get a sec
+
+comfort.too_cold	hey ash give me a bit more warmth
+
+comfort.too_cold	hey ash give me a bit more warmth please
+
+comfort.too_cold	hey ash give me a bit more warmth man
+
+comfort.too_cold	hey ash give me a bit more warmth bro
+
+comfort.too_cold	hey ash give me a bit more warmth for me
+
+comfort.too_cold	hey ash give me a bit more warmth right now
+
+comfort.too_cold	hey ash give me a bit more warmth if you can
+
+comfort.too_cold	hey ash give me a bit more warmth when you get a sec
+
+comfort.too_cold	yo ash give me a bit more warmth
+
+comfort.too_cold	yo ash give me a bit more warmth please
+
+comfort.too_cold	yo ash give me a bit more warmth man
+
+comfort.too_cold	yo ash give me a bit more warmth bro
+
+comfort.too_cold	yo ash give me a bit more warmth for me
+
+comfort.too_cold	yo ash give me a bit more warmth right now
+
+comfort.too_cold	yo ash give me a bit more warmth if you can
+
+comfort.too_cold	yo ash give me a bit more warmth when you get a sec
+
+comfort.too_cold	okay give me a bit more warmth
+
+comfort.too_cold	okay give me a bit more warmth please
+
+comfort.too_cold	okay give me a bit more warmth man
+
+comfort.too_cold	okay give me a bit more warmth bro
+
+comfort.too_cold	okay give me a bit more warmth for me
+
+comfort.too_cold	okay give me a bit more warmth right now
+
+comfort.too_cold	okay give me a bit more warmth if you can
+
+comfort.too_cold	okay give me a bit more warmth when you get a sec
+
+comfort.too_cold	please give me a bit more warmth
+
+comfort.too_cold	please give me a bit more warmth please
+
+comfort.too_cold	please give me a bit more warmth man
+
+comfort.too_cold	please give me a bit more warmth bro
+
+comfort.too_cold	please give me a bit more warmth for me
+
+comfort.too_cold	please give me a bit more warmth right now
+
+comfort.too_cold	please give me a bit more warmth if you can
+
+comfort.too_cold	please give me a bit more warmth when you get a sec
+
+comfort.too_cold	bro give me a bit more warmth
+
+comfort.too_cold	bro give me a bit more warmth please
+
+comfort.too_cold	bro give me a bit more warmth man
+
+comfort.too_cold	bro give me a bit more warmth bro
+
+comfort.too_cold	bro give me a bit more warmth for me
+
+comfort.too_cold	bro give me a bit more warmth right now
+
+comfort.too_cold	bro give me a bit more warmth if you can
+
+comfort.too_cold	bro give me a bit more warmth when you get a sec
+
+comfort.too_cold	ash give me a bit more warmth
+
+comfort.too_cold	ash give me a bit more warmth please
+
+comfort.too_cold	ash give me a bit more warmth man
+
+comfort.too_cold	ash give me a bit more warmth bro
+
+comfort.too_cold	ash give me a bit more warmth for me
+
+comfort.too_cold	ash give me a bit more warmth right now
+
+comfort.too_cold	ash give me a bit more warmth if you can
+
+comfort.too_cold	ash give me a bit more warmth when you get a sec
+
+comfort.too_cold	listen give me a bit more warmth
+
+comfort.too_cold	listen give me a bit more warmth please
+
+comfort.too_cold	listen give me a bit more warmth man
+
+comfort.too_cold	listen give me a bit more warmth bro
+
+comfort.too_cold	listen give me a bit more warmth for me
+
+comfort.too_cold	listen give me a bit more warmth right now
+
+comfort.too_cold	listen give me a bit more warmth if you can
+
+comfort.too_cold	listen give me a bit more warmth when you get a sec
+
+comfort.too_cold	quick one give me a bit more warmth
+
+comfort.too_cold	quick one give me a bit more warmth please
+
+comfort.too_cold	quick one give me a bit more warmth man
+
+comfort.too_cold	quick one give me a bit more warmth bro
+
+comfort.too_cold	quick one give me a bit more warmth for me
+
+comfort.too_cold	quick one give me a bit more warmth right now
+
+comfort.too_cold	quick one give me a bit more warmth if you can
+
+comfort.too_cold	quick one give me a bit more warmth when you get a sec
+
+comfort.too_cold	real quick give me a bit more warmth
+
+comfort.too_cold	real quick give me a bit more warmth please
+
+comfort.too_cold	real quick give me a bit more warmth man
+
+comfort.too_cold	real quick give me a bit more warmth bro
+
+comfort.too_cold	real quick give me a bit more warmth for me
+
+comfort.too_cold	real quick give me a bit more warmth right now
+
+comfort.too_cold	real quick give me a bit more warmth if you can
+
+comfort.too_cold	real quick give me a bit more warmth when you get a sec
+
+##############################################################################
+# INTENT: lights.adjust_more
+#----------------------------------------------------------------------------
+# Extra slang-heavy relative brighten commands.
+#
+
+lights.adjust_more	yo ash crank the lights a bit
+
+lights.adjust_more	ash make it pop more in here
+
+lights.adjust_more	bump that brightness up a lil
+
+lights.adjust_more	I need more glow in this room
+
+lights.adjust_more	turn the vibes up a notch
+
+##############################################################################
+# INTENT: lights.adjust_less
+#----------------------------------------------------------------------------
+# Extra slang-heavy relative dimming commands.
+#
+
+lights.adjust_less	yo ash chill the lights out
+
+lights.adjust_less	tone the glow down a bit
+
+lights.adjust_less	kill some of that brightness
+
+lights.adjust_less	this is harsh, soften the lights
+
+lights.adjust_less	make it more chill in here

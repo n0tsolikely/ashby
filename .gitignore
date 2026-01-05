@@ -1,0 +1,25 @@
+# Python junk
+__pycache__/
+*.py[cod]
+
+# venvs (anywhere)
+.venv/
+.venv_*/
+venv/
+env/
+archive/venvs/
+
+# Runtime/state (local only)
+runtime/
+memory/
+*.log
+
+# Secrets: ignore real, allow redacted placeholders
+secrets/*.env
+secrets/env.py
+!secrets/*REDACTED*.env
+!secrets/*REDACTED*.py
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
