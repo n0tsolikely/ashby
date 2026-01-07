@@ -6,12 +6,12 @@ __pycache__/
 .venv/
 .venv_*/
 venv/
-env/
+/env/
 archive/venvs/
 
 # Runtime/state (local only)
-runtime/
-memory/
+/runtime/
+/memory/
 *.log
 
 # Secrets: ignore real, allow redacted placeholders
@@ -19,6 +19,9 @@ secrets/*.env
 secrets/env.py
 !secrets/*REDACTED*.env
 !secrets/*REDACTED*.py
+
+!/runtime/**/.gitkeep
+!/memory/**/.gitkeep
 
 # OS/editor junk
 .DS_Store
