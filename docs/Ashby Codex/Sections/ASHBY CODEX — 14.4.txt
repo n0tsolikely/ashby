@@ -1,0 +1,202 @@
+ASHBY CODEX — 14.4
+COMFORT SESSIONS
+
+A comfort session is the session archetype for iterative environmental control:
+temperature, HVAC mode, and comfort-related adjustments within a bounded area.
+
+It exists to support natural follow-ups such as:
+- “make it warmer”
+- “a little cooler”
+- “set it to 22”
+- “turn the fan on”
+- “hold this for an hour”
+
+without requiring the user to restate the thermostat, zone, or room every turn.
+
+Comfort sessions exist because comfort control is conversational by nature,
+but comfort systems are safety-sensitive and evidence-limited.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT MAKES COMFORT DIFFERENT
+──────────────────────────────────────────────────────────────────────────────
+
+Comfort differs from lights-style control in key ways:
+
+- SETPOINTS HAVE SAFETY LIMITS
+Extreme temperatures may be unsafe or damaging.
+Policy must enforce minimums, maximums, and confirmation requirements.
+
+- SENSOR STATE IS OFTEN STALE OR LIMITED
+Ambient temperature readings may be unavailable, delayed, or scope-dependent.
+Comfort sessions must not fabricate current readings.
+
+- MULTIPLE CONTROL SURFACES EXIST
+A “comfort zone” may include:
+- thermostat device(s)
+- HVAC system mode
+- fan settings
+- zone dampers
+The session must remain modular and vendor-neutral.
+
+Comfort sessions exist to preserve continuity without increasing hazard.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL SESSION SHAPE (REPRESENTATIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+The shape below is representative.
+Fields may vary by module, but the semantics are stable.
+
+{
+  "session_type": "comfort",
+  "scope_id": "<scope_id>",
+  "active": true,
+
+  "target_set": {
+    "devices": ["<device_key>", "..."],
+    "zone_id": "<zone_id>" | null
+  },
+
+  "baseline": {
+    "last_requested_setpoint_c": <float> | null,
+    "last_delta_c": <float> | null,
+    "last_mode": "<mode>" | null,
+    "last_fan": "<fan_mode>" | null
+  },
+
+  "constraints": {
+    "min_setpoint_c": <float> | null,
+    "max_setpoint_c": <float> | null,
+    "confirmation_required_outside_range": <bool> | null
+  },
+
+  "time_bound": {
+    "hold_duration_sec": <int> | null,
+    "hold_ends_at": "<ISO8601>" | null
+  },
+
+  "awaiting_clarification": false,
+  "created_at": "<ISO8601>",
+  "updated_at": "<ISO8601>",
+  "expires_at": "<ISO8601>"
+}
+
+Notes:
+- baseline fields are interaction continuity, not verified world state
+- constraints are policy expressions, not vendor rules
+- time-bound fields describe intent, not guaranteed system behavior
+- no vendor identifiers or secrets may exist in session state
+
+──────────────────────────────────────────────────────────────────────────────
+SESSION CREATION AND TARGETING
+──────────────────────────────────────────────────────────────────────────────
+
+A comfort session is created when:
+- a comfort domain intent is interpreted, and
+- the target thermostat/zone is resolved safely.
+
+Rules:
+- sessions must not be created with ambiguous targets
+- if “in here” or “this room” cannot be resolved to a zone, Ashby must clarify
+- session scope binds all follow-ups
+
+Comfort sessions may be created after:
+- a setpoint change
+- a mode/fan change
+- a comfort query that resolves a target set (to support follow-ups)
+
+Session creation must not imply that any action was verified.
+
+──────────────────────────────────────────────────────────────────────────────
+FOLLOW-UP INTERPRETATION RULES
+──────────────────────────────────────────────────────────────────────────────
+
+A comfort session enables follow-up parsing for incomplete commands.
+
+Representative mappings:
+- “warmer” → apply +delta to last requested setpoint (or clarify if none)
+- “cooler” → apply -delta
+- “a little” → apply a policy-defined step size
+- “set to 22” → setpoint override (canonical unit °C)
+- “fan on” → fan mode change
+- “hold for an hour” → create or adjust a time-bound hold intent
+
+Rules:
+- if the session lacks a baseline setpoint and the user requests relative change,
+  Ashby must clarify or refresh rather than invent a baseline
+- any action still requires policy approval and evidence-bound reporting
+- comfort sessions must not treat ambient temperature as known unless verified
+
+The session supplies continuity only when doing so is safe.
+
+──────────────────────────────────────────────────────────────────────────────
+SAFETY AND CONFIRMATION RULES
+──────────────────────────────────────────────────────────────────────────────
+
+Comfort control can cause harm.
+
+Policy must enforce:
+- minimum and maximum setpoints per scope
+- confirmation requirements for extreme changes
+- caps on how fast repeated deltas can push the setpoint
+
+Session continuity must not bypass these constraints.
+
+Rules:
+- if a requested setpoint exceeds safe bounds, Ashby must clarify/confirm or refuse
+- if repeated “warmer” commands push beyond bounds, Ashby must stop and confirm
+- if multiple thermostats are in target_set, max_targets limits may apply
+
+Sessions reduce friction.
+Sessions must not reduce safety.
+
+──────────────────────────────────────────────────────────────────────────────
+TIME-BOUND HOLDS DO NOT CREATE TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Comfort sessions may include time-bound holds (e.g., “hold until 6”).
+
+Rules:
+- holds are intent tracking, not proof of HVAC behavior
+- if a hold is scheduled to end, the end action must be executed and evidenced
+- if asked “will it switch back?”, Ashby must answer as planned intent,
+  not as guaranteed external behavior unless verified
+
+Time is plan.
+Evidence is truth.
+
+──────────────────────────────────────────────────────────────────────────────
+EXPIRY AND SAFE FALLBACK
+──────────────────────────────────────────────────────────────────────────────
+
+Comfort sessions must expire.
+
+Rules:
+- sessions expire after a policy window
+- expired sessions may not be used to interpret “warmer” safely without re-targeting
+- when expired, Ashby must clarify target and baseline before acting
+
+Expiry prevents “sticky climate authority” from persisting invisibly.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Comfort sessions must:
+- remain scope-bound
+- preserve concrete targets
+- support safe relative and absolute adjustments
+- respect policy safety limits and confirmation requirements
+- never fabricate sensor truth
+- never upgrade truth or confidence without evidence
+
+Comfort sessions must never:
+- bypass safety bounds due to continuity
+- treat ambient readings as known when stale or unavailable
+- persist indefinitely as a hidden control mode
+- leak across scopes
+- bypass policy or Truth Gate constraints
+
+Comfort sessions exist to make comfort control usable without making it reckless.
+
+END OF 14.4

@@ -1,0 +1,117 @@
+ASHBY CODEX — 8.11
+SETUP, PROVISIONING, AND ONBOARDING
+
+Setup and provisioning define how Ashby enters an environment
+without redefining Ashby’s architecture.
+
+Onboarding is not a shortcut around law.
+It is a controlled process that introduces Ashby
+to a specific reality.
+
+──────────────────────────────────────────────────────────────────────────────
+SETUP AS STRUCTURAL INITIALIZATION
+──────────────────────────────────────────────────────────────────────────────
+
+Setup establishes:
+- initial scope hierarchy
+- authority boundaries
+- core configuration
+- enabled profiles
+- security context
+
+Setup does not:
+- embed assumptions
+- hardcode environment-specific logic
+- bypass governance
+- weaken safety constraints
+
+If setup requires modifying the engine,
+the design is invalid.
+
+──────────────────────────────────────────────────────────────────────────────
+PROVISIONING AS CONTROLLED EXPANSION
+──────────────────────────────────────────────────────────────────────────────
+
+Provisioning adds capabilities
+to an already-defined structure.
+
+Provisioning may:
+- register new scopes
+- associate devices or resources
+- enable modules or connectors
+- configure adapters
+- assign permissions
+
+Provisioning must:
+- respect existing scope law
+- record changes explicitly
+- validate authority
+- refuse unsafe configurations
+
+Provisioning is additive,
+not transformative.
+
+──────────────────────────────────────────────────────────────────────────────
+ONBOARDING AND HUMAN INTERACTION
+──────────────────────────────────────────────────────────────────────────────
+
+Onboarding introduces humans
+to Ashby’s model of reality.
+
+It must:
+- make scope boundaries visible
+- explain authority and limits
+- surface uncertainty
+- avoid false confidence
+- prevent accidental overreach
+
+Onboarding is a safety interface,
+not a marketing flow.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE AND RECOVERY DURING SETUP
+──────────────────────────────────────────────────────────────────────────────
+
+Failures during setup must be explicit.
+
+Ashby must:
+- report incomplete configuration
+- mark affected scopes as uncertain
+- refuse unsafe automation
+- allow recovery without reset
+
+Silent partial setup is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+REPEATABILITY AND REBUILD
+──────────────────────────────────────────────────────────────────────────────
+
+Setup and provisioning must be repeatable.
+
+A system must be reconstructable
+from:
+- configuration
+- recorded state
+- explicit provisioning steps
+
+This supports:
+- rebuild after loss
+- migration
+- audit
+- controlled replication
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Setup, provisioning, and onboarding must never:
+- define truth
+- bypass Action-Gated Truth
+- introduce hidden state
+- create global assumptions
+- weaken scope enforcement
+
+They introduce Ashby to the world.
+They do not redefine it.
+
+END OF 8.11

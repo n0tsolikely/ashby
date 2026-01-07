@@ -1,0 +1,152 @@
+ASHBY CODEX — 8.4
+TRUTH, STATE, AND MEMORY
+
+Truth, state, and memory form a single system in Ashby.
+
+They are not independent concerns.
+They are mechanically linked
+to prevent drift, illusion, and silent failure.
+
+This section defines how these concepts coexist
+inside the architecture.
+
+──────────────────────────────────────────────────────────────────────────────
+TRUTH AS A CONSTRAINED OUTPUT
+──────────────────────────────────────────────────────────────────────────────
+
+Truth in Ashby is not opinion.
+It is not confidence.
+It is not conversational tone.
+
+Truth is a constrained output
+derived from evidence.
+
+Ashby may only claim what passes
+the Action-Gated Truth system.
+
+Truth constrains:
+- language
+- state updates
+- explanations
+- future reasoning
+
+No subsystem may speak past truth.
+
+──────────────────────────────────────────────────────────────────────────────
+STATE AS BELIEF WITH CONFIDENCE
+──────────────────────────────────────────────────────────────────────────────
+
+State represents Ashby’s belief about the world.
+
+Every belief carries confidence.
+
+State is:
+- scoped
+- explicit
+- persistent
+- degradable
+
+State is never assumed.
+State is never reconstructed silently.
+State is never global.
+
+Belief may be:
+- VERIFIED
+- LAST_KNOWN
+- UNKNOWN
+- FAILED
+
+These classes are not descriptive.
+They are enforcement mechanisms.
+
+──────────────────────────────────────────────────────────────────────────────
+MEMORY AS RECORDED HISTORY
+──────────────────────────────────────────────────────────────────────────────
+
+Memory records:
+- attempted actions
+- execution results
+- verification outcomes
+- confidence changes
+- uncertainty events
+
+Memory is not conversation history.
+Conversation is transient.
+Memory is durable.
+
+Memory exists to:
+- preserve accountability
+- enable explanation
+- inform future decisions
+- prevent repetition of failure
+
+──────────────────────────────────────────────────────────────────────────────
+THE LINKAGE BETWEEN THE THREE
+──────────────────────────────────────────────────────────────────────────────
+
+Truth gates state.
+State informs memory.
+Memory constrains future truth.
+
+This loop is intentional.
+
+If any link is broken:
+- truth becomes narrative
+- state becomes assumption
+- memory becomes fiction
+
+Therefore, the linkage is enforced structurally.
+
+──────────────────────────────────────────────────────────────────────────────
+DECAY AND LOSS
+──────────────────────────────────────────────────────────────────────────────
+
+Knowledge degrades over time.
+
+Ashby treats decay as first-class behavior.
+
+Confidence may:
+- expire
+- degrade
+- be downgraded explicitly
+
+Memory may:
+- record loss
+- mark uncertainty
+- trigger re-verification
+
+Ashby never pretends certainty persists.
+
+──────────────────────────────────────────────────────────────────────────────
+ARCHITECTURAL PLACEMENT
+──────────────────────────────────────────────────────────────────────────────
+
+Truth enforcement lives in the engine.
+State authority lives in the engine.
+Memory semantics live in the engine.
+
+Storage may live elsewhere.
+Meaning does not.
+
+This prevents:
+- external truth definition
+- fragmented belief
+- hidden state mutation
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+No component may:
+- define truth outside the engine
+- write state without evidence
+- alter memory semantics
+- upgrade confidence without verification
+
+Truth, state, and memory
+are inseparable by design.
+
+This triad is how Ashby
+remains honest over time.
+
+END OF 8.4

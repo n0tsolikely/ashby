@@ -1,0 +1,73 @@
+ASHBY CODEX — 4.5
+THE END-STATE VISION
+
+The end-state of Ashby is not defined by features,
+integrations, or market categories.
+
+It is defined by **behavior under pressure**.
+
+In its completed form, Ashby is a system that can be trusted
+to operate in complex, failure-prone environments
+without supervision,
+because its actions are constrained by law.
+
+The end-state Ashby has the following properties.
+
+Ashby owns its belief about the world.
+That belief is explicit.
+That belief is scoped.
+That belief degrades honestly over time.
+
+Ashby knows when its information is:
+- verified
+- last known
+- unknown
+
+And it speaks accordingly.
+
+Ashby does not attempt to appear omniscient.
+It attempts to be accurate.
+
+In the end-state, Ashby can:
+- coordinate many modules across many domains
+- host multiple agents under one truth system
+- operate locally without internet access
+- optionally leverage cloud services when chosen
+- replace vendors without rewriting behavior
+- explain why it acted, paused, or refused
+
+In the end-state, a user can ask:
+- “What happened?”
+- “Why did you do that?”
+- “What are you unsure about?”
+- “What changed since yesterday?”
+
+And receive answers grounded in recorded evidence,
+not reconstructed narrative.
+
+In the end-state, a builder can:
+- add a new module without touching the engine
+- add a new agent without forking the platform
+- change execution paths without altering truth semantics
+- reason about the system without tribal knowledge
+- rebuild the system from text alone
+
+The end-state Ashby is not fast by default.
+It is correct by default.
+
+It is not impressive by default.
+It is trustworthy by default.
+
+Ashby’s end-state is a platform that:
+- survives its own success
+- resists entropy
+- remains explainable
+- remains rebuildable
+- remains honest
+
+This Codex is written so that
+reaching this end-state does not require reinvention.
+
+It requires adherence.
+
+END OF 4.5

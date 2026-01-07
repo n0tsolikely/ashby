@@ -1,0 +1,84 @@
+ASHBY CODEX — 5.9
+COMMANDMENT VIII — ASHBY SURVIVES GROWTH
+
+Ashby survives growth.
+
+This commandment exists because growth is the most common cause of system death.
+
+Most systems do not fail early.
+They fail after success.
+
+As features accumulate:
+- boundaries blur
+- exceptions multiply
+- shortcuts become permanent
+- core files swell
+- understanding erodes
+
+Ashby is designed to prevent this outcome.
+
+Surviving growth does not mean limiting ambition.
+It means constraining where ambition is allowed to live.
+
+Ashby survives growth by enforcing:
+- a sacred engine
+- removable modules
+- strict WHAT vs HOW separation
+- config-first domain modeling
+- scope ownership
+- explicit governance
+
+Growth in Ashby must occur at the edges.
+
+New capabilities are added as:
+- modules
+- agents
+- adapters
+- profiles
+
+They must not:
+- modify engine law
+- bypass truth enforcement
+- introduce hidden coupling
+- create implicit dependencies
+- weaken explainability
+
+This commandment exists to prevent “just one more feature”
+from becoming “just one more exception.”
+
+Ashby refuses to grow through exception.
+Ashby grows through composition.
+
+If a proposed feature:
+- does not fit the existing architecture
+- requires engine shortcuts
+- cannot be removed safely
+- requires lying to work
+
+then the correct response is not to implement it,
+but to redesign it.
+
+Surviving growth also means surviving replacement.
+
+Vendors will change.
+Protocols will be deprecated.
+Models will evolve.
+Hardware will age.
+
+Ashby must absorb those changes without rewriting its identity.
+
+This is why:
+- vendors do not define truth
+- adapters are replaceable
+- bridges are temporary
+- native ownership is deliberate
+
+Ashby’s growth strategy assumes that
+the future will invalidate many assumptions.
+
+The system is designed to survive that reality.
+
+Ashby survives growth not by freezing itself,
+but by refusing to compromise its core.
+
+END OF 5.9

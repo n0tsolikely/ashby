@@ -1,0 +1,262 @@
+ASHBY CODEX — 14.5
+PENDING CLARIFICATION SESSIONS
+
+A pending clarification session is the platform mechanism for safely pausing execution
+while waiting for missing information.
+
+It exists to enable multi-turn completion without guessing.
+
+A clarification is not “conversation.”
+A clarification is an incomplete control transaction.
+
+Pending clarification sessions are how Ashby holds a partially resolved intent
+without inventing targets, scope, or parameters.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY PENDING CLARIFICATION SESSIONS EXIST
+──────────────────────────────────────────────────────────────────────────────
+
+Clarification is mandatory when:
+- targets are ambiguous
+- scope is ambiguous
+- required parameters are missing
+- safety impact cannot be evaluated
+
+Without a pending mechanism, the system is forced into one of two failures:
+- forget the incomplete intent and make the user restart
+- retain it informally and risk drift, confusion, or accidental execution
+
+Both outcomes erode trust.
+
+Pending clarification sessions exist to preserve continuity with explicit boundaries.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A PENDING CLARIFICATION SESSION IS
+──────────────────────────────────────────────────────────────────────────────
+
+A pending clarification session is a structured, scoped record containing:
+
+- the partially normalized intent (as far as safely determinable)
+- the missing fields required for policy approval and/or execution
+- the candidate resolution set(s) when ambiguity exists
+- the exact clarification question that was asked
+- the expiry deadline and safety constraints
+
+A pending clarification session is not:
+- an execution plan
+- an authorization grant
+- a guarantee that any action will occur
+
+It is a paused decision awaiting user input.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL SESSION SHAPE (REPRESENTATIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+The shape below is representative.
+Fields may vary by module, but semantics are stable.
+
+{
+  "session_type": "pending_clarification",
+  "scope_id": "<scope_id>",
+  "active": true,
+
+  "pending_intent": {
+    "type": "<intent_type>" | null,
+    "raw_text": "<original_user_text>",
+    "normalized": { ... } | null
+  },
+
+  "missing": {
+    "targets": true | false,
+    "scope": true | false,
+    "parameters": ["<param_name>", "..."] | [],
+    "safety_confirmation": true | false
+  },
+
+  "candidates": {
+    "targets": [
+      { "label": "<human_label>", "device_keys": ["<device_key>", "..."], "zone_id": "<zone_id>" | null }
+    ],
+    "scopes": [
+      { "label": "<human_label>", "scope_id": "<scope_id>" }
+    ]
+  },
+
+  "question": {
+    "prompt": "<clarification_prompt>",
+    "options": ["<option>", "..."] | [],
+    "expects": "target" | "scope" | "parameter" | "confirmation"
+  },
+
+  "created_at": "<ISO8601>",
+  "updated_at": "<ISO8601>",
+  "expires_at": "<ISO8601>"
+}
+
+Rules:
+- pending_intent.normalized must not contain invented targets
+- candidates are suggestions, not selections
+- the session contains no secrets, no vendor payloads, no vendor identifiers
+
+A pending clarification session is an explicit record of incompleteness.
+
+──────────────────────────────────────────────────────────────────────────────
+CREATION RULES (WHEN IT STARTS)
+──────────────────────────────────────────────────────────────────────────────
+
+A pending clarification session is created when policy outcome is CLARIFY.
+
+Rules:
+- the engine must identify exactly what is missing
+- the engine must ask one clear question (or a minimal safe set)
+- the session must record:
+  - the asked question
+  - the missing fields
+  - any candidates presented to the user
+
+A pending clarification session must never be created when:
+- the system has already decided to ACT
+- the system has decided CHAT (no execution intent)
+
+Clarification exists only inside a control path.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT PENDING CLARIFICATION SESSIONS PRESERVE
+──────────────────────────────────────────────────────────────────────────────
+
+They preserve only what is safe to preserve:
+
+- INTENT SHAPE (PARTIAL)
+The action type may be preserved if it is unambiguous.
+If even the action type is ambiguous, it remains null.
+
+- USER TEXT (FOR TRACEABILITY)
+Raw text may be stored for auditing and reference.
+
+- MISSING FIELD MAP
+The session must state exactly what is missing.
+
+- CANDIDATE SETS (BOUND, NON-AUTHORITATIVE)
+Candidate options may be stored to interpret short replies (“bedroom”)
+without having to recompute the universe.
+
+Candidates must be bounded to the active scope and must not expand silently over time.
+
+The session preserves continuity.
+It does not preserve authority.
+
+──────────────────────────────────────────────────────────────────────────────
+RESUME RULES (HOW IT CONTINUES)
+──────────────────────────────────────────────────────────────────────────────
+
+When the user replies while a pending clarification session is active, the platform must:
+
+1) CLASSIFY THE REPLY
+The reply may be:
+- an answer to the clarification
+- a cancellation (“never mind”)
+- a new independent command
+- a question
+
+2) ONLY MERGE IF IT MATCHES THE EXPECTED SHAPE
+If the session expects a target, the reply must be interpreted as target resolution.
+If the reply contains a new verb and new intent shape, it is a new command.
+
+3) MERGE AND RE-EVALUATE POLICY
+After merging:
+- re-run policy
+- re-run safety checks
+- re-run planning and execution as normal
+- do not assume the earlier clarification implies permission to act
+
+Clarification resolves missing information.
+It does not bypass policy.
+
+4) CLEAR OR UPDATE SESSION STATE
+If the clarification is satisfied and action proceeds:
+- the pending session must be resolved/closed
+- domain sessions may be created afterward as normal
+
+If the clarification is still incomplete:
+- update the session and ask the next minimal question
+- preserve the audit trail
+
+A pending clarification session is a state machine, not a suggestion.
+
+──────────────────────────────────────────────────────────────────────────────
+CANCELLATION AND USER CONTROL
+──────────────────────────────────────────────────────────────────────────────
+
+Users must be able to cancel a pending clarification cleanly.
+
+Rules:
+- cancellation closes the pending session
+- cancellation must result in no execution
+- cancellation must not be treated as refusal or failure
+
+Cancellation phrases are not fixed.
+Modules may define representative patterns, but the platform must support an explicit
+cancel operation regardless of phrasing.
+
+A safe system respects “stop” and “never mind.”
+
+──────────────────────────────────────────────────────────────────────────────
+EXPIRY AND SAFETY
+──────────────────────────────────────────────────────────────────────────────
+
+Pending clarification sessions must expire quickly.
+
+Reasons:
+- user context changes
+- the world changes
+- scopes may shift
+- the intended targets may no longer be safe assumptions
+
+Rules:
+- if expired, the pending intent must not be resumed automatically
+- after expiry, short replies (“bedroom”) must not trigger action
+- the system must re-ask the question or treat the reply as fresh input
+
+Expiry is not punishment.
+Expiry prevents accidental execution from stale context.
+
+──────────────────────────────────────────────────────────────────────────────
+RESTART BEHAVIOR
+──────────────────────────────────────────────────────────────────────────────
+
+Restart breaks conversational continuity.
+
+Rules:
+- pending clarification sessions must not survive restart as active authority
+- on restart, any pending clarification must be treated as inactive or expired
+- the system must not execute based on pre-restart pending context
+
+If a pending clarification session is loaded from persistence as history:
+- it may be used for audit display
+- it must not be used to interpret a post-restart short reply as execution authority
+
+Restart increases uncertainty.
+That rule applies to sessions as well as state.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Pending clarification sessions must:
+- exist only under CLARIFY policy outcome
+- be explicitly structured and scope-bound
+- record what is missing and what was asked
+- allow safe resume through merge-and-complete
+- expire quickly and safely
+
+Pending clarification sessions must never:
+- execute while unresolved
+- convert ambiguity into action by assumption
+- survive restart as active authority
+- expand candidate targets silently
+- bypass policy, safety, or Truth Gate constraints
+
+Pending clarification is the lawful way to pause without guessing.
+
+END OF 14.5

@@ -1,0 +1,213 @@
+ASHBY CODEX — 8A.5
+adapters/
+
+adapters/ is the “HOW” layer for capability execution.
+
+It is where Ashby’s intent becomes actual actions in the world.
+
+Modules decide what should happen.
+Adapters make it happen.
+
+If adapters start deciding, the platform becomes unstable.
+If modules start executing, the platform collapses into vendor spaghetti.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF adapters/
+──────────────────────────────────────────────────────────────────────────────
+
+adapters/ exists to:
+- translate ActionRequests into execution calls
+- route execution to bridges or native vendors safely
+- produce ActionResults with verification semantics
+- keep vendor logic out of engine/ and modules/
+- allow execution systems to evolve without rewriting feature logic
+
+Adapters are capability-based.
+
+They are grouped by “what kind of action” (lights, comfort, cameras),
+not by vendor (tuya, reolink, nest).
+
+This prevents vendor capture of the platform.
+
+──────────────────────────────────────────────────────────────────────────────
+2) ABSOLUTE ADAPTER BEHAVIOR LAW
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- reason about user intent
+- interpret natural language
+- invent targets
+- store memory as a truth source
+- make policy decisions (act vs clarify vs confirm)
+- claim success without verification evidence
+- speak to the user
+
+Adapters execute.
+Adapters report.
+Adapters do not decide.
+
+If an adapter must explain itself, the architecture has failed.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHAT BELONGS IN adapters/
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters may contain:
+- vendor SDK usage (through the correct sub-layer)
+- HTTP calls (through the correct sub-layer)
+- translation between internal models and external API shapes
+- retries, timeouts, and fallback logic (as execution mechanics)
+- verification steps and state read-backs
+- mapping of adapter errors into canonical failure taxonomy outputs
+
+Adapters are allowed to be ugly.
+They are allowed to be practical.
+They are not allowed to be intelligent.
+
+──────────────────────────────────────────────────────────────────────────────
+4) WHAT IS FORBIDDEN IN adapters/
+──────────────────────────────────────────────────────────────────────────────
+
+Forbidden includes:
+- any “conversation logic”
+- any “user friendliness” layer
+- any attempt to skip Truth Gate semantics by returning “success” optimistically
+- long-term state ownership
+- embedding vendor-specific policy inside module logic
+
+Adapters may carry vendor knowledge.
+They may not carry platform authority.
+
+──────────────────────────────────────────────────────────────────────────────
+5) CANONICAL SUBTREE (MINIMUM EXPECTED SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+The canonical minimum layout for adapters/ is:
+
+adapters/
+├── lights/
+│   ├── ha_adapter.py
+│   ├── native_vendor_router.py
+│   └── (placeholder)_adapter.py
+│
+├── comfort/
+│   ├── ha_adapter.py
+│   └── nest_adapter.py
+│
+├── cameras/
+│   ├── reolink_adapter.py
+│   └── (placeholder)_camera_adapter.py
+│
+└── media/
+    ├── comfyui_adapter.py
+    └── (placeholder)_video_gen_adapter.py
+
+This shape demonstrates the law:
+capability first, vendor second.
+
+──────────────────────────────────────────────────────────────────────────────
+6) ROUTING: BRIDGE VS NATIVE (WHY native_vendor_router EXISTS)
+──────────────────────────────────────────────────────────────────────────────
+
+A capability often has multiple execution backends:
+- a bridge integration (Home Assistant, Matter, Zigbee, etc.)
+- a native vendor provider (tuya, nest_google_sdm, reolink, etc.)
+
+The adapter layer is allowed to route between them,
+but only as execution selection, not as platform policy.
+
+The engine may express a preference:
+- offline-first
+- native-first
+- bridge fallback
+- cloud-allowed fallback
+
+The adapter enforces that preference mechanically:
+- select backend
+- execute
+- verify
+- return ActionResult with explicit attribution of backend used
+
+The adapter must never claim the backend’s truth as Ashby’s truth without verification.
+
+──────────────────────────────────────────────────────────────────────────────
+7) VERIFICATION IS NOT OPTIONAL
+──────────────────────────────────────────────────────────────────────────────
+
+The adapter is responsible for producing evidence.
+
+An adapter’s ActionResult must be able to answer:
+- was the action executed?
+- what backend performed it?
+- what was observed after execution?
+- what is the confidence level of the observation?
+- what error occurred if it failed?
+
+If verification is impossible for a given action,
+the adapter must return that impossibility explicitly.
+
+The worst behavior an adapter can have is silent optimism.
+
+──────────────────────────────────────────────────────────────────────────────
+8) DEPENDENCY LAW
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters may depend on:
+- domain/ (canonical types)
+- storage/ (only for execution artifacts, not truth ownership)
+- bridges/ and native_vendor/ (through provider interfaces)
+- connectors/ (only when a capability’s execution is inherently non-physical)
+
+Adapters must not depend on:
+- modules/ (feature logic)
+- engine/ internals (policy, memory, routing logic)
+
+The direction is:
+engine → module → adapter → provider.
+
+If adapters depend on modules, HOW becomes entangled with WHAT.
+
+──────────────────────────────────────────────────────────────────────────────
+9) FAILURE MODES (WHAT RUINS adapters/)
+──────────────────────────────────────────────────────────────────────────────
+
+A) Reasoning creep
+Adapters begin interpreting ambiguity or making “smart choices.”
+
+This breaks deterministic control and breaks safety.
+
+B) Truth inflation
+Adapters report “done” without evidence.
+
+This destroys trust and destroys the platform’s truth law.
+
+C) Vendor domination
+Adapters become vendor-shaped instead of capability-shaped.
+
+This locks the platform into a vendor reality.
+
+D) Hidden policy
+Adapters embed business policy in execution logic.
+
+Policy belongs in engine and modules.
+Execution belongs here.
+
+──────────────────────────────────────────────────────────────────────────────
+10) MINIMUM ACCEPTANCE CHECKLIST
+──────────────────────────────────────────────────────────────────────────────
+
+A builder should validate adapters/ with these checks:
+
+- Capability-based folder structure exists (not vendor-based)
+- Each adapter implementation adheres to interface contracts
+- Each execution path returns ActionResult with explicit verification semantics
+- No adapter produces user-facing language
+- No adapter stores secrets in code or logs
+- Offline-first behavior exists where possible
+- Fallback behavior is explicit and attributed
+- Errors map into canonical failure taxonomy
+
+If these pass, adapters/ is doing its job:
+it turns intent into action without stealing authority.
+
+END OF 8A.5

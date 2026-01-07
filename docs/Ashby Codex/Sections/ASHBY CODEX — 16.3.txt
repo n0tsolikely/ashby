@@ -1,0 +1,395 @@
+ASHBY CODEX — 16.3
+Module Lifecycle
+
+A module is not “some code in a folder.”
+A module is a governed unit of meaning and capability that must survive:
+- installs
+- upgrades
+- deprecations
+- removals
+- profile changes
+- provider swaps
+- and time
+
+If the lifecycle is vague, modules become:
+- permanent by accident (violates removability)
+- fragile under updates (breaks resurrection)
+- or unsafe under drift (truth posture erodes)
+
+This section defines the lifecycle of a module as a first-class platform concern.
+
+──────────────────────────────────────────────────────────────────────────────
+1) WHAT “LIFECYCLE” MEANS (FOUR DISTINCT THINGS)
+──────────────────────────────────────────────────────────────────────────────
+
+A module has four distinct “existences” that must not be confused:
+
+A) MODULE CODE
+- the implementation of domain interpretation and planning (WHAT)
+- versioned, testable, removable
+
+B) MODULE DEFINITION (REGISTRY IDENTITY)
+- module_key (stable, permanent identifier)
+- declared capability surface
+- dependency declarations (contracts, connectors, providers by interface)
+- safety classification hints (inputs to policy)
+
+C) MODULE ENABLEMENT (AVAILABILITY STATE)
+- whether the module is enabled in a given profile/scope
+- governed by profiles, flags, entitlements
+- never by “code presence alone”
+
+D) MODULE EFFECTS (ARTIFACTS + STATE IMPACT)
+- artifacts created by module-driven actions
+- HouseState beliefs that were updated based on evidence produced through module plans
+- logs and audit trails associated with module execution
+
+Lifecycle discipline exists to keep these four layers consistent.
+
+Removing code must not erase history.
+Changing enablement must not mutate meaning.
+Upgrading a module must not silently rewrite truth.
+
+──────────────────────────────────────────────────────────────────────────────
+2) LIFECYCLE STATES (THE REQUIRED STATE MACHINE)
+──────────────────────────────────────────────────────────────────────────────
+
+A module must be describable as moving through these states:
+
+1) DESIGNED
+- module’s domain, capabilities, and boundaries are defined
+- interface contracts chosen (but no execution code in module)
+
+2) IMPLEMENTED
+- module planning logic exists
+- no provider calls, no vendor SDKs, no IO in module code
+
+3) VERIFIED (MODULE-LEVEL)
+- module passes:
+  - boundary enforcement tests (no forbidden dependencies)
+  - deterministic planning tests (same input → same plan shape)
+  - clarification correctness tests (asks, doesn’t guess)
+  - safety hint correctness tests (high-impact annotations)
+
+4) REGISTERED
+- module is added to the platform module registry with:
+  - module_key
+  - version
+  - capability declarations
+  - contract dependencies
+  - connector requirements (by handle, not by secret)
+
+5) AVAILABLE (BUILD-TIME)
+- module exists in the distribution (packaged into the build)
+- but may still be disabled by profile or entitlement
+
+6) ENABLED (RUNTIME / PROFILE-SCOPED)
+- profile allows it
+- scope permits it
+- router can select it for matching intents
+
+7) ACTIVE (IN USE)
+- module is being routed to
+- it is producing plans and/or clarifications
+- it is generating ActionRequests that lead to execution through providers
+
+8) DEPRECATED (SOFT EXIT)
+- module remains present but is discouraged or scheduled for removal
+- module may refuse new setups while still supporting existing artifacts
+- module may point to successor modules (through router policy/aliasing)
+
+9) DISABLED (SOFT REMOVAL)
+- module not routable (profile/flags/entitlements)
+- code may still exist
+- all background tasks and triggers owned by the module must be disabled
+
+10) UNINSTALLED (HARD REMOVAL)
+- module code absent from build
+- registry marked absent
+- artifacts remain readable (generic storage)
+- platform remains intact (see 16.2)
+
+This state model is not “process.”
+It is how Ashby avoids accidental permanence and accidental drift.
+
+──────────────────────────────────────────────────────────────────────────────
+3) INSTALLATION: WHAT “ADDING A MODULE” REQUIRES
+──────────────────────────────────────────────────────────────────────────────
+
+A module is not “installed” when code is merged.
+A module is installed when the platform can safely route to it.
+
+Minimum install requirements:
+
+A) REGISTERED IDENTITY
+- module_key created and recorded
+- version set
+- capabilities declared explicitly
+- contract dependencies declared (interfaces only)
+
+B) BOUNDARY COMPLIANCE
+- module imports must not cross into:
+  - providers/
+  - bridges/
+  - vendor SDKs
+  - secrets
+  - network IO
+- module may import:
+  - domain models
+  - schemas/contracts
+  - safe utilities (pure logic)
+
+C) HARNESSED EVIDENCE EXPECTATIONS
+- module must declare what success looks like as evidence expectations
+- the module does not “decide truth,” but it must state verification intent
+  (e.g., “after turning on, readback should reflect ON”)
+
+D) ROUTER DISCOVERY
+- router must be able to:
+  - discover the module
+  - understand its capability coverage
+  - decide when to call it
+
+E) SAFE DEFAULT ENABLEMENT
+- newly installed modules are not globally enabled by default
+- enablement must be profile-scoped and explicit
+
+If these are not satisfied, adding the module is incomplete design, not progress.
+
+──────────────────────────────────────────────────────────────────────────────
+4) ENABLEMENT: HOW A MODULE BECOMES ROUTABLE
+──────────────────────────────────────────────────────────────────────────────
+
+Enablement is where platforms quietly fork if not governed.
+
+Rules:
+
+A) ENABLEMENT IS EXTERNAL
+- modules do not self-enable
+- availability is controlled by profiles/flags/entitlements, not module code paths
+
+B) ENABLEMENT IS SCOPE-BOUND
+- a module may be enabled in one scope and disabled in another
+- scope capability maps must be explicit
+
+C) ENABLEMENT DOES NOT CHANGE MEANING
+- enabling/disabling changes what can be executed
+- it does not change truth posture
+- it does not change WHAT/HOW law
+- it does not change how evidence is classified
+
+D) ENABLEMENT MUST BE AUDITABLE
+- a routing decision should be explainable as:
+  “this module was eligible and enabled under this profile/scope”
+- not as:
+  “it just happened”
+
+Enablement is a gate. Not a behavioral rewrite mechanism.
+
+──────────────────────────────────────────────────────────────────────────────
+5) RUNTIME USE: HOW MODULES PARTICIPATE IN EXECUTION
+──────────────────────────────────────────────────────────────────────────────
+
+At runtime, modules participate only through planning.
+
+A) INPUTS
+A module receives:
+- normalized intent
+- current scope context
+- target ambiguity set (if any)
+- HouseState snapshot (beliefs, staleness)
+- availability gating context (enabled/disabled)
+
+B) OUTPUTS
+A module outputs:
+- ActionRequest plan(s) (WHAT)
+- ClarifyRequest if required
+- structured hints to policy (risk categories), never policy outcomes
+
+C) EXECUTION IS OUTSIDE THE MODULE
+A module must never:
+- call a provider
+- call a bridge
+- run network IO
+- mutate HouseState directly
+
+The adapter/provider layer executes ActionRequests and returns ActionResults.
+Truth Gate evaluates.
+HouseState updates as belief.
+
+This preserves the sacred separation: modules define meaning, not reality.
+
+──────────────────────────────────────────────────────────────────────────────
+6) UPGRADES: VERSIONING WITHOUT AMNESIA
+──────────────────────────────────────────────────────────────────────────────
+
+Modules will change. That is expected.
+
+The lifecycle problem is avoiding silent semantic rewrites.
+
+A) MODULE_KEY NEVER CHANGES
+- module_key is permanent
+- if meaning changes so radically that it is “a different thing,”
+  it is a new module_key (and the old one is deprecated)
+
+B) VERSION INCREMENTS ARE MEANINGFUL
+- patch: implementation fixes, no semantic changes
+- minor: expanded capabilities, backward compatible
+- major: potentially breaking changes in planning semantics or contracts
+
+C) UPGRADE MUST PRESERVE ARTIFACT READABILITY
+Artifacts created earlier must remain readable and interpretable after upgrade.
+If the module previously stored proprietary blob formats, that was already a violation
+(see 16.2 storage durability rules).
+
+D) UPGRADE MUST PRESERVE ROUTER DISCOVERY
+Capability declarations and contract dependencies must remain valid or be migrated.
+
+E) UPGRADE MUST HAVE TEST PROOF
+At minimum:
+- old intents still route correctly (or fail with explicit deprecation language)
+- clarification behavior remains safe (no new guessing)
+- high-impact actions remain confirmation-gated by policy inputs
+- boundary tests remain passing
+
+Upgrades are not “ship and pray.”
+They are governed changes with regression immunity.
+
+──────────────────────────────────────────────────────────────────────────────
+7) DEPRECATION: HOW A MODULE DIES WITHOUT BREAKING THE BODY
+──────────────────────────────────────────────────────────────────────────────
+
+Deprecation is a planned exit, not an emergency removal.
+
+A module becomes deprecated when:
+- a better module replaces it
+- an integration path is being removed
+- the domain meaning needs re-architecture
+- the module violates new invariants (rare; requires governance elsewhere)
+
+Deprecation rules:
+
+A) DEPRECATION MUST BE DECLARED
+- explicit deprecated flag in module registry
+- optional sunset date or conditions
+
+B) DEPRECATION MUST PRESERVE HISTORY
+- artifacts remain accessible
+- previous logs remain reconstructable
+- HouseState beliefs remain beliefs and decay normally
+
+C) DEPRECATION SHOULD PROVIDE A SUCCESSOR PATH
+- router may prefer successor modules
+- user-facing language may recommend successor capability
+- no silent rerouting without explanation when behavior changes
+
+D) DEPRECATION MUST NOT HIDE FAILURES
+- “deprecated” is not a way to avoid fixing a safety bug
+- safety bugs are fixed; deprecation is separate
+
+Deprecation is the civilized alternative to “we ripped it out and everything broke.”
+
+──────────────────────────────────────────────────────────────────────────────
+8) DISABLEMENT AND UNINSTALL: THE REMOVAL CONTRACT (LINK TO 16.2)
+──────────────────────────────────────────────────────────────────────────────
+
+Disablement and uninstall are governed by removability guarantees.
+
+When disabling/uninstalling a module, the platform must ensure:
+
+A) IT IS NO LONGER ROUTABLE
+- router will never select it
+- “available but disabled” is treated as unavailable
+
+B) IT HAS NO ACTIVE BACKGROUND EFFECTS
+- schedules, triggers, long-running loops, watchers created by the module’s domain
+  must be disabled or reassigned
+- no orphan execution continues after removal
+
+C) CONFIG BECOMES DORMANT
+- module-related connector configs may remain but must not execute
+- secret handles must not be referenced by live execution paths
+
+D) USER-FACING BEHAVIOR IS HONEST
+- refusal or clarification based on unavailability
+- no “I tried and it failed” if it never tried
+
+E) THE BODY REMAINS WHOLE
+- engine, Truth Gate, HouseState, routing, logging remain intact
+
+If removal breaks the body, the architecture already violated removability.
+
+──────────────────────────────────────────────────────────────────────────────
+9) MIGRATIONS AND SEMANTIC REALIGNMENT (WHEN MODULE CHANGE AFFECTS STATE)
+──────────────────────────────────────────────────────────────────────────────
+
+Modules are not supposed to own state.
+But module-driven meaning can affect how beliefs are interpreted.
+
+When a module change affects:
+- entity naming rules
+- target resolution heuristics (within allowed boundaries)
+- capability mapping expectations
+- verification readback interpretation
+it may require structural realignment playbooks.
+
+Rule:
+- if state meaning changes, the change must be explicit and auditable
+- migrations must be rehearsed and testable
+- identity continuity must be preserved
+
+Modules do not “rewrite the world model” casually.
+
+──────────────────────────────────────────────────────────────────────────────
+10) REQUIRED TEST SURFACES (THE IMMUNE SYSTEM FOR MODULE LIFECYCLE)
+──────────────────────────────────────────────────────────────────────────────
+
+A module lifecycle is only as strong as its tests.
+
+Minimum required tests:
+
+A) BOUNDARY TESTS
+- fail if module imports forbidden layers (providers, bridges, vendor SDKs)
+
+B) INTENT→PLAN TESTS
+- representative intents produce expected plan shape
+- avoids silent semantic drift
+
+C) CLARIFICATION TESTS
+- ambiguous targets cause CLARIFY
+- contextual phrases are anchored safely (see 15.2)
+- vibe statements do not trigger execution (see 15.4)
+
+D) SAFETY HINT TESTS
+- high-impact actions are annotated correctly
+- policy can choose CONFIRM when required
+
+E) UPGRADE/DEPRECATION TESTS
+- ensure older artifacts remain readable
+- ensure router discovery remains stable
+- ensure deprecation language is honest
+
+If a module cannot be tested, it cannot be safely evolved.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+A module lifecycle must:
+- preserve module_key permanence and meaningful versioning
+- keep enablement external and scope-bound
+- keep execution outside modules (WHAT/HOW separation)
+- preserve truth/state integrity across installs, upgrades, and removals
+- preserve artifact readability and history durability
+- disable background effects when a module is disabled/uninstalled
+- remain auditable: routing and availability decisions must be explainable
+- be enforced by boundary and regression tests
+
+A module lifecycle must never:
+- allow a module to become “core by accident”
+- allow upgrades to silently rewrite meaning or truth posture
+- erase history under removal
+- leave orphan execution running after disable/uninstall
+- use enablement as a hidden product fork mechanism
+
+END OF 16.3

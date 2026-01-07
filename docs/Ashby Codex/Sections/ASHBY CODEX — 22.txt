@@ -1,0 +1,330 @@
+ASHBY CODEX — 22
+PRESERVATION PACK #4 — ACCEPTANCE TESTS & HARNESS
+
+This section is a mechanical invariant.
+
+It defines the acceptance tests and harness required to prove that Ashby’s core has not drifted.
+
+Ashby cannot be validated by unit tests alone.
+
+Ashby is validated by:
+- behavioral invariants
+- state correctness
+- language correctness
+- refusal correctness
+- ambiguity handling correctness
+- resistance to hallucinated certainty
+
+If these tests fail, the platform is considered structurally broken even if “it seems to work.”
+
+The tests below are binding.
+
+──────────────────────────────────────────────────────────────────────────────
+HOW THIS PACK IS USED (NORMATIVE INTEGRATION NOTES)
+──────────────────────────────────────────────────────────────────────────────
+
+1) The harness must exercise the same routing path as real transports.
+A “test-only” shortcut invalidates the results.
+
+2) The harness must not bypass Truth Gate, policy, or session law.
+Those are exactly what must be tested.
+
+3) These are scenario acceptance tests, not “nice-to-have examples.”
+They are regression locks.
+
+4) Tests must assert both:
+- structural artifacts (Intent, ActionRequest, ActionResult, HouseState transitions)
+- user-visible language constraints (VERIFIED/LAST_KNOWN/UNKNOWN/FAILED/NO-OP)
+
+5) A passing test suite is the proof that:
+- meaning (WHAT) still maps to action (HOW) correctly
+- evidence still constrains language
+- ambiguity still triggers clarification
+- sessions do not become stale authority
+- safety and refusal constraints remain intact
+
+6) When new domains are added, the correct approach is:
+- extend the acceptance suite with new scenarios
+- never weaken existing scenarios to “make tests pass”
+
+If tests become negotiable, drift becomes inevitable.
+
+──────────────────────────────────────────────────────────────────────────────
+FULL PRESERVATION PACK CONTENT (AUTHORITATIVE)
+──────────────────────────────────────────────────────────────────────────────
+ASHBY PRESERVATION PACK #4 — ACCEPTANCE TESTS & TEST HARNESS
+Version: 1.0
+Date: 2025-12-22
+Goal: Define the concrete acceptance tests and harness required to prove Ashby
+works correctly and continues to work after refactors. This pack turns vision
+into verifiable behavior.
+
+If Ashby passes these tests, the core is intact.
+
+──────────────────────────────────────────────────────────────────────────────
+1) TESTING PHILOSOPHY
+──────────────────────────────────────────────────────────────────────────────
+Ashby is not “tested” by unit tests alone.
+
+Ashby is validated by:
+  - behavior invariants
+  - state correctness
+  - language correctness
+  - resistance to hallucination
+  - safe handling of ambiguity
+
+These tests are scenario-based and must be preserved across refactors.
+
+──────────────────────────────────────────────────────────────────────────────
+2) MINIMAL TEST HARNESS (REQUIRED)
+──────────────────────────────────────────────────────────────────────────────
+Ashby MUST include a CLI harness that bypasses Telegram/voice.
+
+Purpose:
+  - fast iteration
+  - deterministic debugging
+  - no transport noise
+
+Canonical harness behavior:
+
+- single user_id: "local_terminal"
+- REPL-style input
+- prints:
+    - Intent (optional debug)
+    - ActionRequest (optional debug)
+    - ActionResult (optional debug)
+    - Final response
+
+Skeleton (pseudo-code):
+
+while True:
+    text = input("You: ")
+    if text in ("exit", "quit"): break
+    reply = router.handle_input(
+        user_id="local_terminal",
+        text=text
+    )
+    print("Ashby:", reply)
+
+Rules:
+  - Harness must not bypass Truth Gate.
+  - Harness must use the same router path as Telegram.
+
+──────────────────────────────────────────────────────────────────────────────
+3) LIGHTS — CORE ACCEPTANCE TESTS
+──────────────────────────────────────────────────────────────────────────────
+Test L1 — Basic ON
+Input:
+  "turn on thor"
+Expected:
+  - ActionRequest targets ["thor_bulb"]
+  - ActionResult.ok = true
+  - HouseState.thor_bulb.on = true
+  - Response: VERIFIED language (“Done.”)
+
+Test L2 — Absolute brightness percent
+Input:
+  "set thor to 30%"
+Expected:
+  - brightness normalized to 300/1000
+  - ActionRequest.parameters.brightness = 300
+  - HouseState brightness = 300
+  - Response references 30%
+
+Test L3 — Delta adjust
+Input:
+  "make it brighter"
+Expected:
+  - delta applied using default_step (e.g., +100)
+  - Session.last_delta = +100
+  - Brightness increases accordingly
+
+Test L4 — Again repeats delta
+Sequence:
+  "make it brighter"
+  "again"
+Expected:
+  - second command applies SAME delta as last
+  - No re-interpretation of intent
+
+Test L5 — Turn off via session
+Sequence:
+  "turn on thor"
+  "turn it off"
+Expected:
+  - No clarification prompt
+  - Uses active session target
+
+Test L6 — NO-OP
+Precondition:
+  thor_bulb VERIFIED on
+Input:
+  "turn on thor"
+Expected:
+  - No execution
+  - Response: “It’s already on.”
+
+──────────────────────────────────────────────────────────────────────────────
+4) AMBIGUITY & CLARIFICATION TESTS
+──────────────────────────────────────────────────────────────────────────────
+Test A1 — Ambiguous category
+Input:
+  "turn off the lights"
+Expected:
+  - Clarifier prompt: “Which lights?”
+  - Pending intent stored
+
+Test A2 — Pending target merge
+Sequence:
+  "turn off the lights"
+  "bedroom"
+Expected:
+  - Bedroom zone resolved
+  - Action executes
+  - Clarifier not repeated
+
+Test A3 — Contextual phrase
+Input:
+  "it's bright in here"
+Expected:
+  - If session active: adjust lights
+  - If no session: clarifier OR default-zone logic
+  - Must NOT silently pick random zone
+
+──────────────────────────────────────────────────────────────────────────────
+5) COMFORT / THERMOSTAT TESTS
+──────────────────────────────────────────────────────────────────────────────
+Test C1 — Cold complaint
+Input:
+  "I'm cold"
+Expected:
+  - Comfort session started
+  - Response asks to warm to preferred_temp
+
+Test C2 — Comfort follow-up
+Sequence:
+  "I'm cold"
+  "a little"
+Expected:
+  - proposed temp increases by comfort_step
+  - ActionRequest generated
+  - State updated
+
+Test C3 — Cancel comfort
+Sequence:
+  "I'm cold"
+  "nah"
+Expected:
+  - Comfort session ends
+  - No device action executed
+
+──────────────────────────────────────────────────────────────────────────────
+6) TRUTH GATE LANGUAGE TESTS
+──────────────────────────────────────────────────────────────────────────────
+Test T1 — LAST_KNOWN language
+Precondition:
+  Adapter returns success without confirmation
+Expected:
+  - Response contains “last known”
+  - Response does NOT say “done”
+
+Test T2 — UNKNOWN after contradiction
+Sequence:
+  "turn on thor"
+  User: "it's actually off"
+Expected:
+  - HouseState.confidence = UNKNOWN
+  - Response acknowledges uncertainty
+  - Offers refresh
+
+Test T3 — FAILURE honesty
+Precondition:
+  Adapter timeout
+Expected:
+  - Response says failure
+  - No fake success language
+
+──────────────────────────────────────────────────────────────────────────────
+7) SESSION TIMEOUT TESTS
+──────────────────────────────────────────────────────────────────────────────
+Test S1 — Lights session timeout
+Precondition:
+  Session timeout = 30s
+Sequence:
+  "turn on thor"
+  wait >30s
+  "more"
+Expected:
+  - Session expired
+  - "more" treated as ambiguous or chat
+  - No silent reuse of stale session
+
+Test S2 — Comfort timeout
+Precondition:
+  Comfort timeout = 10s
+Sequence:
+  "I'm cold"
+  wait >10s
+  "yes"
+Expected:
+  - No action executed
+  - Response indicates session expired
+
+──────────────────────────────────────────────────────────────────────────────
+8) RESTART & PERSISTENCE TESTS
+──────────────────────────────────────────────────────────────────────────────
+Test R1 — Restart persistence
+Precondition:
+  Lights VERIFIED on
+Action:
+  Restart Ashby
+Expected:
+  - HouseState loaded
+  - confidence preserved
+  - No upgrade to VERIFIED without refresh
+
+Test R2 — Restart + unknown
+Precondition:
+  Lights LAST_KNOWN
+Action:
+  Restart
+Expected:
+  - confidence remains LAST_KNOWN
+  - Response language still hedged
+
+──────────────────────────────────────────────────────────────────────────────
+9) FAILURE MODES (MUST NOT HAPPEN)
+──────────────────────────────────────────────────────────────────────────────
+These are automatic FAIL conditions:
+
+- Ashby says “done” when verification != VERIFIED
+- Ashby claims action occurred after failure
+- Router executes device call without ActionResult
+- Session reused after timeout
+- Ambiguous target executed without clarification
+- Secrets printed in logs or responses
+- Hardcoded room/group names in module logic
+
+Any of the above = structural failure.
+
+──────────────────────────────────────────────────────────────────────────────
+10) WHY THIS PACK MATTERS
+──────────────────────────────────────────────────────────────────────────────
+This pack is the regression safety net.
+
+If future refactors preserve these tests:
+  - Ashby stays honest
+  - Architecture stays modular
+  - Memory can be safely pruned
+  - New contributors can verify correctness quickly
+
+If these tests are ignored:
+  - Ashby drifts
+  - Trust collapses
+  - Debugging becomes guesswork
+
+Acceptance tests ARE the contract.
+
+END OF PACK #4
+
+END OF 22

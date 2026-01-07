@@ -1,0 +1,334 @@
+ASHBY CODEX — 17.5
+BUSINESS DOMAIN MODULES (INVENTORY-LIKE)
+
+A business domain module is the archetype of “recorded reality”:
+it manages structured domain entities (records) inside Ashby’s governed data layer.
+
+“Inventory-like” is representative.
+This archetype covers domains where Ashby is asked to:
+- store, retrieve, and update structured facts (“add milk”, “remove screws”, “how many left?”)
+- maintain lists, counts, categories, and status fields
+- reconcile ambiguous names into concrete entities
+- preserve audit trails and deterministic behavior over time
+- optionally sync those records to external systems (via adapters), without losing truth posture
+
+Business domain modules are not hardware control.
+They are stateful, governed data operations.
+
+If simple reactive modules make Ashby feel immediate,
+inventory-like modules make Ashby feel reliable.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINING TRAITS (WHAT MAKES THIS ARCHETYPE UNIQUE)
+──────────────────────────────────────────────────────────────────────────────
+
+A module qualifies as inventory-like when:
+
+1) RECORD-BASED TRUTH
+The primary “world” is a set of internal records (entities).
+Actions modify records, not physical devices.
+
+2) QUERY IS A FIRST-CLASS ACTION
+Users frequently ask:
+- “what’s in the pantry?”
+- “do we have eggs?”
+- “show me everything low”
+This requires truthful query semantics, not just control semantics.
+
+3) NAMING AMBIGUITY IS COMMON
+Item names are fuzzy:
+- multiple “milk” entries
+- “batteries” across types
+- “screws” across sizes
+Clarification is frequent and must be handled cleanly.
+
+4) AUDITABILITY IS REQUIRED
+Business records must be reconstructable:
+- who changed what
+- when
+- why (from the intent)
+
+5) SYNC MAY BE OPTIONAL AND NON-AUTHORITATIVE
+Some inventory-like modules may sync to external tools (spreadsheets, ERPs, apps).
+External sync is never the source of truth unless explicitly configured.
+Adapters implement sync. Modules define meaning.
+
+Inventory-like modules are “data truth modules.”
+Their danger is drift, not electricity.
+
+──────────────────────────────────────────────────────────────────────────────
+THE CORE GOVERNANCE DISTINCTION: INTERNAL TRUTH VS EXTERNAL MIRRORS
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory-like modules often touch two realities:
+
+A) INTERNAL CANONICAL RECORD
+This is Ashby’s governed record store.
+If an internal write commits successfully, that internal change may be VERIFIED
+because the platform itself is the authority of that record.
+
+B) EXTERNAL MIRROR / SYNC TARGET (OPTIONAL)
+This is any outside system.
+External state must never be spoken as VERIFIED unless evidence exists.
+
+Rules:
+- The module must always know which layer it is speaking about.
+- A successful internal commit does not automatically mean external sync succeeded.
+- Truth posture must be layered:
+  - internal record truth may be VERIFIED
+  - external sync status may be UNKNOWN / FAILED / LAST_KNOWN until verified
+
+If the system collapses these, it will lie.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL RESPONSIBILITIES OF INVENTORY-LIKE MODULES
+──────────────────────────────────────────────────────────────────────────────
+
+A business domain module must:
+
+- Define canonical domain entities and fields (vendor-neutral, stable)
+- Normalize user intents into record operations deterministically
+- Resolve targets (records) from names using lawful ambiguity handling (15.1–15.4)
+- Enforce domain constraints (required fields, allowed ranges, invariants)
+- Produce ActionRequests for mutations and for governed queries
+- Return ActionResults with evidence-grade outcomes
+- Maintain audit-safe change summaries (without secrets)
+- Support sessions for conversational continuity (record context, active list, filters)
+- Respect permissions, scope boundaries, and policy gates for high-impact changes
+
+A business domain module must never:
+- invent records to satisfy a query
+- silently merge entities without confirmation
+- treat external sync as authoritative without explicit configuration
+- bypass Truth Gate, policy, or scope law
+
+Its job is to make data operations truthful and reconstructable.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE ENTITY SHAPES (NON-EXHAUSTIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory-like modules manage records. These are representative shapes:
+
+- Item (canonical identity)
+  - item_id (stable internal id)
+  - label (human-readable name)
+  - category (optional)
+  - quantity (optional numeric)
+  - unit (optional; e.g., count, lbs, liters)
+  - location (optional; pantry, fridge, garage)
+  - attributes (optional map; size, brand, notes)
+  - status (active, archived, consumed, lost)
+  - created_at / updated_at
+  - provenance (where it came from, if configured)
+
+- List / Collection (optional)
+  - list_id
+  - name (shopping list, pantry, toolkit)
+  - membership rule or explicit membership
+  - visibility / permissions
+
+Rules:
+- item_id must be stable and internal (not vendor ids)
+- label is not identity
+- multiple items may share a label
+- ambiguity is normal and must not be “resolved” by guessing
+
+Entities are the memory of the domain.
+Identity must be stable.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE INTENTS AND ACTIONS (INVENTORY-LIKE)
+──────────────────────────────────────────────────────────────────────────────
+
+These are examples, not a required inventory.
+
+Common intent shapes:
+- inventory.add_item(label, quantity?, unit?, location?, attributes?)
+- inventory.remove_item(item_ref, quantity? | all?)
+- inventory.set_quantity(item_ref, quantity, unit?)
+- inventory.adjust_quantity(item_ref, delta, unit?)
+- inventory.move(item_ref, location)
+- inventory.search(query, filters?)
+- inventory.list(location? | list_id? | filters?)
+- inventory.audit(item_ref) (show history / changes, if permitted)
+
+Rules:
+- “add” must create a new record only if identity is not ambiguous
+- “remove” must clarify whether “remove record” vs “decrement quantity”
+- “set” must not be interpreted as “adjust” unless explicit
+- queries are governed actions: they must be truthful and scope-bound
+
+Mutations and queries both require deterministic semantics.
+
+──────────────────────────────────────────────────────────────────────────────
+AMBIGUITY HANDLING IN BUSINESS DOMAINS
+──────────────────────────────────────────────────────────────────────────────
+
+Ambiguity is the default in inventory-like domains.
+
+Common ambiguity sources:
+- multiple items share the same label (“milk”)
+- the user refers to an attribute (“the big one”)
+- location is missing (“do we have eggs?” across multiple stores)
+- unit semantics differ (“two” vs “two pounds”)
+
+Rules:
+- ambiguity triggers CLARIFY, not “best guess”
+- clarification options must be bounded and scope-bound
+- the module must preserve a pending clarification gate for merge-and-complete (15.3)
+- a correction (“not that one”) must be interpreted within the candidate set, not the full world
+
+Inventory domains punish guessing because records persist.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSIONS FOR INVENTORY-LIKE MODULES
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory interaction is often conversational:
+
+- “add milk”
+- “make it two”
+- “actually put it on the shopping list”
+- “remove the other one”
+- “show me what’s low”
+
+A business domain session may preserve (bounded, expirable):
+- active collection context (which list/location we’re operating on)
+- last referenced record(s)
+- last query filters (e.g., location=pantry, low_stock=true)
+- last mutation intent shape (add/set/adjust/remove)
+- pending gate state (clarification/confirmation)
+
+Rules:
+- sessions must never create new identity
+- sessions must not expand target sets invisibly
+- expiry is mandatory; stale sessions cannot anchor “it”
+- sessions do not upgrade truth or permission
+
+Sessions reduce friction.
+They do not authorize drift.
+
+──────────────────────────────────────────────────────────────────────────────
+HIGH-IMPACT OPERATIONS AND CONFIRMATION
+──────────────────────────────────────────────────────────────────────────────
+
+Business domain actions can be destructive.
+
+High-impact examples (representative):
+- delete/clear an entire list
+- archive all items in a location
+- bulk rename categories
+- merge entities
+
+Rules:
+- bulk operations may require confirmation gates (15.5 conceptually)
+- destructive operations must be explicit
+- “reset everything” must be refused or clarified unless the scope defines lawful meaning
+- “merge” must require explicit confirmation because it changes identity relationships
+
+Destructive record operations are irreversible at human scale.
+They must be gated.
+
+──────────────────────────────────────────────────────────────────────────────
+IDEMPOTENCY AND DUPLICATE INTENT IN INVENTORY DOMAINS
+──────────────────────────────────────────────────────────────────────────────
+
+Duplicates are common, but unlike device control, duplicates may be intended.
+
+Rules:
+- platform idempotency prevents accidental double-commit from transport retries
+- but the module must respect that repeating a command may be intentional (“add milk” twice)
+
+Therefore:
+- idempotency is applied to execution attempts of the same turn/request
+- repeated user turns are treated as new intent unless a gate/session indicates otherwise
+
+Special case: “again”
+- if a valid session indicates “again” refers to the last mutation, it may be replayed
+  only if replay meaning is safe and clear
+- if replay could create duplicate records unintentionally, confirm or clarify
+
+Inventory-like modules must prevent accidental duplicates without denying intentional repetition.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE MODES (AND TRUTHFUL REPORTING)
+──────────────────────────────────────────────────────────────────────────────
+
+Common failure modes include:
+- permission denied (not_permitted)
+- schema validation failure (invalid_parameters)
+- conflict / concurrent modification (conflict)
+- storage unavailable (backend_unreachable)
+- external sync failure (sync_failed) (optional)
+
+Rules:
+- internal commit failure must be reported as FAILED/UNKNOWN honestly
+- external sync failure must not be described as internal failure if the internal commit succeeded
+- partial outcomes must be explicit (internal updated, external pending/failed)
+- provide safe next steps:
+  retry sync, re-run query, narrow target, ask which one, or request permission
+
+A record system must be precise about what succeeded.
+
+──────────────────────────────────────────────────────────────────────────────
+AUDIT TRAILS ARE PART OF THE DOMAIN
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory-like systems must be auditable.
+
+Rules:
+- every mutation must produce a change summary:
+  - what record(s)
+  - what fields changed
+  - old vs new (where permitted)
+  - who initiated (actor context)
+  - correlation ids
+- history must not leak secrets or private fields outside permission
+- audit visibility is scope-governed
+
+Audit is not optional for persistent record truth.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE MODULE CONTRACT (NON-BINDING SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+Representative interface (conceptual):
+
+- can_handle(intent) → bool
+- normalize(intent) → normalized_intent
+- plan(normalized_intent, scope, policy, sessions, state) → plan_outcome
+  where plan_outcome is:
+  - ACT with ActionRequest(s) (mutations and/or governed queries), or
+  - CLARIFY with pending gate, or
+  - CONFIRM with pending gate, or
+  - REFUSE with reason label
+
+The engine remains the arbiter of policy outcomes.
+The module provides domain structure and meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Business domain modules (inventory-like) must:
+- remain vendor-neutral and removable
+- treat internal records as canonical only when configured as such
+- separate internal truth from external sync truth
+- enforce ambiguity handling and merge-and-complete gates
+- preserve audit trails for every mutation
+- use sessions only as bounded continuity, never as authority
+- remain scope-bound, permission-bound, and policy-governed
+- remain truthful about partial outcomes
+
+Business domain modules must never:
+- guess identity when labels are ambiguous
+- invent records or quantities to satisfy queries
+- merge or delete records without explicit consent where consequences are large
+- treat external mirrors as authoritative without explicit configuration
+- bypass Truth Gate or present sync as verification
+- hide partial failures behind fluent summaries
+
+Inventory-like modules are where Ashby becomes a trusted system of record.
+
+END OF 17.5

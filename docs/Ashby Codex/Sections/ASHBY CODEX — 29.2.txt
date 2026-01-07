@@ -1,0 +1,230 @@
+ASHBY CODEX — 29.2
+AGENTS AS ORGANS
+
+Agents are organs.
+
+An “organ” is a specialized capability that lives inside the Ashby body
+and uses the body’s nerves, blood, and bones rather than creating its own.
+
+In Ashby terms:
+- an agent is a module with deeper cognition and domain-specific workflows
+- it may produce artifacts (transcripts, summaries, plans, inventories)
+- it may run heavier compute
+- it may orchestrate multiple internal steps
+- but it remains governed by the same platform law
+
+Agents are not platforms.
+Agents are not forks.
+Agents are not “mini-Ashbys.”
+
+If an agent becomes a platform, the system fractures.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINITION: WHAT MAKES A MODULE AN “AGENT”
+──────────────────────────────────────────────────────────────────────────────
+
+An agent is distinguished by behavior, not by name.
+
+A module is an agent when it satisfies these traits:
+
+1) DOMAIN-AUTONOMOUS WORKFLOWS
+It performs multi-step domain workflows:
+- gather inputs
+- transform inputs
+- produce artifacts or structured results
+- present outcomes through Truth Gate constraints
+
+2) LONGER LIVED TASKS OR ARTIFACTS
+It may create durable artifacts:
+- documents, transcripts, summaries, extracted decisions
+- structured records, indexes, or derived metadata
+
+3) SPECIALIZED SESSION SHAPES
+It benefits from domain-specific session semantics:
+- meeting sessions
+- inventory sessions
+- investigation sessions
+
+4) COMPUTE OR TOOLING COMPLEXITY
+It may invoke heavy compute or multiple adapters:
+- transcription
+- storage
+- search
+- indexing
+- analysis pipelines
+
+These traits demand discipline.
+That discipline is why “agent” is a formal category.
+
+──────────────────────────────────────────────────────────────────────────────
+AGENT IDENTITY IS METADATA, NOT ARCHITECTURE
+──────────────────────────────────────────────────────────────────────────────
+
+The system must distinguish:
+
+- module_key (architecture identity)
+- display_name (user-facing persona label)
+
+Rules:
+- module_key must remain stable over time
+- display_name may be aliased
+- routing and policy must key off architecture identity, not persona name
+
+Changing the name of an agent must not change behavior.
+
+“Stuart” is a label.
+“meetings” is the architectural identity.
+
+Names are a UI surface.
+Architecture is law.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT AGENTS SHARE (MANDATORY)
+──────────────────────────────────────────────────────────────────────────────
+
+Agents share the Ashby body’s core infrastructure.
+
+All agents share:
+- router (execution selection and invocation)
+- Truth Gate (reality enforcement)
+- HouseState (state authority and belief)
+- logging/observability (reconstruction)
+- security/secrets handling (boundary enforcement)
+
+This is mandatory.
+
+If two agents do not share these, they are not coexisting.
+They are diverging.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT AGENTS DO NOT SHARE (DEFAULT)
+──────────────────────────────────────────────────────────────────────────────
+
+Agents do not share:
+
+- internal logic
+- private storage keys
+- private artifact formats
+- session semantics (unless explicitly bridged)
+- domain-specific caches that would cause cross-contamination
+
+Default non-sharing prevents unintended coupling.
+
+Cross-agent sharing is allowed only when:
+- a contract is explicitly defined
+- the data has a defined owner
+- the Truth Gate rules remain intact
+- permissions and scopes remain intact
+
+Sharing without contracts is how organs poison the body.
+
+──────────────────────────────────────────────────────────────────────────────
+AGENT EXECUTION LAW (HOW AGENTS “DO THINGS”)
+──────────────────────────────────────────────────────────────────────────────
+
+Agents do not execute directly.
+
+Rules:
+- an agent produces ActionRequests
+- the router selects adapters
+- adapters attempt execution and return ActionResults
+- the Truth Gate evaluates evidence and constrains language/state updates
+
+An agent may request:
+- IO capture (microphone, camera feed) via IO layer contracts
+- storage writes via StorageAdapter
+- search/index actions via connectors/adapters
+- computations via compute adapters
+
+But the agent must never:
+- open sockets directly as an architectural escape hatch
+- embed vendor SDKs
+- bypass adapter contracts “because it’s easier”
+- speak verified outcomes without evidence
+
+Agents are powerful only inside the pipeline.
+
+──────────────────────────────────────────────────────────────────────────────
+AGENT STORAGE AND ARTIFACT BOUNDARIES
+──────────────────────────────────────────────────────────────────────────────
+
+Agents often create artifacts.
+
+Ashby distinguishes:
+- platform state (HouseState beliefs)
+- platform memory (preferences, last actions, scoped continuity)
+- agent artifacts (domain outputs, raw transcripts, files)
+
+Rules:
+- artifacts must be stored through StorageAdapter only
+- artifacts must not contain secrets
+- artifact keys must be deterministic and traceable
+- artifact content visibility is permission-bound and scope-bound
+- artifacts may inform the agent’s outputs, but Truth Gate governs claims
+
+Agents may write small metadata into platform memory only when explicitly designed.
+Example: “last meeting summary delivered” is a metadata marker.
+It is not a replacement for artifact storage.
+
+Artifacts are not HouseState.
+HouseState is not a file cabinet.
+
+──────────────────────────────────────────────────────────────────────────────
+AGENT FAILURE IS NOT PLATFORM FAILURE
+──────────────────────────────────────────────────────────────────────────────
+
+Agents must be failure-contained.
+
+Rules:
+- if an agent crashes, Ashby continues
+- other agents continue
+- device control continues
+- sessions for the agent are marked failed/ended
+- user is notified honestly, without invented recovery claims
+
+If Ashby crashes:
+- all agents stop
+- state reload occurs on restart
+- confidence is degraded appropriately under staleness/decay law
+
+This is required to prevent “agent bugs” from becoming “platform collapses.”
+
+──────────────────────────────────────────────────────────────────────────────
+AGENT REMOVABILITY AND LIFECYCLE
+──────────────────────────────────────────────────────────────────────────────
+
+Agents are modules and must be removable.
+
+Rules:
+- disabling an agent must invalidate its sessions and gates
+- removal must not corrupt shared state
+- other agents must not depend on its presence
+- the engine must not assume the agent exists
+
+Agents are optional.
+The body must survive without them.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Agents as organs must:
+- live inside the Ashby body’s guarantees
+- share router, Truth Gate, HouseState, logs, and security
+- remain modular, removable, and scope-governed
+- use adapters for execution and storage
+- avoid cross-agent coupling without explicit contracts
+- report failures honestly and degrade confidence correctly
+
+Agents as organs must never:
+- become separate platforms
+- implement parallel truth/state systems
+- embed vendor execution directly
+- bypass adapter contracts
+- treat persona names as routing keys
+- share secrets or storage keys across agents by default
+
+Agents are organs.
+Ashby is the body.
+
+END OF 29.2

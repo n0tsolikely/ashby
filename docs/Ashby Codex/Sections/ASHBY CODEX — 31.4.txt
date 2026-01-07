@@ -1,0 +1,304 @@
+ASHBY CODEX — 31.4
+Native Vendor Expansion
+
+Native Vendor Expansion is the disciplined growth of Ashby-owned integrations
+under native_vendor/ that progressively replace bridge dependencies.
+
+Native expansion is not “own everything.”
+It is the deliberate acquisition of ownership where it provides leverage:
+- stronger verification
+- better offline capability
+- improved reliability and latency
+- deeper features
+- reduced dependency risk
+- improved security posture
+- long-term product stability
+
+Bridges exist to ship.
+Native ownership exists to endure.
+
+──────────────────────────────────────────────────────────────────────────────
+1) NATIVE VENDOR INTEGRATION: DEFINITION
+──────────────────────────────────────────────────────────────────────────────
+
+A native vendor integration is:
+- an Ashby-owned provider implementation for a specific vendor/ecosystem
+- isolated in its own folder under native_vendor/
+- implementing the same provider interface as bridge-backed providers
+- never imported by engine/ or modules/
+- selected by routing policy at execution time
+
+Native integration is still HOW, not WHAT.
+
+Modules continue to describe intent in vendor-neutral terms.
+Native providers execute those intents against vendor APIs or local devices.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHY NATIVE OWNERSHIP IS STRATEGIC (AND WHEN IT IS REQUIRED)
+──────────────────────────────────────────────────────────────────────────────
+
+Native ownership is justified when it enables one or more of:
+
+A) VERIFICATION FIDELITY
+- reliable readbacks
+- consistent state semantics
+- fewer optimistic acknowledgements
+- better confirmation of action outcomes
+
+B) OFFLINE OR LOCAL CONTROL
+- bridge/cloud layers introduce dependency and latency
+- local vendor APIs or LAN protocols can improve resilience
+
+C) FEATURE DEPTH
+- bridges often expose a lowest-common-denominator capability surface
+- native integrations may unlock advanced features and diagnostics
+
+D) SECURITY
+- direct control over token handling, scopes, and credential isolation
+- reduced third-party data exposure
+
+E) RELIABILITY AND MAINTAINABILITY
+- bridges can be fragile when upstream changes occur
+- native ownership reduces “unknown unknowns” in execution pipelines
+
+Native ownership is not pursued for ego.
+It is pursued for stability and leverage.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE NATIVE VENDOR RULES (NON-NEGOTIABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+A) ONE FOLDER PER VENDOR
+Each vendor integration lives in:
+native_vendor/<vendor_name>/
+
+B) NO CROSS-VENDOR LOGIC
+Vendor-specific behavior is isolated.
+No “mega integration” folder that handles multiple vendors.
+
+C) PROVIDER INTERFACE COMPLIANCE
+Native providers implement the same IntegrationProvider interface used by bridges.
+They produce the same evidence shapes.
+
+D) MODULES STAY VENDOR-NEUTRAL
+No module changes are allowed to “support the vendor.”
+Vendor support belongs in providers and adapters only.
+
+E) SECRETS ARE STRICT
+OAuth tokens, API keys, and device credentials remain secret.
+No secrets in logs, configs, or artifacts.
+
+F) OBSERVABILITY IS MANDATORY
+Native providers must emit execution traces and failures in a way that supports
+debugging, audits, and migration decisions.
+
+Native ownership must not become a second architecture.
+It must occupy the same seams.
+
+──────────────────────────────────────────────────────────────────────────────
+4) THE STANDARD NATIVE PROVIDER SHAPE (REFERENCE PATTERN)
+──────────────────────────────────────────────────────────────────────────────
+
+A native vendor folder typically contains (representative, not exhaustive):
+
+- oauth.py
+  - authorization flow handlers
+  - refresh token logic
+  - token storage hooks (through secret store)
+
+- client.py / api_client.py
+  - HTTP client or LAN client
+  - retries, timeouts, rate limiting
+  - sanitized error mapping
+
+- discovery.py
+  - device discovery and enumeration
+  - metadata gathering
+
+- normalizer.py
+  - mapping vendor device models → Ashby capabilities
+  - mapping vendor state → canonical state belief inputs
+  - mapping vendor commands → interface contract actions
+
+- provider.py
+  - implements IntegrationProvider
+  - exposes:
+    - execute(ActionRequest) → ActionResult
+    - read_state(target) → evidence
+    - subscribe() / poll() as needed
+
+This pattern keeps vendor integrations legible and replaceable.
+
+──────────────────────────────────────────────────────────────────────────────
+5) IDENTITY AND MIGRATION (THE MOST IMPORTANT PART)
+──────────────────────────────────────────────────────────────────────────────
+
+Native expansion must not break identity.
+
+Canonical identity rules:
+
+- device_key remains the canonical identity.
+- vendor ids are mapped under device_key as external identifiers.
+
+Migration requirement:
+- migrating from bridge → native must not change device_key.
+- HouseState beliefs remain attached to device_key.
+- only the provider mapping changes.
+
+Preferred migration process:
+
+A) DISCOVER AND MAP
+- discover vendor devices
+- map them to existing device_keys using:
+  - stable hardware ids (preferred)
+  - unique vendor ids
+  - user confirmation when ambiguous
+- store external id mapping for native provider
+
+B) PARITY VALIDATION
+- confirm that native provider can:
+  - execute key capabilities
+  - read back state
+  - subscribe/poll reliably
+- compare with bridge path outcomes for the same device_key
+
+C) ROUTE SWITCH (INCREMENTAL)
+- switch routing for a subset of devices/scopes
+- observe
+- expand gradually
+
+D) ROLLBACK PATH
+- preserve bridge mapping until native is proven stable
+- rollback must be immediate and safe
+
+Identity continuity is the difference between migration and replacement.
+
+──────────────────────────────────────────────────────────────────────────────
+6) VERIFICATION RESPONSIBILITY (NATIVE MUST RAISE THE BAR)
+──────────────────────────────────────────────────────────────────────────────
+
+Native ownership is not merely “faster execution.”
+It is an opportunity to strengthen verification.
+
+Native providers should aim to improve:
+
+- readback latency and accuracy
+- state subscription reliability
+- mismatch detection
+- failure classification
+- recovery guidance (when safe and factual)
+
+However, native ownership must still obey Truth Gate law.
+Native providers supply evidence.
+They do not declare truth.
+
+Verification improvement must be explicit:
+- define what qualifies as VERIFIED for each capability
+- define how readbacks are performed
+- define what happens when readback is unavailable
+
+Native ownership is valuable when it produces stronger evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+7) ACCEPTANCE TESTS AND BEHAVIOR PARITY
+──────────────────────────────────────────────────────────────────────────────
+
+Native expansion must not change behavior unexpectedly.
+
+Canonical parity requirements:
+- a light that worked before must work identically after
+- confirmation/clarification requirements must remain the same
+- truth posture must remain correct (no upgraded certainty without evidence)
+- failures must remain honest and observable
+
+Native expansion should be validated by:
+- harness tests for core capabilities
+- golden action flows for a set of representative devices
+- regression checks for state updates and staleness behavior
+- controlled rollout and observability metrics
+
+If parity cannot be proven, routing must not switch.
+
+──────────────────────────────────────────────────────────────────────────────
+8) STRANGLER PATH: HOW HA SHRINKS AS NATIVE GROWS
+──────────────────────────────────────────────────────────────────────────────
+
+Native expansion and bridge-first are designed to coexist.
+
+The strangler path is:
+
+1) HA provides broad coverage early.
+2) Native providers are built for high-value vendors.
+3) Routing prefers native when available.
+4) HA becomes fallback for unsupported devices or emergency recovery.
+5) HA usage shrinks over time.
+6) HA becomes removable, optional legacy infrastructure.
+
+Important rule:
+- HA is not “kept forever just in case.”
+If HA is kept, it must remain isolated, optional, and auditable.
+
+The platform must be able to survive without the bridge.
+
+──────────────────────────────────────────────────────────────────────────────
+9) OPERATIONS AND MAINTENANCE (NATIVE OWNERSHIP IS A COMMITMENT)
+──────────────────────────────────────────────────────────────────────────────
+
+Owning a vendor integration means owning:
+- API drift and version changes
+- credential refresh and revocation handling
+- rate limiting and backoff behavior
+- vendor outages and degraded modes
+- device model diversity
+- security posture over time
+
+Native vendor expansion must include:
+- versioned contracts
+- robust error taxonomy mapping
+- observability hooks
+- documented recovery procedures
+- clear disabling/removal behavior
+
+Native ownership without maintenance discipline is worse than bridging.
+
+──────────────────────────────────────────────────────────────────────────────
+10) SECURITY POSTURE (NATIVE MUST NOT INCREASE RISK)
+──────────────────────────────────────────────────────────────────────────────
+
+Native providers handle powerful secrets.
+
+Rules:
+- secrets are stored only via secret-handling subsystems
+- tokens never appear in logs
+- logs are sanitized and structured
+- permissions are least-privilege where possible
+- audit trails record:
+  - which user authorized the integration
+  - when authorization occurred
+  - when tokens were refreshed or revoked
+  - which executions occurred
+
+Native expansion must improve security posture, not degrade it.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Native Vendor Expansion must:
+- expand native_vendor/ deliberately, vendor-by-vendor
+- maintain stable device_keys and preserve identity continuity
+- implement provider interfaces without leaking vendor logic into modules/engine
+- improve evidence quality and verification fidelity where possible
+- preserve behavior parity through tests and controlled rollout
+- enable strangler migration where bridges shrink over time
+- remain auditable, removable, and secure
+
+Native Vendor Expansion must never:
+- require module rewrites to “support the vendor”
+- introduce cross-vendor mega logic that collapses boundaries
+- upgrade truth posture without evidence
+- break identity continuity during migration
+- weaken secret hygiene or observability
+- turn native ownership into a second platform architecture
+
+END OF 31.4

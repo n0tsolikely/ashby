@@ -1,0 +1,138 @@
+ASHBY CODEX — 6.11
+CONTROL SYNC GOVERNANCE
+
+Control Sync is the governance mechanism of Ashby.
+
+It exists to ensure that foundational change
+is deliberate, visible, and accountable.
+
+Without Control Sync,
+Ashby would drift invisibly
+until its identity was lost.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT CONTROL SYNC IS
+──────────────────────────────────────────────────────────────────────────────
+
+A Control Sync is a formal decision process
+required for any change that affects Ashby’s core law.
+
+It is not a meeting for convenience.
+It is not a procedural ritual.
+It is a safeguard.
+
+Control Sync exists to pause momentum
+long enough for judgment to occur.
+
+──────────────────────────────────────────────────────────────────────────────
+WHEN CONTROL SYNC IS REQUIRED
+──────────────────────────────────────────────────────────────────────────────
+
+A Control Sync is required when a change affects:
+
+- engine responsibilities
+- truth semantics
+- state authority
+- scope model
+- WHAT vs HOW separation
+- removability guarantees
+- governance assumptions
+- rebuildability guarantees
+
+These changes redefine what Ashby is.
+
+They are not incremental improvements.
+They are identity changes.
+
+──────────────────────────────────────────────────────────────────────────────
+WHEN CONTROL SYNC IS NOT REQUIRED
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is not required for:
+
+- adding or removing modules
+- adding or removing agents
+- adding or removing adapters
+- adding vendors or protocols
+- creating or modifying profiles
+- tuning policies within existing law
+- fixing bugs that do not alter semantics
+
+These are expected forms of growth
+that occur within Ashby’s defined boundaries.
+
+──────────────────────────────────────────────────────────────────────────────
+THE CONTROL SYNC PROCESS
+──────────────────────────────────────────────────────────────────────────────
+
+A Control Sync requires:
+
+1) Explicit articulation of the proposed change
+2) Clear identification of affected laws or principles
+3) Explanation of why existing law is insufficient
+4) Description of the new law or modification
+5) Acknowledgment of consequences
+6) Update to the Codex reflecting the change
+
+No Control Sync is valid
+without Codex update.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY CONTROL SYNC IS NON-NEGOTIABLE
+──────────────────────────────────────────────────────────────────────────────
+
+Systems do not fail from large changes.
+They fail from small, unexamined ones.
+
+Control Sync prevents:
+- accidental redefinition of the engine
+- erosion of truth enforcement
+- silent scope expansion
+- normalization of exceptions
+- loss of rebuildability
+
+It protects future builders
+from inheriting invisible decisions.
+
+──────────────────────────────────────────────────────────────────────────────
+CONTROL SYNC AND AUTHORITY
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync does not centralize power.
+It centralizes responsibility.
+
+Any participant in a Control Sync
+must accept that:
+
+- the decision becomes permanent law
+- future work is constrained by it
+- the Codex reflects it explicitly
+
+There is no informal override.
+
+If a change is uncomfortable,
+that discomfort is a signal.
+
+If a change feels “too big to explain,”
+it is too big to implement without Control Sync.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSEQUENCES
+──────────────────────────────────────────────────────────────────────────────
+
+Any foundational change made without Control Sync
+is considered invalid.
+
+If discovered,
+the system must be realigned
+to the Codex immediately.
+
+Control Sync exists
+so that Ashby remains intentional
+even as it evolves.
+
+Governance is not overhead.
+
+It is how Ashby survives time.
+
+END OF 6.11

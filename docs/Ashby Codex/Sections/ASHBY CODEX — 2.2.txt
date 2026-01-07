@@ -1,0 +1,89 @@
+ASHBY CODEX — 2.2
+WHAT ASHBY IS NOT
+
+Ashby is not a chatbot.
+
+It is not a language model wrapped in integrations.
+It is not a conversational interface with side effects.
+It is not a system whose primary goal is to sound helpful.
+
+Ashby does not exist to fill silence.
+Ashby does not exist to guess intent.
+Ashby does not exist to reassure without evidence.
+
+Ashby is not a smart home hub.
+
+It is not a collection of device drivers.
+It is not a protocol bridge with a voice layer.
+It is not defined by lights, thermostats, irrigation, cameras, or any other domain.
+
+Those are modules.
+They are removable.
+They are not Ashby.
+
+Ashby is not a vendor ecosystem.
+
+It is not owned by:
+- a cloud provider
+- a hardware manufacturer
+- a protocol alliance
+- a single API
+
+Ashby can work with vendors.
+Ashby can replace vendors.
+Ashby is not dependent on them.
+
+Ashby is not cloud-required.
+
+Cloud services may be used.
+Cloud services may be convenient.
+Cloud services may accelerate development.
+
+But Ashby must always be capable of operating offline
+when paired with appropriate hardware and local integrations.
+
+Any system that cannot operate without the cloud
+is not Ashby.
+
+Ashby is not flexible at the core.
+
+The engine is not a playground.
+Truth enforcement is not configurable.
+State authority is not optional.
+Scope ownership is not negotiable.
+
+Flexibility exists at the edges,
+not at the center.
+
+Ashby is not a fast prototype.
+
+It is not designed to be rewritten every six months.
+It is not designed to be hacked together and replaced.
+It is not designed to chase trends in models or frameworks.
+
+Ashby is designed to last.
+
+Ashby is also not neutral.
+
+It explicitly rejects:
+- silent failure
+- invented certainty
+- hidden state
+- convenience-driven architecture
+- systems that cannot explain themselves
+
+If a design choice requires violating these constraints,
+that choice is rejected.
+
+Ashby is not everything.
+
+It does not try to solve every problem.
+It does not attempt to be omniscient.
+It does not pretend to be human.
+
+Ashby is disciplined by design.
+
+That discipline is what allows it to grow
+without losing its identity.
+
+END OF 2.2

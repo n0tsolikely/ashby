@@ -1,0 +1,277 @@
+ASHBY CODEX — 8A.1
+engine/
+
+This section is not a file listing.
+It is a zoning law for the most sacred directory in Ashby.
+
+engine/ is the body.
+
+Everything that makes Ashby Ashby lives here:
+- routing discipline
+- policy outcomes
+- Truth Gate enforcement
+- HouseState authority
+- session and confirmation law
+- execution orchestration (as orchestration, not vendor logic)
+- observability and accountability hooks
+
+engine/ must remain stable.
+engine/ must remain readable.
+engine/ must remain vendor-neutral.
+
+If engine/ becomes “where we put logic,” Ashby dies by monolith.
+If engine/ becomes “where we integrate vendors,” Ashby dies by dependency capture.
+If engine/ becomes “where we make exceptions,” Ashby dies by drift.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF engine/
+──────────────────────────────────────────────────────────────────────────────
+
+engine/ exists to enforce platform law mechanically.
+
+Its purpose is to ensure that:
+- intent does not become action without permission
+- language does not become truth without evidence
+- state does not become fantasy without decay and attribution
+- modules cannot bypass invariants
+- vendors cannot rewrite meaning
+- products cannot fork the constitution
+
+engine/ is the place where the platform protects itself from its own growth.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT MUST LIVE IN engine/ (OWNED RESPONSIBILITIES)
+──────────────────────────────────────────────────────────────────────────────
+
+engine/ owns the following responsibilities:
+
+A) INPUT NORMALIZATION (PRE-MODULE)
+- normalize user input into a structured intent representation
+- manage conversation/session context as a control artifact, not as “memory truth”
+- anchor contextual phrases through scoped context rules
+
+B) ROUTING (THIN ORCHESTRATION)
+- select eligible modules based on:
+  - intent match
+  - profile/entitlement availability
+  - scope capability maps
+- route to modules for planning only
+- never route “because it feels right”
+- log routing decisions
+
+C) POLICY AND OUTCOME SELECTION
+- decide ACT / CLARIFY / CONFIRM / REFUSE / CHAT
+- enforce confirmation for high-impact actions
+- enforce refusal when capability is unavailable or unsafe
+- enforce “no guessing” posture where ambiguity exists
+
+D) PLANNING ORCHESTRATION (NOT DOMAIN PLANNING)
+- accept module PlanCandidates
+- assemble multi-step execution flows when required by platform mechanics
+  (e.g., verification readback step, retry policies, timeouts)
+- ensure the plan remains within the WHAT/HOW boundary
+
+E) EXECUTION ORCHESTRATION (HOW SEAM, NOT VENDOR LOGIC)
+- transform ActionRequests into execution calls through:
+  - adapters/
+  - providers/
+- manage retries, timeouts, and correlation IDs
+- capture ActionResults as evidence artifacts
+- ensure execution is attributable (which provider did what)
+
+F) TRUTH GATE ENFORCEMENT
+- classify evidence into truth classes
+- constrain language posture in responses
+- prevent “verification inflation”
+- preserve UNKNOWN where evidence is absent
+
+G) HOUSESTATE AUTHORITY
+- persist beliefs with scope and staleness
+- apply decay rules
+- represent mixed reality (partial success, contradictions)
+- ensure state updates are derived from evidence, not narrative
+
+H) OBSERVABILITY AND AUDITABILITY
+- structured logs at each gate:
+  input → intent → policy → plan → execute → evidence → truth → state → response
+- correlation_id propagation everywhere
+- sanitization rules for secrets and sensitive payloads
+
+I) GOVERNANCE ENFORCEMENT HOOKS
+- mechanisms that make Control Sync meaningful:
+  - tests that fail when invariants are violated
+  - explicit classification points where constitutional changes are detectable
+
+engine/ is the system of laws and enforcement.
+It is not the system of features.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHAT MUST NEVER LIVE IN engine/ (FORBIDDEN CONTENT)
+──────────────────────────────────────────────────────────────────────────────
+
+engine/ must not contain:
+
+A) DOMAIN-SPECIFIC MEANING
+- “lighting logic,” “inventory logic,” “meeting logic,” etc.
+That belongs in modules/.
+
+B) VENDOR SDKS OR PROTOCOL CLIENTS
+- Home Assistant clients
+- Zigbee coordinators
+- Matter controllers
+- vendor-specific APIs
+These belong in providers/ and/or bridges/ and/or native_vendor/.
+
+C) PRODUCT-SPECIFIC BRANCHING
+- “enterprise behavior”
+- “home version behavior”
+- “premium tier behavior”
+Productization is profiles/flags/entitlements, not core branching.
+
+D) SECRETS OR CREDENTIAL MATERIAL
+engine/ must never store raw secrets.
+Secret handling is a separate system and accessed through handles.
+
+E) UI / FRONTEND / PRESENTATION
+engine/ does not do “pretty.”
+It enforces correctness.
+
+F) “ONE-OFF EXCEPTIONS”
+If a decision cannot be expressed as a policy rule, schema rule, or test,
+it does not belong in engine/.
+Exceptions are how constitutions rot.
+
+If any of these appear in engine/, it is a structural violation.
+
+──────────────────────────────────────────────────────────────────────────────
+4) SUBSTRUCTURE INSIDE engine/ (CANONICAL ZONES)
+──────────────────────────────────────────────────────────────────────────────
+
+engine/ may contain subpackages that map to the platform control loop.
+
+These are canonical zones (names may vary, responsibilities may not):
+
+A) router/
+- discovery of eligible modules
+- dispatch of intents to modules
+- orchestration logic only (thin)
+
+B) cognition/intent/
+- NLU management (local + optional cloud)
+- intent schema definitions
+- normalization and parsing
+- never execution, never vendor assumptions
+
+C) cognition/policy/
+- action policy (ACT/CLARIFY/CONFIRM/REFUSE/CHAT)
+- confirmation policy
+- refusal policy
+- response style policy (but constrained by truth law)
+
+D) planning/
+- assembly of execution steps
+- verification readback planning
+- timeouts/retry policies as platform mechanics
+- never domain logic
+
+E) truth/
+- Truth Gate implementation
+- evidence evaluation rules
+- language constraint library (forbidden phrases, certainty gating)
+
+F) state/
+- HouseState interfaces and persistence wrappers
+- state update application rules
+- staleness/decay evaluation
+
+G) session/
+- session lifecycle and expiry
+- pending clarification artifacts and merge-complete control
+
+H) observability/
+- logging primitives
+- correlation tools
+- sanitization tooling
+
+The names are less important than the boundaries.
+The boundaries are sacred.
+
+──────────────────────────────────────────────────────────────────────────────
+5) DEPENDENCY DIRECTION (THE ENGINE’S IMPORT LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+engine/ may import:
+- schemas and shared contracts
+- domain models (abstract, vendor-neutral)
+- safe utilities (pure logic)
+- storage interfaces (not vendor-specific implementations)
+
+engine/ must not import:
+- modules/ (engine must not depend on optional organs)
+- providers/ (engine orchestrates via interfaces, not concrete vendor code)
+- bridges/ (engine does not speak vendor/protocol dialects)
+- native_vendor/ (same reason)
+- connectors/ (connectors are domain extensions, not core law)
+
+If engine/ depends on optional components, removability is broken.
+If engine/ depends on vendor code, vendor neutrality is broken.
+
+──────────────────────────────────────────────────────────────────────────────
+6) ENGINE CHANGES AND GOVERNANCE (WHAT NEEDS CONTROL SYNC)
+──────────────────────────────────────────────────────────────────────────────
+
+Not every code change in engine/ needs Control Sync.
+But changes that alter platform meaning do.
+
+Control Sync is required when a change modifies:
+- Truth Gate semantics or language posture rules
+- HouseState semantics, decay, or authority boundaries
+- policy outcome selection rules (ACT/CLARIFY/CONFIRM/REFUSE/CHAT)
+- scope and identity law enforcement
+- WHAT/HOW boundary enforcement mechanisms
+
+Implementation improvements (refactor, optimization) do not require Control Sync
+as long as invariants remain identical and tests enforce equivalence.
+
+engine/ must be the hardest place to “accidentally change meaning.”
+
+──────────────────────────────────────────────────────────────────────────────
+7) REQUIRED TEST SURFACES FOR engine/
+──────────────────────────────────────────────────────────────────────────────
+
+engine/ must be protected by tests that fail loudly when law is violated:
+
+- boundary tests (forbidden imports)
+- Truth Gate posture tests (no certainty inflation)
+- HouseState persistence/decay tests
+- policy outcome tests (risk → confirmation)
+- routing tests (availability gates, scope capability maps)
+- offline behavior tests (honest degradation)
+- observability tests (correlation_id everywhere, sanitization)
+
+If tests do not enforce the law, engine/ will drift under pressure.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+engine/ must:
+- embody platform law and enforcement
+- remain vendor-neutral
+- remain product-neutral
+- remain readable and stable
+- enforce WHAT/HOW separation mechanically
+- enforce Truth Gate and HouseState authority
+- remain independent of optional modules (removability)
+
+engine/ must never:
+- contain domain feature logic
+- contain vendor/protocol SDKs
+- store or expose secrets
+- become a dumping ground for exceptions
+- silently change constitutional semantics without governance
+
+engine/ is the body.
+Keep it sacred.
+
+END OF 8A.1

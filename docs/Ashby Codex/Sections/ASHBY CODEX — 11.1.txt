@@ -1,0 +1,333 @@
+ASHBY CODEX — 11.1  
+INTENT
+
+Intent is the canonical, normalized representation of what an input means.
+
+It is not a plan.  
+It is not an execution instruction.  
+It is not a truth claim.
+
+Intent exists so that Ashby can treat all inputs—voice, text, API calls, triggers, and agent-to-agent messages—as the same kind of raw signal, then apply one lawful cognition path to produce one lawful outcome.
+
+Intent is the first stable artifact in the control pipeline.
+
+──────────────────────────────────────────────────────────────────────────────  
+PURPOSE OF INTENT  
+──────────────────────────────────────────────────────────────────────────────
+
+Intent exists to enforce four constraints:
+
+1) INPUT NEUTRALITY  
+Raw input may be ambiguous, emotional, contradictory, malformed, or delayed.  
+Intent must remain structured and transport-agnostic regardless of input source.
+
+2) STABILITY UNDER GROWTH  
+NLU engines change. Models change. Transports change.  
+Intent provides a stable interface so the engine, policy, modules, and test harness do not drift with each NLU implementation.
+
+3) SEPARATION OF MEANING FROM EXECUTION  
+Intent describes WHAT the user wants in normalized terms.  
+Planning and execution occur later.  
+Intent must not contain vendor identifiers, protocol details, or execution logic.
+
+4) AUDITABILITY AND REBUILDABILITY  
+If raw input is lost, a persisted Intent must still be sufficient to explain what was understood, what was ambiguous, and why policy behaved as it did.
+
+──────────────────────────────────────────────────────────────────────────────  
+INTENT AS LAWFUL INPUT TO THE ENGINE  
+──────────────────────────────────────────────────────────────────────────────
+
+Intent is the only form of user meaning the engine is allowed to reason over.
+
+Downstream components must never substitute:
+- raw text
+- UI events
+- transport metadata
+- adapter-specific payloads
+
+If a system passes unnormalized raw text deeper into the pipeline to “save time,” the system is already drifting.
+
+Intent is the boundary that prevents:
+- interface-driven hacks
+- transport-specific shortcuts
+- silent reinterpretation
+- inconsistent policy behavior across channels
+
+──────────────────────────────────────────────────────────────────────────────  
+CANONICAL INTENT STRUCTURE  
+──────────────────────────────────────────────────────────────────────────────
+
+The canonical structure below is normative.
+
+Additional intent types may exist as new modules are added.  
+The naming pattern is invariant.  
+The shape is invariant.  
+The set of type strings is extensible.
+
+Canonical form (JSON-like):
+
+{
+  "type": "<module>.<verb>" | "chat" | "unknown",
+
+  "targets": {
+    "device_key": "<internal_device_key>" | null,
+    "zone_id": "<zone_id>" | null,
+    "room_name": "<human_room_label>" | null,
+    "category": "<capability_category>" | null,
+    "role": "<device_role>" | null
+  },
+
+  "parameters": {
+    "brightness": <int 0..1000> | null,
+    "delta": <int -1000..1000> | null,
+    "temperature_c": <float> | null,
+    "duration_sec": <int> | null
+  },
+
+  "mode": "max" | "min" | "scene" | null,
+
+  "confidence": "HIGH" | "MEDIUM" | "LOW",
+
+  "raw_text": "<original input>",
+
+  "source": "<nlu_engine_identifier>"
+}
+
+This structure is used to:
+- drive policy decisions (act vs clarify vs chat)
+- select the correct module
+- produce deterministic acceptance tests
+- preserve explainability under failure
+
+──────────────────────────────────────────────────────────────────────────────  
+FIELD SEMANTICS  
+──────────────────────────────────────────────────────────────────────────────
+
+TYPE  
+`type` is a namespaced action label.
+
+Rules:
+- The prefix identifies the module domain: `<module>`.
+- The suffix identifies the normalized verb: `<verb>`.
+- Type values must be stable across time; renaming a type is a foundational change.
+
+Examples (representative, non-exhaustive):
+- "lights.on"
+- "lights.off"
+- "lights.adjust"
+- "plugs.on"
+- "thermostat.set"
+- "cameras.snapshot"
+- "meetings.start"
+- "chat"
+- "unknown"
+
+Special values:
+- `chat` indicates no action intent is present and the input is conversational or informational.
+- `unknown` indicates the system cannot confidently classify the input into a known intent type.
+
+`unknown` is a valid output.  
+Returning `unknown` is not failure.  
+Returning a wrong confident type is failure.
+
+TARGETS  
+`targets` contains normalized references to what the input is about.
+
+Targets are hints, not a resolved execution plan.
+
+Rules:
+- Targets must be vendor-neutral.
+- Targets must not include vendor IDs, entity IDs from external systems, API handles, or protocol addresses.
+- Targets may be partial.
+- Targets may be underspecified.
+- Targets may imply ambiguity.
+
+Canonical target keys:
+
+- `device_key`  
+  A stable internal identifier for a specific device or entity.
+
+- `zone_id`  
+  A stable Ashby-owned identifier representing a physical or logical containment unit.
+
+- `room_name`  
+  A human label mapped to a zone or scope anchor. It is a convenience label, not reality.
+
+- `category`  
+  A capability grouping such as "lights", "plugs", "thermostat", "cameras", "meetings".  
+  Categories are interpreted by modules and resolution logic, not by transports.
+
+- `role`  
+  A semantic role such as "ambient", "desk", "security", "primary".  
+  Roles are Ashby-owned metadata and must never be delegated to adapters.
+
+Target rules under ambiguity:
+- If targets do not resolve to a concrete target set, the system must clarify rather than guess.
+- If multiple targets match equally, the system must clarify rather than select arbitrarily.
+
+PARAMETERS  
+`parameters` contains normalized modifiers and values required to interpret the intent.
+
+Rules:
+- All canonical parameters must be normalized before policy and planning.
+- Units must be canonical and stable.
+- Percent parsing, unit conversion, and “natural language magnitude” interpretation belong to normalization, not execution.
+
+Canonical parameters:
+
+- `brightness`  
+  Integer brightness on Ashby’s internal scale: 0–1000.  
+  0 represents fully off.  
+  1000 represents maximum.
+
+- `delta`  
+  Relative adjustment in internal brightness units: -1000..1000.  
+  Used for commands like “brighter,” “dim it,” “a little more.”
+
+- `temperature_c`  
+  Temperature setpoint in degrees Celsius as the canonical internal unit.  
+  Modules and adapters translate as needed, but internal meaning remains °C.
+
+- `duration_sec`  
+  Duration in seconds when the intent implies time-bounded behavior.
+
+MODE  
+`mode` represents normalized non-numeric extremes or categorical operation modes.
+
+Rules:
+- Modes are not a substitute for numeric values.
+- Modes exist to preserve meaning for inputs like “max,” “minimum,” or “set a scene.”
+- Mode semantics must remain module-owned and must never leak into adapters.
+
+Representative examples:
+- "max" (set to maximum permitted by constraints)
+- "min" (set to minimum permitted by constraints)
+- "scene" (apply a named or configured scene)
+
+CONFIDENCE  
+`confidence` expresses NLU certainty, not execution certainty.
+
+Rules:
+- Confidence is not proof.
+- Confidence cannot upgrade truth.
+- Confidence cannot justify skipping clarification when targets are ambiguous.
+
+Semantics:
+- HIGH: classification and extracted targets/parameters are likely correct.
+- MEDIUM: reasonable interpretation, but ambiguity or uncertainty exists.
+- LOW: interpretation is fragile; clarification is likely required.
+
+RAW_TEXT  
+`raw_text` preserves the original user input verbatim.
+
+Rules:
+- Raw text must be retained for traceability, debugging, and future evaluation.
+- Raw text must not be used as a substitute for missing fields downstream.
+- Raw text may be redacted or handled carefully in environments where sensitive inputs are possible, but it must never be silently replaced with a paraphrase.
+
+SOURCE  
+`source` identifies the NLU engine or extractor that produced the Intent.
+
+Rules:
+- Source exists to support debugging, evaluation, and controlled evolution of NLU.
+- Source must not alter policy logic. It is metadata, not meaning.
+- Source identifiers are representative and replaceable.
+
+Examples (representative):
+- "local_nlu"
+- "gpt_nlu"
+- "hybrid_nlu"
+
+──────────────────────────────────────────────────────────────────────────────  
+INTENT INVARIANTS  
+──────────────────────────────────────────────────────────────────────────────
+
+The following invariants are absolute:
+
+1) NO EXECUTION IN INTENT  
+Intent must never:
+- call tools
+- schedule jobs
+- modify state
+- imply completion
+- contain adapter payloads
+
+2) NO VENDOR IDENTIFIERS  
+Intent must never embed:
+- vendor_device_id
+- external entity IDs
+- API handles
+- protocol addresses
+- secret-bearing references
+
+3) CANONICAL UNITS AT THE BOUNDARY  
+All numeric meaning must be normalized:
+- brightness always 0–1000
+- deltas expressed in 0–1000 scale
+- temperatures expressed in °C
+- durations expressed in seconds
+
+4) AMBIGUITY MUST REMAIN EXPLICIT  
+Normalization may remove surface variation.  
+Normalization must not erase uncertainty.
+
+If the input is ambiguous, Intent must preserve that ambiguity through:
+- null fields
+- partial targets
+- reduced confidence
+
+5) UNKNOWN IS VALID  
+If a safe, lawful interpretation cannot be produced, Intent must be `unknown` rather than guessed.
+
+──────────────────────────────────────────────────────────────────────────────  
+EXAMPLES (REPRESENTATIVE ONLY)  
+──────────────────────────────────────────────────────────────────────────────
+
+Example A — Explicit device action  
+Input: “turn on thor”  
+Intent:
+- type: "lights.on"
+- targets.device_key: "thor_bulb"
+- confidence: HIGH
+
+Example B — Zone/category action  
+Input: “turn off the lights in the bedroom”  
+Intent:
+- type: "lights.off"
+- targets.room_name: "bedroom"
+- targets.category: "lights"
+- confidence: MEDIUM or HIGH depending on resolver certainty
+
+Example C — Relative adjustment  
+Input: “make it brighter”  
+Intent:
+- type: "lights.adjust"
+- parameters.delta: +<normalized_step>
+- targets may be null if a session or scope must supply the target
+- confidence depends on contextual target availability
+
+Example D — Unknown input  
+Input: “do the thing we talked about”  
+Intent:
+- type: "unknown"
+- confidence: LOW
+- requires clarification
+
+These examples are illustrative only.  
+They do not define a fixed inventory of device keys, rooms, zones, or modules.
+
+──────────────────────────────────────────────────────────────────────────────  
+ABSOLUTE CONSTRAINTS  
+──────────────────────────────────────────────────────────────────────────────
+
+Intent must never:
+- claim truth
+- imply execution
+- encode vendor reality
+- suppress ambiguity
+- become transport-specific
+- become a substitute for planning
+
+Intent exists so that lawful reasoning can begin.
+
+END OF 11.1

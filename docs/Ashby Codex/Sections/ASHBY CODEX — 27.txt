@@ -1,0 +1,233 @@
+ASHBY CODEX — 27
+Preservation Pack #9 — HouseState Sync & Staleness
+
+This subsection embeds the corresponding Preservation Pack as a mechanical invariant.
+It is reproduced in full to support rebuild, audit, and long-horizon continuity.
+Unless amended via Control Sync, the rules herein are treated as canonical.
+
+BEGIN PRESERVATION PACK #9
+
+ASHBY PRESERVATION PACK #9 — HOUSESTATE SYNC, STALENESS, & REALITY RECONCILIATION
+Version: 1.0
+Date: 2025-12-22
+Goal: Define how Ashby maintains, degrades, refreshes, and reconciles its belief
+about the world over time. This pack prevents “state rot,” silent lies, and false
+confidence after restarts, failures, or human contradictions.
+
+This is the missing piece between raw execution and long‑term trust.
+
+──────────────────────────────────────────────────────────────────────────────
+1) CORE PRINCIPLE: STATE IS A BELIEF, NOT A FACT
+──────────────────────────────────────────────────────────────────────────────
+HouseState represents Ashby’s belief about the world.
+Beliefs have confidence.
+Beliefs can become stale.
+Beliefs can be wrong.
+
+Ashby must:
+  - know when it knows
+  - know when it doesn’t know
+  - say the difference out loud
+
+State without confidence is a lie.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CONFIDENCE LEVELS (AUTHORITATIVE)
+──────────────────────────────────────────────────────────────────────────────
+Each device attribute (on/off, brightness, temp, etc.) has exactly ONE confidence:
+
+VERIFIED:
+  - Confirmed by explicit readback OR
+  - Confirmed by verified execution response
+  - Safe to speak declaratively
+
+LAST_KNOWN:
+  - Command sent successfully
+  - No explicit readback
+  - Likely correct but not guaranteed
+
+UNKNOWN:
+  - Failed execution
+  - Timeout
+  - Restart without refresh
+  - Human contradiction
+  - Device unreachable
+
+Confidence is NOT global. It is per‑attribute, per‑device.
+
+──────────────────────────────────────────────────────────────────────────────
+3) STALENESS (TIME‑BASED DECAY)
+──────────────────────────────────────────────────────────────────────────────
+Even VERIFIED state can become stale over time.
+
+Define optional decay windows (configurable):
+  - lights: VERIFIED → LAST_KNOWN after N minutes
+  - thermostat read: VERIFIED → LAST_KNOWN after M minutes
+  - cameras: snapshot validity short‑lived
+
+Example policy:
+  - brightness VERIFIED < 10 min → VERIFIED
+  - brightness VERIFIED ≥ 10 min → LAST_KNOWN
+  - brightness LAST_KNOWN ≥ 60 min → UNKNOWN
+
+Rules:
+  - Decay NEVER upgrades confidence
+  - Decay only moves VERIFIED → LAST_KNOWN → UNKNOWN
+
+Ashby must respect decay when speaking.
+
+──────────────────────────────────────────────────────────────────────────────
+4) RESTART BEHAVIOR (CRITICAL)
+──────────────────────────────────────────────────────────────────────────────
+On restart:
+
+1) Load persisted HouseState from disk
+2) DO NOT upgrade confidence
+3) Apply decay rules immediately
+4) Mark any transient sessions as inactive
+
+Rules:
+  - Restart never implies VERIFIED
+  - Restart always increases uncertainty, never decreases it
+
+User‑visible behavior:
+  - “As of last time, the lights were on (last known). Want me to refresh?”
+
+──────────────────────────────────────────────────────────────────────────────
+5) USER CONTRADICTION HANDLING
+──────────────────────────────────────────────────────────────────────────────
+When a user contradicts Ashby’s belief:
+
+Example:
+  Ashby: “The lights are at 60%.”
+  User: “No they’re off.”
+
+Rules:
+  1) Immediately mark affected attributes as UNKNOWN
+  2) Acknowledge uncertainty
+  3) Offer refresh or corrective action
+  4) Do NOT argue
+
+Response template:
+  “Okay — my state was stale. I’m not sure right now. Want me to sync them?”
+
+Never:
+  - override user statement
+  - silently ignore contradiction
+
+──────────────────────────────────────────────────────────────────────────────
+6) REFRESH / SYNC OPERATIONS
+──────────────────────────────────────────────────────────────────────────────
+A refresh is an explicit attempt to read reality.
+
+Triggers:
+  - user asks “what’s the state?”
+  - user says “check”
+  - after contradiction
+  - scheduled maintenance
+  - explicit “sync devices” command
+
+Refresh semantics:
+  - adapter attempts readback
+  - ActionResult returned
+  - HouseState updated based on verification
+  - confidence upgraded ONLY if VERIFIED read
+
+If readback unsupported:
+  - remain LAST_KNOWN
+  - explain limitation honestly
+
+──────────────────────────────────────────────────────────────────────────────
+7) PARTIAL SUCCESS & MIXED CONFIDENCE
+──────────────────────────────────────────────────────────────────────────────
+Batch actions may produce mixed outcomes.
+
+Example:
+  - 3 lights targeted
+  - 2 VERIFIED
+  - 1 FAILED
+
+Rules:
+  - HouseState updated per‑device
+  - Response must acknowledge partial success
+  - Avoid blanket statements
+
+Allowed response:
+  “Thor and Sky are set to 60%. Captain didn’t respond.”
+
+Never:
+  - say “done” globally
+  - hide partial failure
+
+──────────────────────────────────────────────────────────────────────────────
+8) SESSION INTERACTION WITH STATE
+──────────────────────────────────────────────────────────────────────────────
+Sessions (lights/comfort) interact with HouseState but do not override it.
+
+Rules:
+  - Session target selection may use LAST_KNOWN
+  - Session execution still respects Truth Gate
+  - If session acts on UNKNOWN state, response must hedge
+
+If a session expires:
+  - do not reuse stale targets
+  - force clarification or treat input as fresh
+
+──────────────────────────────────────────────────────────────────────────────
+9) BACKGROUND STATE DRIFT (OPTIONAL, FUTURE)
+──────────────────────────────────────────────────────────────────────────────
+If future versions include:
+  - polling
+  - webhooks
+  - push events
+
+Rules remain:
+  - All updates must pass through ActionResult‑like verification
+  - HouseState updated only from verified sources
+  - Confidence rules still apply
+
+Do NOT silently mutate state.
+
+──────────────────────────────────────────────────────────────────────────────
+10) SPEAKING RULES TIED TO CONFIDENCE
+──────────────────────────────────────────────────────────────────────────────
+VERIFIED:
+  - “is”
+  - “are”
+  - “set to”
+
+LAST_KNOWN:
+  - “was last set to”
+  - “as far as I know”
+  - “last known”
+
+UNKNOWN:
+  - “I’m not sure”
+  - “I don’t have a reliable state”
+
+This mapping is mandatory.
+
+──────────────────────────────────────────────────────────────────────────────
+11) WHY THIS PACK MATTERS
+──────────────────────────────────────────────────────────────────────────────
+This pack prevents the slow death of agentic systems.
+
+Without it:
+  - state becomes fiction
+  - users lose trust
+  - bugs are invisible
+
+With it:
+  - Ashby remains honest
+  - uncertainty is explicit
+  - long‑running systems stay sane
+
+State is belief.
+Confidence is honesty.
+Ashby must preserve both.
+
+END OF PACK #9
+
+END PRESERVATION PACK #9
+
+END OF 27

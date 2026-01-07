@@ -1,0 +1,81 @@
+ASHBY CODEX — 4.1
+WHY THIS CODEX IS NOT “v1 DOCUMENTATION”
+
+This Codex is not versioned documentation.
+
+It does not describe Ashby “as it exists today.”
+It does not freeze a moment in development.
+It does not attempt to catalog current features or implementations.
+
+This Codex is intentionally written as if Ashby is already complete.
+
+That does not mean Ashby is finished.
+It means the *laws that govern Ashby are finished*.
+
+Versioned documentation assumes:
+- rapid change
+- frequent rewrites
+- disposable understanding
+- replacement over preservation
+
+Ashby rejects that model.
+
+Ashby is designed so that:
+- the engine remains stable
+- the rules remain consistent
+- the architecture remains legible
+- expansion does not require redefinition
+
+If this Codex were written as “v1 documentation,”
+it would encourage the most dangerous behavior a platform can allow:
+
+“We’ll fix it later.”
+
+Later never comes.
+Later becomes drift.
+Drift becomes collapse.
+
+By writing this Codex as a permanent charter,
+the system is forced to grow *within constraints*,
+not through exception.
+
+This Codex does not prevent evolution.
+It prevents erosion.
+
+When Ashby gains:
+- new modules
+- new agents
+- new vendors
+- new products
+- new scopes
+
+This Codex should still be correct.
+
+If a future change requires altering this Codex,
+that change is not incremental.
+It is foundational.
+
+Foundational changes require:
+- deliberate pause
+- explicit Control Sync
+- conscious acceptance of consequences
+
+That is by design.
+
+This Codex is written to outlive:
+- any single repository
+- any single maintainer
+- any single hardware generation
+- any single model provider
+- any single product iteration
+
+It exists so that Ashby does not become
+“whatever it happens to be right now.”
+
+It exists so that Ashby remains Ashby.
+
+This is not v1 documentation.
+
+This is the permanent definition of the system.
+
+END OF 4.1

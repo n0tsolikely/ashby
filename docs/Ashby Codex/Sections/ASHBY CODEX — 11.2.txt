@@ -1,0 +1,291 @@
+ASHBY CODEX — 11.2  
+ACTIONREQUEST
+
+ActionRequest is the canonical representation of a planned action.
+
+It is the artifact produced by planning
+after intent has been interpreted,
+scope has been resolved,
+and targets have been made explicit.
+
+ActionRequest describes WHAT must be attempted,
+where it is allowed,
+and under what constraints.
+
+It does not perform execution.  
+It does not claim outcomes.  
+It does not contain vendor reality.
+
+ActionRequest exists so that execution can be:
+- deterministic
+- auditable
+- modular
+- replaceable
+
+──────────────────────────────────────────────────────────────────────────────  
+WHY ACTIONREQUEST EXISTS  
+──────────────────────────────────────────────────────────────────────────────
+
+Systems fail when planning and execution are fused.
+
+If planning touches the external world:
+- failures contaminate cognition
+- state mutates without evidence
+- retries become improvisation
+- debugging becomes impossible
+
+ActionRequest enforces a hard boundary.
+
+Planning answers:
+“What should be attempted?”
+
+ActionRequest records that answer
+in a stable, transport-neutral form.
+
+Execution answers:
+“What actually happened?”
+
+ActionResult records that answer later.
+
+──────────────────────────────────────────────────────────────────────────────  
+ACTIONREQUEST IN THE CONTROL PIPELINE  
+──────────────────────────────────────────────────────────────────────────────
+
+ActionRequest is produced only after:
+
+- intent is normalized
+- policy decides “act” (not clarify, refuse, or chat)
+- scope is resolved and authority is established
+- targets are resolved into concrete internal identifiers
+- parameters are normalized into canonical units
+- safety constraints are evaluated
+
+If any prerequisite is unmet,
+ActionRequest must not be produced.
+
+If targets are ambiguous,
+the correct output is clarification,
+not a guessed ActionRequest.
+
+──────────────────────────────────────────────────────────────────────────────  
+CANONICAL ACTIONREQUEST STRUCTURE  
+──────────────────────────────────────────────────────────────────────────────
+
+The canonical structure below is normative.
+
+The set of action_type values is extensible by modules.  
+The shape is invariant.  
+All fields marked required are mandatory.
+
+Canonical form (JSON-like):
+
+{
+  "action_type": "<stable_action_label>",
+
+  "scope": {
+    "scope_id": "<scope_id>",               // required
+    "zone_id": "<zone_id>" | null           // optional convenience
+  },
+
+  "target_set": {
+    "devices": ["<device_key>", "..."],     // required, non-empty
+    "zone_id": "<zone_id>" | null,
+    "category": "<category>" | null,
+    "role": "<role>" | null
+  },
+
+  "parameters": {
+    "brightness": <int 0..1000> | null,
+    "delta": <int -1000..1000> | null,
+    "temperature_c": <float> | null,
+    "duration_sec": <int> | null
+  },
+
+  "constraints": {
+    "timeout_sec": <int> | null,
+    "max_retries": <int> | null,
+    "confirmation_required": <bool> | null,
+    "max_targets": <int> | null
+  },
+
+  "user_id": "<actor_identifier>",
+  "correlation_id": "<correlation_id>",
+  "requested_at": "<ISO8601 timestamp>"
+}
+
+Notes:
+- scope.zone_id is not authoritative if target_set.zone_id is present.
+- constraints fields may be null if defaults are defined by policy configuration.
+- additional constraint keys may exist in the future, but must remain vendor-neutral.
+
+──────────────────────────────────────────────────────────────────────────────  
+FIELD SEMANTICS  
+──────────────────────────────────────────────────────────────────────────────
+
+ACTION_TYPE  
+`action_type` is a stable label describing the planned operation.
+
+Rules:
+- action_type must be independent of vendor, protocol, and transport.
+- action_type must not encode “how” (no vendor names, SDK names, or API paths).
+- action_type must remain stable across time; renaming is foundational.
+
+Representative examples (non-exhaustive):
+- "turn_on"
+- "turn_off"
+- "set_brightness"
+- "adjust_brightness"
+- "set_temperature"
+- "adjust_temperature"
+- "snapshot"
+- "record"
+- "noop"
+
+SCOPE  
+`scope` binds the planned action to a lawful boundary of existence and authority.
+
+Rules:
+- scope_id is required.
+- scope_id must be resolved before planning completes.
+- no ActionRequest may exist without scope binding.
+- scope binding may not be inferred at execution time.
+
+Target selection occurs within a scope.  
+Permission is evaluated within a scope.  
+State updates occur within a scope.
+
+TARGET_SET  
+`target_set` represents the resolved execution targets.
+
+Rules:
+- target_set.devices must contain concrete internal identifiers (device_keys).
+- target_set.devices must be non-empty.
+- if targets cannot be resolved, ActionRequest must not be produced.
+- zone/category/role fields are informational context and audit aids.
+- devices are authoritative targets for execution.
+
+`target_set` must never include:
+- vendor device IDs
+- protocol addresses
+- external entity IDs
+- secret-bearing references
+
+PARAMETERS  
+`parameters` contains canonical values required by the planned action.
+
+Rules:
+- parameters must be normalized before ActionRequest is issued.
+- units are canonical and stable.
+- parsing and conversion happen before planning completes.
+
+Examples:
+- brightness must always be 0–1000.
+- temperature must always be °C.
+- durations must always be seconds.
+
+CONSTRAINTS  
+`constraints` records execution guardrails and safety limits.
+
+Constraints exist because execution is dangerous.
+
+Rules:
+- constraints must remain vendor-neutral.
+- constraints must not include adapter-specific tuning.
+- constraints represent policy decisions at the moment of planning.
+- null indicates “use policy defaults,” not “no constraints exist.”
+
+Typical constraint intents:
+- timeouts prevent hanging execution
+- max_retries prevents infinite loops
+- confirmation_required prevents unsafe automation
+- max_targets prevents blast radius expansion
+
+USER_ID  
+`user_id` identifies the actor that originated the request.
+
+Rules:
+- user_id is required for traceability.
+- user_id is transport-neutral (the transport may contribute the identifier string).
+- user_id must not be treated as a scope substitute.
+
+CORRELATION_ID  
+`correlation_id` ties the full lifecycle together:
+Input → Intent → ActionRequest → ActionResult → Logs → Response.
+
+Rules:
+- correlation_id is required.
+- correlation_id is generated at engine/router entry.
+- correlation_id must be propagated unchanged through execution.
+
+REQUESTED_AT  
+`requested_at` records when the plan was issued.
+
+Rules:
+- timestamp must be recorded in a stable format (ISO8601 recommended).
+- timestamps support reconstruction and debugging.
+- timestamps do not upgrade truth.
+
+──────────────────────────────────────────────────────────────────────────────  
+ACTIONREQUEST INVARIANTS  
+──────────────────────────────────────────────────────────────────────────────
+
+1) NO AMBIGUOUS TARGETS  
+If targets are ambiguous, ActionRequest must not exist.
+
+2) NO EXECUTION IN ACTIONREQUEST  
+ActionRequest does not call adapters.  
+It is a plan artifact only.
+
+3) NO VENDOR REALITY  
+ActionRequest must never contain vendor IDs, SDK concepts, API endpoints, or secrets.
+
+4) CANONICAL UNITS  
+All numeric parameters must already be normalized.
+
+5) SCOPE REQUIRED  
+No ActionRequest exists outside a resolved scope.
+
+6) DETERMINISM  
+Given the same inputs (intent, state, policy, scope),
+planning should produce the same ActionRequest.
+This is required for testability.
+
+──────────────────────────────────────────────────────────────────────────────  
+NO-OP AS A PLANNED ACTION  
+──────────────────────────────────────────────────────────────────────────────
+
+If the requested outcome is already satisfied,
+planning must prefer NO-OP.
+
+NO-OP is still a planned action.
+
+It exists to:
+- avoid unnecessary external calls
+- preserve trust
+- preserve determinism
+- preserve traceability
+
+A NO-OP ActionRequest must:
+- set action_type = "noop"
+- include scope and correlation identifiers
+- include target_set.devices (the resolved targets)
+- include parameters representing the requested state (if applicable)
+
+NO-OP must never imply that execution occurred.
+
+──────────────────────────────────────────────────────────────────────────────  
+ABSOLUTE CONSTRAINTS  
+──────────────────────────────────────────────────────────────────────────────
+
+ActionRequest must never:
+- claim success
+- imply verification
+- include vendor identifiers
+- include secrets
+- be issued without scope binding
+- be issued with unresolved or guessed targets
+
+ActionRequest is the planned “what.”
+Execution is external.
+
+END OF 11.2

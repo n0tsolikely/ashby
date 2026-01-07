@@ -1,0 +1,251 @@
+ASHBY CODEX — 16.1
+DEFINITION AND RESPONSIBILITIES
+
+A module is an organ of Ashby.
+
+The platform body is the engine, truth law, state law, scopes, identity, and execution seams.
+Modules plug into that body to add meaning and capability without rewriting the body.
+
+This section defines what a module is, what it is responsible for,
+and what it is forbidden from doing.
+
+If modules are allowed to:
+- execute directly,
+- store competing truth,
+- bypass policy,
+- or import vendor logic,
+then Ashby collapses into a pile of special cases.
+
+Modules exist to prevent that collapse.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITION: WHAT A MODULE IS
+──────────────────────────────────────────────────────────────────────────────
+
+A MODULE is a bounded, removable capability component that:
+- interprets intents within a domain
+- plans actions as ActionRequests (WHAT)
+- asks domain-specific clarifications when required
+- never executes actions directly (HOW is elsewhere)
+- never claims truth directly (Truth Gate is elsewhere)
+- does not own long-term platform state (HouseState is elsewhere)
+
+A module is not a provider.
+A module is not a bridge.
+A module is not an agent brain.
+A module is not the engine.
+
+A module is a disciplined translator from:
+intent + context → plan + clarification needs.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT MODULES OWN (THEIR RESPONSIBILITIES)
+──────────────────────────────────────────────────────────────────────────────
+
+A module owns:
+
+A) DOMAIN INTERPRETATION
+- mapping user language and synonyms into domain concepts
+- recognizing intents within its capability surface
+- determining which capability contract(s) apply
+
+B) PLANNING AS WHAT
+- producing ActionRequests that describe intended effects
+- choosing plan structure within its domain:
+  - single action vs multi-step
+  - required preconditions
+  - expected verification requirements (as a request, not as truth)
+
+C) CLARIFICATION QUESTIONS (DOMAIN-SPECIFIC)
+- identifying what missing information prevents safe planning
+- asking minimal, targeted questions that reduce ambiguity
+- producing a “pending completion state” artifact for merge-and-complete flow
+
+D) RISK ANNOTATION (INPUT TO POLICY, NOT POLICY ITSELF)
+Modules may produce structured hints such as:
+- “this action is high-impact”
+- “this action changes access/security”
+- “this action affects money”
+These hints help policy choose CONFIRM vs ACT.
+
+However:
+- policy outcome selection belongs to the engine policy system
+- modules must not override policy outcomes
+
+E) CAPABILITY DECLARATION
+A module must declare:
+- the capability types it handles
+- the interface contracts it uses
+- the required evidence/verification expectations for success
+(These expectations are still evaluated through Truth Gate.)
+
+F) ERROR SURFACE NORMALIZATION (IN DOMAIN TERMS)
+Modules may map low-level failure categories into domain-safe explanations,
+but they must not invent causes.
+
+“Why it failed” must remain evidence-derived.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHAT MODULES DO NOT OWN (THEIR FORBIDDEN RESPONSIBILITIES)
+──────────────────────────────────────────────────────────────────────────────
+
+Modules must not own:
+
+A) EXECUTION (HOW)
+- modules must not call providers
+- must not call bridges
+- must not import vendor SDKs
+- must not perform network IO as part of planning
+Execution belongs to adapters/providers under controlled seams.
+
+B) TRUTH (CERTAINTY)
+- modules must not decide truth class
+- must not use forbidden phrases as if verified
+- must not upgrade weak evidence into strong claims
+Truth belongs to Truth Gate.
+
+C) PLATFORM STATE AUTHORITY
+- modules must not write HouseState directly
+- modules must not maintain a competing “module memory” that overrides HouseState
+Modules may read HouseState to plan.
+They may not redefine it.
+
+D) SECURITY AND SECRETS
+- modules must not read raw secrets
+- modules must not store credentials
+- modules must not log sensitive payloads
+Modules may request that a connector/provider be used,
+but secrets handling stays in secret systems.
+
+E) PRODUCTIZATION LOGIC
+- modules must not branch on product tiers
+- modules must not implement entitlements checks as ad-hoc behavior
+Availability is handled by profiles/flags/entitlements gates outside module meaning.
+
+F) GOVERNANCE
+- modules must not modify invariants
+- modules must not bypass Control Sync requirements
+Constitutional changes do not occur in modules.
+
+If a module is doing any of the above, it is not a module.
+It is a fork mechanism.
+
+──────────────────────────────────────────────────────────────────────────────
+4) MODULE INTERFACE: INPUTS AND OUTPUTS
+──────────────────────────────────────────────────────────────────────────────
+
+A correct module interface is shaped like:
+
+INPUTS (READ-ONLY CONTEXT)
+- normalized Intent (and any merge-completed payload)
+- scope context (current scope, permissions)
+- target resolution context (registry matches, ambiguity set)
+- HouseState snapshot or scoped view (beliefs with staleness)
+- profile/flag/entitlement availability (as “is this module available?”, not as behavior rewrite)
+- session context (if this is a multi-turn continuation)
+
+OUTPUTS (PLANNING ARTIFACTS)
+- PlanCandidate:
+  - one or more ActionRequests (WHAT)
+  - constraints and prerequisites (e.g., required target binding)
+  - required confirmations (as hints)
+- ClarifyRequest:
+  - a minimal question set
+  - a structured “missing fields” schema
+  - a pending completion artifact for merge-and-complete
+
+The module does not output:
+- “done”
+- “executed”
+- “verified”
+Those are downstream consequences.
+
+Modules plan.
+They do not perform.
+
+──────────────────────────────────────────────────────────────────────────────
+5) DETERMINISM AND RECONSTRUCTABILITY
+──────────────────────────────────────────────────────────────────────────────
+
+Modules must be reconstructable from text and logs.
+
+Rules:
+- given the same normalized intent and the same context snapshot,
+  a module should produce the same plan shape
+- if a module uses heuristics, the heuristics must be explicit and testable
+- any probabilistic behavior must be bounded and recorded (and is generally discouraged)
+
+A module’s decisions must be explainable through:
+- the intent
+- the context
+- the module rules
+
+If a module’s plan cannot be explained, it cannot be trusted.
+
+──────────────────────────────────────────────────────────────────────────────
+6) MODULE REGISTRATION AND DISCOVERY
+──────────────────────────────────────────────────────────────────────────────
+
+Modules must be discoverable and manageable as discrete units.
+
+At minimum, each module should have:
+- module_key (stable identifier)
+- version
+- declared capabilities
+- declared interface contract dependencies
+- declared required connectors (if any)
+- declared safety classification hints
+- owner/maintainer metadata (if applicable)
+
+The engine/router uses this registry to:
+- determine which modules are available
+- route intents to candidate modules
+- respect profiles/entitlements without rewriting module meaning
+
+Modules must not self-enable by side effect.
+Availability is a gate, not a module behavior.
+
+──────────────────────────────────────────────────────────────────────────────
+7) HOW MODULES COOPERATE (WITHOUT BECOMING ENTANGLED)
+──────────────────────────────────────────────────────────────────────────────
+
+Modules may coordinate through the platform body:
+- by reading HouseState
+- by emitting ActionRequests that affect shared devices/targets
+- by producing artifacts through standard storage channels
+
+Modules must not:
+- call each other directly as dependencies
+- assume another module is present
+- import another module’s internal structures
+
+Direct inter-module dependencies destroy removability.
+
+If collaboration is needed, it must happen through:
+- shared domain models
+- shared interface contracts
+- explicit router orchestration
+not through hidden coupling.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Modules must:
+- express WHAT only (planning)
+- remain removable and isolated
+- produce ActionRequests and/or clarification requirements
+- read HouseState but never replace it
+- respect scope and identity law
+- provide domain interpretation without vendor/protocol leakage
+- be auditable and explainable via logged inputs/outputs
+
+Modules must never:
+- execute actions directly or import providers/vendors
+- decide truth class or claim verification
+- bypass policy outcomes or confirmation requirements
+- store secrets or leak sensitive data into logs/artifacts
+- encode product-tier behavior as hidden forks
+- create direct dependencies on other modules that break removability
+
+END OF 16.1

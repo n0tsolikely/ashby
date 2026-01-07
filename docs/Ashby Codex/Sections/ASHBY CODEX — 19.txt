@@ -1,0 +1,439 @@
+ASHBY CODEX — 19
+PRESERVATION PACK #1 — CONFIG SCHEMAS
+
+This section is a mechanical preservation pack.
+
+It is intended to be copy/paste-ready.
+It defines the config-first domain modeling layer that Ashby loads and reasons over.
+
+The pack content below is canonical structure, templates, and schema rules.
+Any future changes to these invariants require deliberate Control Sync.
+
+──────────────────────────────────────────────────────────────────────────────
+BEGIN PRESERVATION PACK CONTENT
+──────────────────────────────────────────────────────────────────────────────
+
+ASHBY PRESERVATION PACK #1 — CONFIG SCHEMAS PACK (CONFIG-FIRST DOMAIN)
+Version: 1.0
+Date: 2025-12-22
+Goal: Provide copy/paste-ready config templates and schema rules so a new engineer (or new AI) can recreate Ashby’s domain modeling without needing prior chat history.
+
+This pack covers:
+  - configs/schema_version.json
+  - configs/zones.json
+  - configs/rooms.json
+  - configs/devices.json
+  - configs/aliases.json
+  - configs/modules.json
+  - configs/brands.json (NO SECRETS — references only)
+
+Non-negotiable: Config-first. Code must load these files and reason over them.
+No hardcoded “bedroom/kitchen” logic inside modules or router.
+
+──────────────────────────────────────────────────────────────────────────────
+0) DIRECTORY CONVENTION
+──────────────────────────────────────────────────────────────────────────────
+ashby/
+  configs/
+    schema_version.json
+    zones.json
+    rooms.json
+    devices.json
+    aliases.json
+    modules.json
+    brands.json
+
+  secrets/
+    .env  (NOT committed; contains actual tokens/keys)
+
+Rule: configs contain structure and references only. secrets contain secrets.
+
+──────────────────────────────────────────────────────────────────────────────
+1) schema_version.json (required)
+──────────────────────────────────────────────────────────────────────────────
+Purpose:
+  - Allows forward migrations as schemas evolve.
+  - Prevents silent config drift.
+
+Rules:
+  - Every config file should be treated as compatible only if schema_version matches.
+  - If mismatch: Ashby should warn loudly and either:
+      a) refuse to start, OR
+      b) start in SAFE MODE (chat-only) depending on your policy.
+
+Template (copy/paste):
+{
+  "schema_version": "1.0",
+  "generated_at": "2025-12-22",
+  "notes": "Initial Ashby config schema pack."
+}
+
+──────────────────────────────────────────────────────────────────────────────
+2) zones.json (required; canonical domain)
+──────────────────────────────────────────────────────────────────────────────
+Meaning:
+  - Zones are canonical/stable identifiers: zone1..zoneN.
+  - Zones are NOT “rooms.” Rooms are human labels mapped to zones.
+  - Zones allow relabeling without breaking device identity.
+
+Rules:
+  - zone_id must be unique.
+  - zones are stable; renaming is done via labels, not by changing zone_id.
+  - A device attaches to exactly one zone_id.
+
+Template:
+{
+  "zones": [
+    {
+      "zone_id": "zone1",
+      "labels": ["default", "unknown"],
+      "notes": "Fallback zone when location is not known."
+    },
+    {
+      "zone_id": "zone2",
+      "labels": ["bedroom"],
+      "notes": "Example zone."
+    }
+  ],
+  "defaults": {
+    "fallback_zone_id": "zone1"
+  }
+}
+
+Design tips:
+  - Keep zones small and stable even if rooms change.
+  - If you later add GPS / camera / WiFi inference, zones remain the anchor.
+
+──────────────────────────────────────────────────────────────────────────────
+3) rooms.json (optional convenience)
+──────────────────────────────────────────────────────────────────────────────
+Meaning:
+  - Rooms are human-readable labels that map to zone_ids.
+  - “bedroom” can map to zone2 today; if you remodel, you can change mapping.
+  - Rooms are not required, but they make NLU resolution easier early on.
+
+Rules:
+  - room_name must be unique (case-insensitive).
+  - Each room_name maps to exactly one zone_id.
+  - You can have multiple room aliases mapping to the same zone (e.g., “master”, “bedroom”).
+
+Template:
+{
+  "rooms": [
+    {
+      "room_name": "bedroom",
+      "zone_id": "zone2",
+      "aliases": ["master", "main bedroom"]
+    },
+    {
+      "room_name": "living room",
+      "zone_id": "zone3",
+      "aliases": ["livingroom", "front room"]
+    }
+  ]
+}
+
+Resolution behavior:
+  - If user says “bedroom” → infer zone2.
+  - If user says “master” → also infer zone2.
+
+──────────────────────────────────────────────────────────────────────────────
+4) devices.json (required; inventory + capabilities)
+──────────────────────────────────────────────────────────────────────────────
+Meaning:
+  - This is the canonical device registry for THIS deployment/house.
+  - Must contain enough metadata for target resolution and capability matching.
+
+Rules (minimum fields):
+  - device_key (internal key, unique)  e.g. "thor_bulb"
+  - brand/backend                      e.g. "tuya", "nest", "reolink"
+  - category                           "lights" | "plugs" | "thermostat" | "cameras" | ...
+  - role                               e.g. "ambient", "desk", "security"
+  - zone_id                            e.g. "zone2"
+  - vendor_device_id                   e.g. Tuya device id, Nest device path, Reolink UID
+  - capabilities                       array of strings
+Optional but recommended:
+  - description
+  - model
+  - tags
+  - preferred_names (aliases for referencing this device)
+
+Canonical capabilities (suggested baseline list):
+  - on_off
+  - brightness
+  - color_temp
+  - color_rgb
+  - motion
+  - recording
+  - snapshot
+  - temperature_read
+  - temperature_set
+  - humidity_read
+  - power_monitor
+
+Template:
+{
+  "devices": [
+    {
+      "device_key": "thor_bulb",
+      "brand": "tuya",
+      "category": "lights",
+      "role": "ambient",
+      "zone_id": "zone2",
+      "vendor_device_id": "TUYA_DEVICE_ID_HERE",
+      "capabilities": ["on_off", "brightness"],
+      "description": "Bedroom ambient bulb (Thor)",
+      "preferred_names": ["thor", "thor light", "thor bulb"]
+    },
+    {
+      "device_key": "bed_lamp_plug",
+      "brand": "tuya",
+      "category": "plugs",
+      "role": "lamp",
+      "zone_id": "zone2",
+      "vendor_device_id": "TUYA_DEVICE_ID_HERE",
+      "capabilities": ["on_off"],
+      "description": "Bedside lamp outlet",
+      "preferred_names": ["bed lamp", "lamp plug"]
+    },
+    {
+      "device_key": "hallway_thermostat",
+      "brand": "nest",
+      "category": "thermostat",
+      "role": "primary_thermostat",
+      "zone_id": "zone1",
+      "vendor_device_id": "enterprises/.../devices/...",
+      "capabilities": ["temperature_read", "temperature_set"],
+      "description": "Nest thermostat in hallway"
+    }
+  ],
+  "defaults": {
+    "lights_default_step": 100,
+    "brightness_scale_max": 1000
+  }
+}
+
+Important: brightness scale
+  - Ashby’s internal brightness scale is 0–1000.
+  - Devices that use 0–255 or 0–100 should be normalized by adapter logic.
+  - The module logic should only see 0–1000.
+
+──────────────────────────────────────────────────────────────────────────────
+5) aliases.json (required; user phrases → target hints)
+──────────────────────────────────────────────────────────────────────────────
+Meaning:
+  - This is how you map human phrases to domain hints WITHOUT hardcoding in code.
+  - Aliases can resolve:
+      - zones/rooms (“in here”, “my bedroom”)
+      - devices (“thor”, “captain america”)
+      - categories (“the lights”)
+      - roles (“ambient lights”)
+  - Aliases are NOT secrets. They are business logic.
+
+Rules:
+  - normalize all alias matching by:
+      - lowercasing
+      - stripping punctuation
+      - collapsing whitespace
+  - alias mapping can return multiple hints; resolution chooses best match.
+
+Template:
+{
+  "aliases": [
+    {
+      "phrase": "in here",
+      "hints": {
+        "type": "contextual_zone",
+        "notes": "Requires policy: if user_zone is unknown, ask once."
+      }
+    },
+    {
+      "phrase": "the lights",
+      "hints": {
+        "category": "lights"
+      }
+    },
+    {
+      "phrase": "thor",
+      "hints": {
+        "device_key": "thor_bulb"
+      }
+    },
+    {
+      "phrase": "bedroom lights",
+      "hints": {
+        "room_name": "bedroom",
+        "category": "lights"
+      }
+    },
+    {
+      "phrase": "ambient lights",
+      "hints": {
+        "category": "lights",
+        "role": "ambient"
+      }
+    }
+  ],
+  "defaults": {
+    "max_alias_matches_considered": 5
+  }
+}
+
+Notes:
+  - Keep aliases small at first. Expand over time.
+  - Never let aliases silently override explicit user choices.
+
+──────────────────────────────────────────────────────────────────────────────
+6) modules.json (required; enable/disable + module settings)
+──────────────────────────────────────────────────────────────────────────────
+Meaning:
+  - Modules are feature packs (lights, plugs, thermostat, cameras, meetings).
+  - Router can dispatch only to enabled modules.
+  - This is the mechanical rule that makes modules removable.
+
+Rules:
+  - If a module is disabled and an intent targets it:
+      - either clarify or respond “module not enabled”
+      - NEVER crash
+      - ALWAYS remain capable of chat
+
+Template:
+{
+  "modules": {
+    "lights": {
+      "enabled": true,
+      "default_step": 100,
+      "supports_scenes": false
+    },
+    "plugs": {
+      "enabled": true
+    },
+    "thermostat": {
+      "enabled": true,
+      "default_preferred_temp_c": 21.0,
+      "comfort_step_c": 1.0
+    },
+    "cameras": {
+      "enabled": false
+    },
+    "meetings": {
+      "enabled": false,
+      "name": "stuart"
+    }
+  }
+}
+
+──────────────────────────────────────────────────────────────────────────────
+7) brands.json (required; brand credentials references ONLY)
+──────────────────────────────────────────────────────────────────────────────
+Meaning:
+  - brands.json defines how to locate brand-specific secrets, but does NOT contain them.
+  - For example, “tuya credentials live in env vars with these names.”
+
+Rules:
+  - DO NOT place tokens, passwords, refresh tokens, API keys here.
+  - Only reference secret sources.
+
+Template:
+{
+  "brands": {
+    "tuya": {
+      "enabled": true,
+      "secrets_source": "env",
+      "env": {
+        "endpoint": "TUYA_ENDPOINT",
+        "access_id": "TUYA_ACCESS_ID",
+        "access_key": "TUYA_ACCESS_KEY",
+        "username": "TUYA_USERNAME",
+        "password": "TUYA_PASSWORD",
+        "app_schema": "TUYA_APP_SCHEMA",
+        "country_code": "TUYA_COUNTRY_CODE"
+      },
+      "notes": "Tuya OpenAPI credentials are provided via environment variables."
+    },
+    "nest": {
+      "enabled": true,
+      "secrets_source": "env",
+      "env": {
+        "client_id": "NEST_CLIENT_ID",
+        "client_secret": "NEST_CLIENT_SECRET",
+        "refresh_token": "NEST_REFRESH_TOKEN",
+        "device_path": "NEST_DEVICE_PATH"
+      },
+      "notes": "Nest SDM uses OAuth refresh tokens. Never log them."
+    },
+    "reolink": {
+      "enabled": false,
+      "secrets_source": "env",
+      "env": {
+        "uid": "REOLINK_UID",
+        "username": "REOLINK_USERNAME",
+        "password": "REOLINK_PASSWORD"
+      }
+    },
+    "telegram": {
+      "enabled": true,
+      "secrets_source": "env",
+      "env": {
+        "bot_token": "TELEGRAM_BOT_TOKEN"
+      }
+    }
+  }
+}
+
+──────────────────────────────────────────────────────────────────────────────
+8) SAFE STARTUP VALIDATION (what Ashby should check)
+──────────────────────────────────────────────────────────────────────────────
+On startup, Ashby should validate:
+  - configs/schema_version.json exists and supported
+  - zones.json exists and has fallback_zone_id
+  - devices.json exists and every device has:
+      - device_key, brand, category, zone_id, vendor_device_id, capabilities
+  - modules.json exists
+  - brands.json exists
+  - each device.zone_id exists in zones.json
+  - optional: room mappings reference valid zones
+
+If any required config fails:
+  - Ashby enters SAFE MODE:
+      - chat-only
+      - refuses device actions and explains “config invalid”
+This prevents accidental device control with broken mappings.
+
+──────────────────────────────────────────────────────────────────────────────
+9) MIGRATION NOTE: LEGACY GROUPS
+──────────────────────────────────────────────────────────────────────────────
+If the current system uses legacy GROUPS mappings (like "thor" -> ["thor_bulb"]):
+  - Treat that as temporary and migrate to config-driven resolution.
+  - You may keep a compatibility layer that:
+      - checks aliases first
+      - checks device_registry next
+      - checks legacy groups last
+But do not hardcode new groups in code.
+
+──────────────────────────────────────────────────────────────────────────────
+10) QUICK EXAMPLES (how a phrase resolves)
+──────────────────────────────────────────────────────────────────────────────
+User: "turn on thor"
+  - alias "thor" -> device_key "thor_bulb"
+  - module lights -> adapter tuya -> ActionResult -> HouseState updates
+
+User: "turn off the lights in the bedroom"
+  - room "bedroom" -> zone2
+  - category "lights"
+  - device_registry finds devices in zone2 with category lights
+  - execute batch -> ActionResult
+
+User: "it's bright in here"
+  - alias "in here" -> contextual_zone hint
+  - policy decides clarify if user_zone unknown
+  - if session active, may apply session target
+  - if clarified/resolved -> lights.adjust delta -step
+
+END OF PACK #1
+
+──────────────────────────────────────────────────────────────────────────────
+END PRESERVATION PACK CONTENT
+──────────────────────────────────────────────────────────────────────────────
+
+END OF 19

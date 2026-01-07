@@ -1,0 +1,195 @@
+ASHBY CODEX — 6.3
+WHAT VS HOW (ABSOLUTE LAW)
+
+WHAT and HOW are separate.
+
+This separation is not a guideline.
+It is absolute law.
+
+WHAT defines intent, meaning, policy, and truth.
+HOW defines execution, translation, and interaction with the external world.
+
+If WHAT and HOW are allowed to mix,
+Ashby ceases to be a platform.
+
+──────────────────────────────────────────────────────────────────────────────
+THE DEFINITION OF WHAT
+──────────────────────────────────────────────────────────────────────────────
+
+WHAT describes:
+- user intent
+- system intent
+- policy decisions
+- scope resolution
+- state transitions
+- truth semantics
+- session behavior
+- explainability requirements
+
+WHAT answers questions such as:
+- What is the user trying to do?
+- What is allowed?
+- What should happen next?
+- What must be verified?
+- What may Ashby claim?
+- What is the current belief and confidence?
+
+WHAT is expressed in:
+- engine reasoning
+- cognition layers
+- policy evaluation
+- modules (as intent definitions)
+- sessions
+- scope law
+- truth gating rules
+
+WHAT is independent of:
+- vendors
+- protocols
+- APIs
+- hardware
+- transport layers
+- cloud availability
+
+WHAT must remain stable even if every execution path changes.
+
+──────────────────────────────────────────────────────────────────────────────
+THE DEFINITION OF HOW
+──────────────────────────────────────────────────────────────────────────────
+
+HOW describes:
+- execution mechanics
+- vendor interaction
+- protocol translation
+- API calls
+- retries and backoff
+- timeouts and fallbacks
+- device-specific behavior
+- transport concerns
+
+HOW answers questions such as:
+- How is this action carried out?
+- Which vendor or protocol is used?
+- How is the command translated?
+- How is failure detected?
+- How is evidence collected?
+
+HOW is expressed in:
+- adapters
+- bridges
+- native vendor integrations
+- connectors
+- execution services
+
+HOW must never:
+- infer intent
+- decide policy
+- interpret meaning
+- own state authority
+- upgrade confidence
+- decide what Ashby may say
+
+HOW exists to serve WHAT.
+Never the reverse.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY THIS SEPARATION IS NON-NEGOTIABLE
+──────────────────────────────────────────────────────────────────────────────
+
+Every large system that collapses
+collapses because WHAT and HOW become entangled.
+
+When this happens:
+- reasoning becomes vendor-specific
+- policy becomes execution-dependent
+- state becomes implicit
+- truth becomes narrative
+- refactoring becomes dangerous
+- growth becomes brittle
+
+Ashby prevents this by enforcing:
+- structural separation
+- interface contracts
+- unidirectional dependency
+- truth gating at the platform level
+
+WHAT must be able to exist without HOW.
+HOW must never exist without WHAT.
+
+This ensures:
+- vendor replaceability
+- offline capability
+- explainability
+- rebuildability
+- long-term stability
+
+──────────────────────────────────────────────────────────────────────────────
+ENFORCEMENT MECHANISMS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby enforces WHAT vs HOW separation through structure, not discipline.
+
+The engine:
+- reasons about WHAT
+- never executes HOW
+
+Execution layers:
+- perform HOW
+- never reason about WHAT
+
+Adapters:
+- accept ActionRequest
+- return ActionResult
+- never emit user-facing language
+- never own truth semantics
+
+The Truth Gate:
+- exists above execution
+- constrains language
+- interprets evidence
+- updates belief
+
+No execution path may bypass the Truth Gate.
+No execution result may directly influence language.
+
+Any design that requires:
+- engine imports of vendor code
+- adapter-side policy decisions
+- execution-driven truth claims
+- vendor-shaped reasoning
+
+is invalid.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSEQUENCES
+──────────────────────────────────────────────────────────────────────────────
+
+Violating WHAT vs HOW separation produces irreversible damage.
+
+Once violated:
+- vendors become sticky
+- state becomes untrustworthy
+- truth becomes relative
+- the engine becomes polluted
+- future domains become harder to add
+
+These effects compound over time.
+
+Therefore:
+
+If a feature requires violating this separation,
+the feature is rejected.
+
+If a shortcut requires violating this separation,
+the shortcut is rejected.
+
+If convenience requires violating this separation,
+convenience is rejected.
+
+Ashby survives because this law is enforced
+even when it is uncomfortable.
+
+WHAT and HOW remain separate
+so that Ashby remains Ashby.
+
+END OF 6.3

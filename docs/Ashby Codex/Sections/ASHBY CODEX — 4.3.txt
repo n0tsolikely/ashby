@@ -1,0 +1,86 @@
+ASHBY CODEX — 4.3
+MULTI-AGENT FUTURES
+
+Ashby is designed from the beginning to host multiple agents
+without fragmenting truth, state, or authority.
+
+In most systems, adding a second agent means:
+- duplicating state
+- duplicating memory
+- duplicating execution logic
+- duplicating failure modes
+- creating conflicting narratives
+
+Ashby rejects this pattern.
+
+In Ashby, there is **one platform** and **many agents**.
+
+The platform owns:
+- truth enforcement
+- state authority
+- execution verification
+- scope modeling
+- logging and observability
+- security and secrets
+- governance
+
+Agents do not own these things.
+Agents operate within them.
+
+An agent in Ashby is defined as:
+- a specialized reasoning layer
+- operating within defined scopes
+- using the same execution and truth substrate
+- producing domain-specific intent
+
+This allows agents to differ in purpose
+without differing in honesty.
+
+Examples of agents include:
+- a meetings agent
+- an inventory agent
+- a monitoring agent
+- a scheduling agent
+- future domain-specific agents
+
+These examples are representative, not exhaustive.
+
+All agents in Ashby must obey the same laws:
+- no agent may claim an action occurred without verification
+- no agent may maintain a private version of state
+- no agent may bypass the Truth Gate
+- no agent may execute actions directly
+
+Agents may disagree.
+Agents may be uncertain.
+Agents may fail.
+
+But they must fail **honestly** and **consistently**.
+
+Multi-agent futures introduce complexity,
+but Ashby absorbs that complexity at the platform level.
+
+Conflict between agents is resolved by:
+- shared state
+- shared truth semantics
+- explicit arbitration
+- scope-based authority
+
+There is no silent override.
+There is no hidden precedence.
+There is no agent-level exception to core law.
+
+This design allows Ashby to grow horizontally:
+more agents,
+more domains,
+more capabilities,
+without vertical collapse.
+
+Ashby’s multi-agent future is not a collection of personalities.
+It is a coordinated system of specialized reasoners
+bound by a single reality.
+
+This is how Ashby scales intelligence
+without fragmenting truth.
+
+END OF 4.3

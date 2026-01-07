@@ -1,0 +1,264 @@
+ASHBY CODEX — 18.4
+CLOUD-ALLOWED FALLBACK
+
+Cloud-allowed fallback defines when and how Ashby may use cloud execution
+as a secondary path while preserving platform truth and safety.
+
+Fallback is not a convenience hack.
+It is a governed mechanism that acknowledges reality:
+
+- local infrastructure may not exist
+- local bridges may be unhealthy
+- some devices expose capabilities only through cloud APIs
+- the internet may be available sometimes and unavailable other times
+- products and customers may accept different tradeoffs
+
+This section defines the law that makes fallback possible
+without collapsing Ashby into cloud dependence or truth drift.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINITIONS (FALLBACK-SIDE)
+──────────────────────────────────────────────────────────────────────────────
+
+PRIMARY PATH
+The adapter selected by the router’s preference order (often offline-first).
+
+FALLBACK PATH
+A secondary adapter path selected when:
+- the primary path is unavailable, or
+- the primary path fails in a way policy allows retry via an alternate route.
+
+CLOUD-ALLOWED
+A scope/profile policy setting indicating that cloud execution is permitted.
+
+CLOUD-REQUIRED
+A scope/profile setting indicating that cloud execution is the only available mode.
+This is a profile choice, not a platform default.
+
+CLOUD-DISALLOWED
+A scope/profile setting indicating that cloud execution is forbidden.
+
+Fallback is a routing and execution policy.
+It does not redefine module meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+WHEN CLOUD FALLBACK IS ALLOWED (PRECONDITIONS)
+──────────────────────────────────────────────────────────────────────────────
+
+Cloud fallback is allowed only when ALL are true:
+
+1) SCOPE/POLICY PERMITS IT
+The active scope must allow cloud execution for this capability/action.
+
+2) MEANING IS PRESERVED
+Cloud execution must attempt the same capability with the same canonical parameters.
+Fallback must not change WHAT is being attempted.
+
+3) RISK IS ACCEPTABLE FOR THIS ACTION TYPE
+The action must be safe under duplicate attempts,
+or policy must require confirmation before attempting fallback.
+
+4) AUDITABILITY IS MAINTAINED
+Both attempts (primary and fallback) must be traceable via correlation_id
+and recorded as separate evidence, not merged into a single narrative.
+
+If any precondition fails, fallback is forbidden.
+The correct outcome is refusal, clarification, or failure reporting.
+
+──────────────────────────────────────────────────────────────────────────────
+FALLBACK TRIGGERS (WHAT CAUSES FALLBACK)
+──────────────────────────────────────────────────────────────────────────────
+
+Fallback may be triggered by two classes of conditions.
+
+A) UNAVAILABILITY BEFORE EXECUTION
+- no offline-capable adapter supports the required capability for the target
+- the offline adapter is disabled in this scope
+- the offline adapter is known unhealthy at selection time
+- the target is outside the offline adapter’s compatibility set
+
+In this case, the router may select the best cloud candidate immediately,
+if cloud is allowed.
+
+B) FAILURE DURING EXECUTION
+The offline adapter was selected and invoked, but returns failure evidence such as:
+- unreachable
+- timeout
+- transient vendor/bridge error
+
+Whether these failures trigger fallback is policy-defined.
+Fallback must not be a hidden default.
+
+Some failures must never trigger fallback automatically:
+- invalid_parameters (planning bug)
+- capability_mismatch (fallback cannot change meaning)
+- permission denied (policy must be addressed, not routed around)
+
+Fallback is for path failure, not for law bypass.
+
+──────────────────────────────────────────────────────────────────────────────
+FALLBACK SAFETY: DOUBLED ACTION RISK
+──────────────────────────────────────────────────────────────────────────────
+
+Fallback implies multiple execution attempts for the same user intent.
+
+This introduces a fundamental hazard:
+the second attempt may succeed after the first attempt already succeeded silently.
+
+Therefore, fallback must be constrained by action semantics.
+
+A) SAFE (GENERALLY IDempotent) ACTIONS
+These actions are safe to attempt via an alternate path because repeating them
+does not compound effects:
+
+- set_on(true/false)
+- set_level(value)
+- set_temperature(value)
+- stop operations (when “stop” is a safe dominant command)
+
+Even here, truth must remain honest:
+two attempts are still two attempts, and evidence must be preserved.
+
+B) UNSAFE (NON-IDEMPOTENT) ACTIONS
+These actions may compound effects if repeated:
+
+- toggle
+- “increase by delta” where delta compounds if applied twice
+- “open/close” when current state is unknown and execution may be mechanical risk
+- “start recording” if duplicates create multiple clips unintentionally
+- “place order” style actions (business domains)
+
+For unsafe actions, fallback requires one of:
+- verification-capable primary path (so the system knows whether the first succeeded)
+- explicit confirmation gate before attempting fallback
+- refusal if risk is unacceptable in the configured policy
+
+Fallback is never allowed to silently double-act in unsafe domains.
+
+──────────────────────────────────────────────────────────────────────────────
+EVIDENCE PRESERVATION UNDER FALLBACK
+──────────────────────────────────────────────────────────────────────────────
+
+Fallback must preserve evidence as it happened.
+
+Rules:
+- primary attempt returns an ActionResult (success or failure).
+- fallback attempt returns a separate ActionResult.
+- the router must not overwrite the first result with the second.
+- the engine must gate truth using the combined evidence set,
+  but must not rewrite history.
+
+A later success does not erase earlier failure.
+A later failure does not erase earlier success.
+
+This prevents retroactive narrative truth.
+
+──────────────────────────────────────────────────────────────────────────────
+USER-FACING HONESTY UNDER FALLBACK
+──────────────────────────────────────────────────────────────────────────────
+
+Fallback affects how Ashby should speak.
+
+Rules:
+- if fallback changes the verification risk (e.g., local verified vs cloud write-only),
+  the response must reflect the best available truth posture.
+- if the system attempted multiple paths, the user-facing explanation must not claim
+  only a single attempt occurred when that would be misleading.
+- user-facing detail may be minimal, but must not be false.
+
+Examples (representative):
+- “I tried locally first, then used the cloud path after the local bridge didn’t respond.”
+- “I sent the command via the cloud path because no local path was available in this scope.”
+
+The system must never pretend the world is simpler than it is.
+
+──────────────────────────────────────────────────────────────────────────────
+CONFIGURATION MODES (HOW PRODUCTS CONTROL FALLBACK)
+──────────────────────────────────────────────────────────────────────────────
+
+Cloud fallback must be configurable at least at these levels:
+
+1) SCOPE-LEVEL MODE
+- cloud_disallowed
+- cloud_allowed
+- cloud_required
+
+2) CAPABILITY / ACTION-TYPE OVERRIDES (OPTIONAL)
+Examples:
+- allow cloud fallback for “turn_off” but not for “unlock”
+- require confirmation before cloud fallback for “start_recording”
+
+3) TIMEOUT / HEALTH THRESHOLDS
+Fallback triggers should be parameterized:
+- local timeout threshold before fallback
+- health degradation threshold before preferring cloud
+
+Rules:
+- configuration is explicit.
+- defaults must be conservative.
+- changes to these defaults are governance events for shipped profiles.
+
+Cloud fallback exists to support many customer realities without hiding risk.
+
+──────────────────────────────────────────────────────────────────────────────
+PRIVACY AND DATA FLOW CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Cloud execution may expose more data than local execution.
+
+Therefore:
+- scopes may prohibit cloud execution for privacy reasons.
+- certain capabilities may be cloud-prohibited (e.g., camera operations)
+  unless explicitly enabled.
+- adapters must not exfiltrate more data than required to execute the action.
+
+Fallback must respect privacy policy as strictly as safety policy.
+
+“Cloud-allowed” is not “anything goes.”
+
+──────────────────────────────────────────────────────────────────────────────
+FALLBACK AND HEALTH-BASED ROUTING (NON-SILENT)
+──────────────────────────────────────────────────────────────────────────────
+
+Health signals may influence selection:
+- prefer a healthy path over a failing one
+
+However:
+- health-based rerouting must remain auditable
+- it must not silently change semantics
+- it must not bypass offline-only policy
+
+If offline-only is configured:
+- health does not authorize cloud.
+- the platform refuses rather than silently changing execution mode.
+
+If cloud-allowed is configured:
+- health may cause cloud to be selected earlier,
+  but the selection must remain visible in audit logs.
+
+Health is a routing input, not a meaning input.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Cloud-allowed fallback must:
+- be controlled by scope/profile policy (cloud_disallowed/allowed/required)
+- preserve WHAT exactly (same capability, same canonical parameters)
+- be deterministic and auditable
+- preserve evidence as separate ActionResults per attempt
+- respect idempotency and action semantics (no silent double-act)
+- respect privacy constraints and scope prohibitions
+- never bypass Truth Gate or scope law
+
+Cloud-allowed fallback must never:
+- be used as an excuse to skip building offline capability
+- silently route around policy/permissions
+- change meaning in order to “make something work”
+- collapse multiple attempts into a single success narrative
+- perform fallback for unsafe actions without confirmation or verification ability
+- violate cloud-disallowed scopes under any circumstance
+
+Fallback exists to handle reality, not to hide it.
+
+END OF 18.4

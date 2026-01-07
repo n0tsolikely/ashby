@@ -1,0 +1,86 @@
+ASHBY CODEX — 2.3
+ASHBY AS A PLATFORM, NOT A PRODUCT
+
+Ashby is not shipped as a single finished thing.
+Ashby is a platform that produces many products.
+
+This distinction is fundamental.
+
+A product is defined by:
+- a fixed set of features
+- a specific audience
+- a bounded scope
+- a lifecycle that ends in replacement
+
+A platform is defined by:
+- a stable core
+- extensible capabilities
+- multiple use cases
+- a lifecycle that continues through evolution
+
+Ashby is designed as a platform from the beginning.
+
+This means Ashby’s identity does not change when:
+- a new module is added
+- an old module is removed
+- a product profile is created
+- a product profile is retired
+- a new domain is introduced
+- a new agent is attached
+
+Products are expressions of Ashby.
+They are not Ashby itself.
+
+In Ashby, products are defined by:
+- enabled modules
+- configuration
+- profiles
+- feature flags
+- entitlements
+
+Examples of products include:
+- a home automation product
+- a meetings capture product
+- an inventory management product
+- a creator or media workflow product
+
+These examples are representative, not exhaustive.
+
+The platform beneath them is the same.
+
+This separation allows Ashby to:
+- serve different audiences without forking code
+- evolve features independently
+- ship constrained versions safely
+- support experimentation without destabilizing the core
+
+It also allows Ashby to survive success.
+
+Most systems collapse when they succeed
+because their core was never designed to host multiple products.
+Features accrete until the system becomes unmanageable.
+
+Ashby avoids this by enforcing:
+- strict WHAT vs HOW separation
+- removable modules
+- configuration-driven behavior
+- profile-based product definition
+
+If a feature requires forking the engine,
+that feature is incompatible with Ashby.
+
+If a feature can be enabled or disabled cleanly,
+it belongs on the platform.
+
+Ashby’s platform-first design is what makes it:
+- reusable
+- maintainable
+- explainable
+- rebuildable
+- future-proof
+
+Ashby is not a product that happens to be extensible.
+
+Ashby is a platform that produces products by design.
+
+END OF 2.3

@@ -1,0 +1,76 @@
+ASHBY CODEX — 5.12
+COMMANDMENT XI — ASHBY CHANGES ONLY BY CONTROL SYNC
+
+Ashby changes only by Control Sync.
+
+This commandment exists because ungoverned change
+is indistinguishable from architectural decay.
+
+Most systems fail not because they change,
+but because they change silently.
+
+Small decisions accumulate.
+Shortcuts are taken.
+Exceptions are justified.
+Over time, the system becomes something
+no one intended to build.
+
+Ashby prevents this by requiring explicit governance
+for foundational change.
+
+A Control Sync is required when a change affects:
+- engine responsibilities
+- truth semantics
+- state authority
+- scope model
+- WHAT vs HOW separation
+- removability guarantees
+- trust assumptions
+
+These changes are not incremental.
+They redefine Ashby’s identity.
+
+A Control Sync requires:
+- deliberate pause
+- explicit articulation of the change
+- acknowledgment of consequences
+- documentation of the new law
+- acceptance that previous assumptions are invalidated
+
+Control Sync is not bureaucracy.
+It is protection.
+
+Changes that do NOT require Control Sync include:
+- adding or removing modules
+- adding or removing agents
+- adding or removing adapters
+- adding vendors or protocols
+- creating new product profiles
+- tuning policies within existing law
+
+These are expected forms of growth.
+
+Control Sync exists to prevent:
+- accidental redefinition of the engine
+- erosion of truth enforcement
+- gradual collapse of boundaries
+- loss of rebuildability
+- divergence between intention and reality
+
+This commandment also protects future builders.
+
+A future maintainer must be able to trust
+that the Codex represents deliberate decisions,
+not the residue of convenience.
+
+If a change feels uncomfortable,
+that discomfort is a signal.
+
+If a change feels “too big for a commit,”
+it probably requires Control Sync.
+
+Ashby changes only by Control Sync
+so that when Ashby changes,
+everyone knows exactly what changed and why.
+
+END OF 5.12

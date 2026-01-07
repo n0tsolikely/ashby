@@ -1,0 +1,257 @@
+ASHBY CODEX — 23
+Preservation Pack #5 — Migration & Structural Realignment
+
+This subsection embeds the corresponding Preservation Pack as a mechanical invariant.
+It is reproduced in full below to support rebuild, audit, and long-horizon continuity.
+Unless amended via Control Sync, the rules herein are treated as canonical.
+
+BEGIN PRESERVATION PACK #5
+
+ASHBY PRESERVATION PACK #5 — MIGRATION & STRUCTURAL REALIGNMENT PLAYBOOK
+Version: 1.0
+Date: 2025-12-22
+Goal: Provide an exact, low-risk, step-by-step playbook for restructuring Ashby
+without breaking behavior. This pack is specifically designed to support the
+“Structural Realignment Raid” and any future refactors.
+
+This document assumes:
+  - Behavior is currently WORKING and must not change.
+  - The refactor goal is structural hygiene + future extensibility.
+  - Action-Gated Truth must remain intact at every step.
+
+──────────────────────────────────────────────────────────────────────────────
+1) CORE RULES OF STRUCTURAL REALIGNMENT
+──────────────────────────────────────────────────────────────────────────────
+These rules are absolute:
+
+1. NO BEHAVIOR CHANGE.
+   - If lights worked before, they must work exactly the same after.
+   - No logic “improvements” during structure work.
+
+2. ONE CANONICAL ROOT.
+   - There must be exactly ONE Ashby root directory.
+   - All execution, imports, and tooling reference this root.
+
+3. SMALL, REVERSIBLE STEPS.
+   - Every step must be revertible within minutes.
+   - Snapshots before every major move.
+
+4. NEVER MIX STRUCTURE AND LOGIC.
+   - Structural move first.
+   - Logic changes later in a different raid.
+
+5. ROUTER STAYS UGLY (FOR NOW).
+   - router.py may remain a god file temporarily.
+   - Do NOT split router until structure is clean and stable.
+
+──────────────────────────────────────────────────────────────────────────────
+2) PRE-FLIGHT CHECKLIST (MANDATORY)
+──────────────────────────────────────────────────────────────────────────────
+Before touching anything:
+
+- [ ] Lights control confirmed working
+- [ ] Telegram control confirmed working
+- [ ] CLI harness confirmed working
+- [ ] Current directory tree documented (tree > snapshot.txt)
+- [ ] Full backup created (zip/tar)
+
+Backup recommendation:
+  tar -czvf ashby_pre_refactor_YYYY-MM-DD.tar.gz ashpi/
+
+If this step is skipped, STOP.
+
+──────────────────────────────────────────────────────────────────────────────
+3) CANONICAL ROOT MIGRATION
+──────────────────────────────────────────────────────────────────────────────
+Target end state:
+  ~/ashby/
+    ashby/          # python package
+    configs/
+    secrets/
+    runtime/
+    io/
+    scripts/
+    tests/
+
+Steps:
+
+1) Create canonical root:
+   mkdir ~/ashby
+
+2) Move current working package into new root:
+   mv ~/home/notsolikely/home/notsolikely/ashpi ~/ashby/ashby
+
+3) Verify python package import:
+   - ashby/__init__.py must exist
+   - imports temporarily still reference old names (next step fixes this)
+
+4) Do NOT delete old tree yet.
+   - Keep it until verification passes.
+
+──────────────────────────────────────────────────────────────────────────────
+4) PACKAGE RENAME: ashpi → ashby
+──────────────────────────────────────────────────────────────────────────────
+Goal:
+  - Eliminate legacy naming.
+  - Make platform identity unambiguous.
+
+Steps:
+
+1) Rename folder (already done above):
+   ashpi → ashby
+
+2) Global import replacement:
+   - Replace all:
+       import ashpi...
+     with:
+       import ashby...
+
+3) Update entrypoints:
+   - CLI harness
+   - Telegram bot
+   - Any scripts
+
+4) Run minimal test:
+   - import ashby
+   - run CLI harness
+   - toggle a light
+
+If anything breaks:
+   - revert
+   - fix imports only
+   - retry
+
+No logic edits allowed.
+
+──────────────────────────────────────────────────────────────────────────────
+5) TOP-LEVEL FILE HYGIENE
+──────────────────────────────────────────────────────────────────────────────
+Goal:
+  - Remove “random .py files” from home directory.
+  - Every file must have a purpose and location.
+
+Rules:
+
+- Telegram bot → io/telegram/
+- CLI harness → io/cli/
+- One-off diagnostics → scripts/
+- Casting / experiments → scripts/ (or archive)
+
+Example moves:
+  mv ashby_telegram_control.py ashby/io/telegram/telegram_app.py
+  mv ashpi_test.py ashby/io/cli/cli.py
+  mv ashpi_tuya_test.py ashby/scripts/diagnostics_tuya.py
+
+Nothing remains loose in ~/home/notsolikely.
+
+──────────────────────────────────────────────────────────────────────────────
+6) RUNTIME VS SOURCE SEPARATION
+──────────────────────────────────────────────────────────────────────────────
+Runtime artifacts MUST NOT live beside source code.
+
+Create:
+  ashby/runtime/
+    memory/
+    cache/
+    logs/
+
+Move:
+  - JSON memory files
+  - cached device state
+  - temp audio files
+  - log files
+
+Update code to reference runtime paths dynamically.
+
+──────────────────────────────────────────────────────────────────────────────
+7) SECRETS HANDLING (STRUCTURAL)
+──────────────────────────────────────────────────────────────────────────────
+Rules:
+  - No secrets in source tree.
+  - No secrets in configs.
+  - No secrets in chat logs.
+
+Steps:
+  - Move env.py / .env files into ashby/secrets/
+  - Replace direct imports with env loaders
+  - Verify secrets are loaded at runtime only
+
+Never print secrets for debugging.
+
+──────────────────────────────────────────────────────────────────────────────
+8) ROUTER STABILIZATION CHECK
+──────────────────────────────────────────────────────────────────────────────
+Before moving on to logic refactors:
+
+- [ ] router.py still executes end-to-end
+- [ ] ActionResult still returned
+- [ ] Truth Gate still enforced
+- [ ] Sessions still behave identically
+- [ ] Acceptance tests from Pack #4 still pass
+
+If any fail:
+  - STOP
+  - revert last change
+  - fix structure only
+
+──────────────────────────────────────────────────────────────────────────────
+9) SNAPSHOT & RAID CHECKPOINT
+──────────────────────────────────────────────────────────────────────────────
+At end of Structural Realignment Raid:
+
+Produce:
+  - End-of-Day Snapshot file
+  - Updated directory tree
+  - Confirmation that:
+      - behavior unchanged
+      - new structure stable
+
+Then and ONLY then:
+  - Resume Ashby Core Raid
+  - Begin router decomposition in a NEW raid
+
+──────────────────────────────────────────────────────────────────────────────
+10) FUTURE REFACTOR PHASES (NOT PART OF THIS RAID)
+──────────────────────────────────────────────────────────────────────────────
+Explicitly out of scope for Structural Realignment:
+
+- Router decomposition
+- Policy extraction
+- NLU refactor
+- Module expansion
+- Camera/Stuart work
+
+These require separate Guild Orders.
+
+──────────────────────────────────────────────────────────────────────────────
+11) FAILURE CONDITIONS (ABORT SIGNALS)
+──────────────────────────────────────────────────────────────────────────────
+If ANY of the following occur, ABORT and ROLLBACK:
+
+- Lights no longer respond
+- Telegram no longer works
+- CLI harness diverges from Telegram behavior
+- Action-Gated Truth violated
+- Router begins mutating behavior
+
+Structural refactor must be boring.
+
+──────────────────────────────────────────────────────────────────────────────
+12) WHY THIS PLAYBOOK MATTERS
+──────────────────────────────────────────────────────────────────────────────
+This pack prevents:
+  - accidental rewrites
+  - silent behavior drift
+  - future “we don’t know how this works anymore” moments
+
+It allows Ashby to evolve safely.
+
+Structure first.
+Logic later.
+Truth always.
+
+END OF PACK #5
+
+END PRESERVATION PACK #5
+
+END OF 23

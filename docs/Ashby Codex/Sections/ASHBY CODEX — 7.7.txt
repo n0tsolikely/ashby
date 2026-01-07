@@ -1,0 +1,150 @@
+ASHBY CODEX — 7.7
+WHY ADAPTERS MAY NEVER DEFINE REALITY
+
+Adapters may never define reality in Ashby.
+
+This rule is absolute.
+
+Adapters exist to interact with the external world.
+They do not own truth.
+They do not own state.
+They do not own meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT AN ADAPTER IS
+──────────────────────────────────────────────────────────────────────────────
+
+An adapter is an execution interface.
+
+It translates Ashby’s intent
+into external actions
+and returns observable results.
+
+Adapters exist to:
+- speak vendor protocols
+- issue commands
+- receive telemetry
+- report execution outcomes
+
+Adapters do not reason.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY ADAPTER-DEFINED REALITY IS DANGEROUS
+──────────────────────────────────────────────────────────────────────────────
+
+External systems:
+- collapse outcomes into success
+- hide partial failure
+- report intent as completion
+- mask uncertainty
+- change semantics over time
+
+If Ashby accepts adapter output as truth,
+then reality becomes vendor-defined.
+
+This leads to:
+- false confidence
+- silent failure
+- inconsistent explanations
+- loss of rebuildability
+- erosion of trust
+
+Ashby rejects this.
+
+──────────────────────────────────────────────────────────────────────────────
+EVIDENCE VS TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters produce evidence.
+
+Evidence must be:
+- interpreted
+- evaluated
+- contextualized
+- gated
+
+Only the engine may perform this interpretation.
+
+An adapter may say:
+“Command accepted.”
+
+Ashby may say:
+“The action was attempted, but verification is incomplete.”
+
+This distinction preserves honesty.
+
+──────────────────────────────────────────────────────────────────────────────
+ADAPTER BOUNDARIES
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- write directly to HouseState
+- upgrade confidence
+- decide language
+- infer success
+- assume continuity
+- reconcile conflicting data
+
+Adapters must:
+- return raw execution results
+- report errors explicitly
+- expose uncertainty
+- avoid semantic interpretation
+
+Any adapter that violates these rules
+is incompatible with Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+ADAPTERS AND SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters operate within scope,
+but do not define it.
+
+They may:
+- receive scoped targets
+- execute scoped actions
+- return scoped evidence
+
+They may not:
+- infer scope
+- escalate scope
+- collapse scope boundaries
+
+Scope law is owned by the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY THIS MATTERS AT SCALE
+──────────────────────────────────────────────────────────────────────────────
+
+As Ashby grows:
+- more vendors are added
+- more protocols are bridged
+- more domains are integrated
+
+If adapters are allowed to define reality,
+Ashby fractures into vendor-shaped truths.
+
+By forbidding this,
+Ashby maintains:
+- consistent truth semantics
+- explainable behavior
+- vendor replaceability
+- offline survivability
+- long-term integrity
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSEQUENCES
+──────────────────────────────────────────────────────────────────────────────
+
+If adapters define reality,
+Ashby becomes a proxy, not a platform.
+
+Therefore:
+
+Adapters produce evidence.
+The engine defines reality.
+
+This boundary must never be crossed.
+
+END OF 7.7

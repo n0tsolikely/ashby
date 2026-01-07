@@ -1,0 +1,136 @@
+ASHBY CODEX — 10.2
+INTENT EXTRACTION AND NORMALIZATION
+
+Intent extraction is the process by which Ashby
+converts raw input into a structured, actionable representation.
+
+Normalization ensures that intent is expressed
+in a consistent form
+before any reasoning occurs.
+
+This separation prevents ambiguity
+from contaminating policy, scope, or execution.
+
+──────────────────────────────────────────────────────────────────────────────
+RAW INPUT VS INTENT
+──────────────────────────────────────────────────────────────────────────────
+
+Raw input is untrusted.
+
+It may be:
+- vague
+- incomplete
+- emotional
+- contradictory
+- imprecise
+
+Intent is structured.
+
+It represents:
+- desired outcome
+- implied action
+- referenced entities
+- candidate scope
+- confidence level
+
+Normalization is required
+before intent may enter cognition.
+
+──────────────────────────────────────────────────────────────────────────────
+INTENT EXTRACTION
+──────────────────────────────────────────────────────────────────────────────
+
+Intent extraction identifies:
+- action candidates
+- target references
+- qualifiers and modifiers
+- temporal hints
+- negation or cancellation
+- uncertainty markers
+
+Extraction does not decide meaning.
+It surfaces possibilities.
+
+Ambiguity is preserved,
+not resolved,
+at this stage.
+
+──────────────────────────────────────────────────────────────────────────────
+NORMALIZATION
+──────────────────────────────────────────────────────────────────────────────
+
+Normalization converts extracted intent
+into a canonical form.
+
+This includes:
+- standardized action verbs
+- normalized entity identifiers
+- explicit scope references
+- normalized modifiers
+- explicit ambiguity flags
+
+Normalization removes surface variation,
+not semantic uncertainty.
+
+Different phrasings that mean the same thing
+must normalize identically.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT NORMALIZATION MUST NEVER DO
+──────────────────────────────────────────────────────────────────────────────
+
+Normalization must never:
+- resolve ambiguity
+- infer missing intent
+- assume default scope
+- upgrade confidence
+- discard uncertainty
+
+Those decisions belong to cognition and policy.
+
+──────────────────────────────────────────────────────────────────────────────
+INTENT AS INPUT TO COGNITION
+──────────────────────────────────────────────────────────────────────────────
+
+Only normalized intent
+may enter cognition subsystems.
+
+This guarantees that:
+- reasoning is deterministic
+- policy decisions are traceable
+- behavior is consistent across transports
+
+If normalization cannot produce
+a valid structured intent,
+the engine must clarify or refuse.
+
+──────────────────────────────────────────────────────────────────────────────
+EVOLUTION AND EXTENSIBILITY
+──────────────────────────────────────────────────────────────────────────────
+
+Intent schemas may evolve.
+
+New actions,
+domains,
+or modifiers
+may be added
+without rewriting existing law.
+
+Normalization absorbs this growth
+without affecting policy semantics.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Intent extraction and normalization must never:
+- decide policy
+- execute actions
+- define truth
+- alter state
+- hide ambiguity
+
+They exist to prepare input
+for lawful reasoning.
+
+END OF 10.2

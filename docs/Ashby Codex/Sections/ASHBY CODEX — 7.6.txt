@@ -1,0 +1,129 @@
+ASHBY CODEX — 7.6
+SCOPE-BOUND AUTHORITY AND STATE
+
+Authority and state in Ashby are inseparable from scope.
+
+There is no authority without scope.
+There is no state without scope.
+
+This binding is what prevents Ashby
+from acting globally, guessing context,
+or leaking control across boundaries.
+
+──────────────────────────────────────────────────────────────────────────────
+AUTHORITY IS ALWAYS SCOPED
+──────────────────────────────────────────────────────────────────────────────
+
+Authority defines what Ashby is permitted to do.
+
+In Ashby:
+- authority is granted per scope
+- authority is never global
+- authority is never implied
+- authority is never inferred from convenience
+
+An action is permitted
+only if the active scope grants authority for it.
+
+If authority cannot be resolved confidently,
+Ashby must refuse or clarify.
+
+──────────────────────────────────────────────────────────────────────────────
+STATE IS ALWAYS SCOPED
+──────────────────────────────────────────────────────────────────────────────
+
+State represents Ashby’s belief about reality.
+
+That belief exists only within scope.
+
+State includes:
+- device state
+- environmental conditions
+- automation status
+- historical actions
+- confidence levels
+- uncertainty markers
+
+There is no global HouseState.
+
+HouseState is a collection of scoped beliefs,
+not a flat store.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY SCOPE-BOUND STATE IS REQUIRED
+──────────────────────────────────────────────────────────────────────────────
+
+Without scoped state:
+- failures propagate incorrectly
+- confidence upgrades leak globally
+- partial success is misrepresented
+- explanations lose precision
+
+Scope-bound state ensures that:
+- belief changes are localized
+- uncertainty is contained
+- confidence degrades correctly
+- explanations reference the correct context
+
+This is required for honesty at scale.
+
+──────────────────────────────────────────────────────────────────────────────
+AUTHORITY VS PERMISSION
+──────────────────────────────────────────────────────────────────────────────
+
+Authority is structural.
+Permission is situational.
+
+Authority answers:
+“Is this action allowed in this scope?”
+
+Permission answers:
+“Is this action allowed right now?”
+
+Permissions may depend on:
+- time
+- user role
+- safety conditions
+- confirmation state
+
+Authority must exist
+before permission is evaluated.
+
+If authority is absent,
+permission is irrelevant.
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPE TRANSITIONS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby may reason across scopes,
+but it may not act across scopes
+without explicit transition.
+
+A scope transition requires:
+- explicit resolution
+- explanation
+- confirmation when appropriate
+
+Implicit scope escalation is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+No action may:
+- upgrade state outside its scope
+- claim authority outside its scope
+- modify sibling scope state
+- bypass scope checks
+
+Any design that introduces
+global authority or global state
+violates Ashby’s core law.
+
+Scope-bound authority and state
+are how Ashby remains safe,
+honest,
+and explainable.
+
+END OF 7.6

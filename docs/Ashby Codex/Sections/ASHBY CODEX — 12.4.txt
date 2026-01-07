@@ -1,0 +1,197 @@
+ASHBY CODEX — 12.4
+RESTART AND PERSISTENCE
+
+HouseState must survive restarts.
+
+Persistence is not a convenience feature.
+Persistence is a requirement for continuity, auditability, and long-term trust.
+
+A system that forgets its belief on restart is forced to:
+- guess
+- re-learn through failure
+- speak without context
+- behave inconsistently across time
+
+Ashby forbids this.
+
+HouseState is persisted so that Ashby can resume with:
+- the last known belief
+- explicit confidence
+- explicit timestamps
+- explicit uncertainty
+
+Persistence preserves belief.
+Persistence does not create truth.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT PERSISTENCE MEANS
+──────────────────────────────────────────────────────────────────────────────
+
+Persistence means that HouseState is written to durable storage in a canonical form.
+
+Rules:
+- persisted state is scope-bound
+- persisted state is portable across machines
+- persisted state is readable without vendor SDKs
+- persisted state is validated on load
+- persisted state never includes secrets
+
+Persistence records:
+- what Ashby believed
+- how confident it was
+- when that belief was last updated and/or verified
+
+Persistence must not record:
+- credentials, tokens, or keys
+- raw vendor payloads as authoritative truth
+- transport artifacts as meaning
+- model outputs as evidence
+
+HouseState is an engine artifact.
+It must remain auditable and rebuild-safe.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT MUST BE PERSISTED
+──────────────────────────────────────────────────────────────────────────────
+
+At minimum, persistence must include:
+
+1) SCOPE BINDING
+- scope_id for each belief set
+- any required scope metadata to interpret device keys correctly
+
+2) ENTITY IDENTIFIERS
+- internal device_keys and other internal entity identifiers
+- no vendor identifiers as authoritative targets
+
+3) ATTRIBUTE BELIEFS
+For each attribute that Ashby reasons over:
+- canonical value (in canonical units)
+- confidence (VERIFIED / LAST_KNOWN / UNKNOWN)
+- timestamps sufficient to evaluate staleness and decay
+
+4) TRACEABILITY FIELDS (MINIMUM)
+- last update timestamps
+- optional correlation identifiers for last update
+- optional module key that produced the update (for audit only)
+
+Persistence must remain minimal but sufficient.
+Sufficient means:
+a rebuild can restore the belief model and its uncertainty correctly.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT MUST NEVER BE PERSISTED
+──────────────────────────────────────────────────────────────────────────────
+
+Persistence must never include:
+- secrets, keys, tokens, passwords
+- vendor headers, OAuth payloads, session cookies
+- raw vendor responses as canonical evidence
+- full unredacted error traces
+- user-provided secret strings embedded in state
+
+If a secret appears in persisted state, the system is compromised.
+
+Persistence is part of security posture.
+
+──────────────────────────────────────────────────────────────────────────────
+ATOMICITY AND CORRUPTION SAFETY
+──────────────────────────────────────────────────────────────────────────────
+
+Persistence must be safe under power loss and crashes.
+
+Rules:
+- writes must be atomic (transactional storage or write-then-rename)
+- partially written state must never be treated as valid
+- state loads must validate schema and integrity before use
+
+If persisted state is corrupted or invalid:
+- Ashby must not guess
+- Ashby must enter a degraded truth posture
+- affected beliefs must be treated as UNKNOWN
+- the system must surface the fault to operators via logs and status
+
+A corrupted belief store is not “bad data.”
+It is absence of trustworthy evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+RESTART PROCEDURE (AUTHORITATIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+On restart, Ashby must:
+
+1) Load persisted HouseState
+- validate schema
+- validate scope bindings
+- validate required fields for confidence and timestamps
+
+2) Never upgrade confidence due to restart
+- restart is not evidence
+- restart increases uncertainty, never decreases it
+
+3) Apply staleness/decay rules immediately
+- VERIFIED may decay to LAST_KNOWN
+- LAST_KNOWN may decay to UNKNOWN
+- UNKNOWN remains UNKNOWN
+
+4) Mark transient session state as inactive
+- sessions may be resumed only through explicit session law
+- no session may survive restart as “active by assumption”
+
+5) Resume operation in an explicitly honest posture
+- if beliefs are stale, Ashby must speak as last-known or unknown
+- if state is unknown, Ashby must offer refresh rather than pretend certainty
+
+Restart restores memory of belief, not proof of reality.
+
+──────────────────────────────────────────────────────────────────────────────
+PERSISTENCE FREQUENCY AND FLUSH LAW
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState must be persisted whenever it is meaningfully updated.
+
+Rules:
+- state updates derived from ActionResult evidence must be persisted promptly
+- persistence must not be deferred indefinitely
+- persistence must not rely solely on graceful shutdown
+
+Graceful shutdown is not guaranteed.
+Crash safety is required.
+
+Persisted state is allowed to lag by a small, bounded window,
+but the window must be deliberate and explicitly chosen.
+
+A system that silently drops state updates is not rebuild-safe.
+
+──────────────────────────────────────────────────────────────────────────────
+USER-VISIBLE BEHAVIOR AFTER RESTART
+──────────────────────────────────────────────────────────────────────────────
+
+After restart, Ashby must not speak as if it is currently observing reality.
+
+Allowed patterns:
+- “As of last time, the lights were on (last known). Want me to refresh?”
+- “I don’t have a reliable state after restart. I can sync devices if you want.”
+
+Forbidden patterns:
+- “The lights are on.” (unless VERIFIED by post-restart evidence)
+- “Everything is normal.” (unless proven)
+
+A restart is a loss of live continuity.
+Ashby must admit that loss.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Restart and persistence must never:
+- upgrade confidence without new evidence
+- treat saved state as current observation
+- restore sessions as active by assumption
+- persist secrets or raw vendor payloads as truth
+- hide corruption or silently continue on invalid state
+
+Persistence preserves belief.
+Evidence preserves truth.
+
+END OF 12.4

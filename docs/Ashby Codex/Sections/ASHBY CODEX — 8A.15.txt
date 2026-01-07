@@ -1,0 +1,392 @@
+ASHBY CODEX — 8A.15
+tests/
+
+tests/ is Ashby’s immune system.
+
+Everything that makes Ashby resurrectable is enforced here.
+Because people forget.
+Teams change.
+Vendors change.
+Pressure happens.
+And without mechanical enforcement, the system drifts.
+
+tests/ exists to make the Ashby constitution real:
+- WHAT/HOW separation stays true
+- Truth Gate posture cannot be weakened quietly
+- HouseState staleness and decay cannot be hand-waved
+- scope and identity law cannot be bypassed
+- modules remain removable
+- bridges and vendors remain optional
+- secrets do not leak
+- offline/degraded behavior stays honest
+- migrations remain safe
+
+If tests/ is weak, the platform’s written laws become optional.
+Optional law is how platforms die.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF tests/
+──────────────────────────────────────────────────────────────────────────────
+
+tests/ exists to guarantee:
+
+A) CONSTITUTIONAL INVARIANTS ARE ENFORCED
+The most important properties are not “features.”
+They are laws.
+
+B) CHANGE CAN BE TRUSTED
+A platform that cannot verify changes cannot evolve safely.
+
+C) REGRESSION IS DETECTABLE
+If a change breaks truth posture, safety, or removability,
+the system must fail loudly before it ships.
+
+D) RESURRECTION IS POSSIBLE
+A future builder can run tests and know:
+- whether Ashby still matches its doctrine
+- where it deviated
+- and what needs repair
+
+tests/ is not “quality assurance.”
+It is Ashby’s continuity mechanism.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL tests/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+tests/
+├── unit/                                      # pure logic tests (fast)
+│   ├── engine/
+│   ├── scopes/
+│   ├── domain/
+│   ├── modules/
+│   └── utils/
+│
+├── contract/                                  # interface contract tests
+│   ├── adapters/
+│   ├── bridges/
+│   ├── native_vendor/
+│   ├── connectors/
+│   └── plugins/
+│
+├── integration/                               # stitched system tests (real seams)
+│   ├── engine_loop/                           # intent→policy→plan→execute→truth→state→response
+│   ├── storage/
+│   ├── identity/
+│   └── eventing/
+│
+├── acceptance/                                # “platform behaves as Ashby” tests
+│   ├── harness/                               # test harness runtime + fixtures
+│   ├── scenarios/                             # high-level scenarios by domain
+│   └── golden/                                # golden outputs (truth posture + language)
+│
+├── migration/                                 # schema + structural realignment tests
+│   ├── fixtures/
+│   ├── forward/
+│   └── rollback/
+│
+├── security/                                  # secrets, sanitization, access control
+│   ├── leak_tests/
+│   ├── permission_tests/
+│   └── plugin_sandbox_tests/
+│
+├── performance/                               # latency + throughput + resource bounds
+│   ├── load/
+│   └── soak/
+│
+└── chaos/                                     # degraded/offline/outage tests
+    ├── offline/
+    ├── vendor_outage/
+    ├── bridge_outage/
+    └── partial_failure/
+
+The names are canonical at the category level.
+Tools can vary.
+Responsibilities do not.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE CONSTITUTIONAL TEST SET (WHAT MUST BE TESTED, ALWAYS)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby must have explicit tests that enforce the following invariants.
+These are non-negotiable.
+
+3.1 WHAT / HOW SEPARATION (THE SACRED SPLIT)
+Tests must fail if:
+- modules perform execution
+- modules import vendor SDKs, bridge clients, or connector clients
+- modules perform network IO
+- engine becomes dependent on optional organs (modules/)
+
+Examples of enforcement:
+- forbidden import tests
+- network syscall blocking tests in module execution context
+- “adapter-only execution” contract tests
+
+3.2 TRUTH GATE POSTURE (NO LYING)
+Tests must fail if:
+- the system claims an action occurred without ActionResult evidence
+- the system claims VERIFIED when evidence is weak or missing
+- forbidden phrases appear under UNKNOWN/LAST_KNOWN
+- uncertainty qualifiers disappear during formatting
+
+These tests must cover:
+- success cases (VERIFIED)
+- partial success
+- contradictory readbacks
+- outages (UNKNOWN)
+- stale beliefs (LAST_KNOWN with timestamps)
+
+3.3 HOUSESTATE BELIEF LAW (STALENESS/DECAY)
+Tests must fail if:
+- HouseState stores blobs as belief content
+- stale beliefs are presented as current reality
+- decay rules are bypassed
+- mixed reality is collapsed into “all good”
+
+HouseState tests must cover:
+- belief updates from evidence bundles
+- staleness evaluation under time passage
+- conflict handling (two providers disagree)
+- “no new evidence” scenarios
+
+3.4 SCOPE AND CONTEXT LAW (NO GUESSING)
+Tests must fail if:
+- contextual phrases (“in here”) resolve without a valid anchor
+- alias collisions are hidden instead of surfaced
+- cross-scope actions occur without explicit resolution
+- scope capability maps are ignored by routing
+
+These tests must include:
+- multi-room ambiguity
+- stale session anchors
+- scope permission boundaries
+
+3.5 POLICY OUTCOMES (ACT / CLARIFY / CONFIRM / REFUSE / CHAT)
+Tests must fail if:
+- ambiguity does not lead to CLARIFY
+- high-impact actions do not lead to CONFIRM
+- unavailable capabilities do not lead to REFUSE
+- emotion does not change law (“frustration is not authorization”)
+
+These tests must cover:
+- direct commands
+- vibe statements (must not execute)
+- follow-up merge-and-complete flows
+
+3.6 REMOVABILITY (UNINSTALL MUST NOT KILL THE BODY)
+Tests must fail if:
+- removing a module breaks engine boot
+- removing a module breaks artifact readability
+- disabling a module leaves background execution running
+- router selects disabled/uninstalled modules
+- platform “pretends it tried” when capability is unavailable
+
+These tests must include:
+- “feature removed” refusal correctness
+- orphan trigger prevention (eventing/runtime)
+- generic artifact readers
+
+3.7 SECRETS AND PRIVACY (NO LEAKS)
+Tests must fail if:
+- logs include tokens/credentials
+- diagnostic bundles contain secrets
+- exports contain secret handles resolved into raw values
+- plugin sandbox can exfiltrate secrets or call forbidden APIs
+
+This includes:
+- sanitization tests
+- bundle redaction tests
+- permission boundary tests for connectors and plugins
+
+3.8 OFFLINE / DEGRADED HONESTY
+Tests must fail if:
+- the system pretends it reached a vendor during outage
+- it claims “done” when no execution occurred
+- it hides unknowns instead of surfacing them
+- it retry-storms
+
+These tests must include:
+- bridge outage
+- vendor API outage
+- partial connectivity
+- long staleness windows
+
+These eight domains are the constitutional immune system.
+
+──────────────────────────────────────────────────────────────────────────────
+4) CONTRACT TESTS (INTERFACE CONTRACTS ARE LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+Contract tests exist to prevent two common failure patterns:
+- “adapter changed shape and broke modules silently”
+- “connector returns something new and the platform lies about it”
+
+Contract tests must verify:
+
+A) INPUT/OUTPUT SHAPES
+- request schema validation
+- response schema validation
+- error shape validation
+
+B) SEMANTIC EXPECTATIONS
+- idempotency behavior where promised
+- verification semantics (readback expectations)
+- “ack vs verified” distinction remains intact
+
+C) ATTRIBUTION
+- every ActionResult includes:
+  - provider/adapter attribution
+  - timestamps
+  - correlation_id
+  - scope_id (where applicable)
+
+Contract tests are where vendors are tamed into stable interfaces.
+
+──────────────────────────────────────────────────────────────────────────────
+5) ACCEPTANCE TESTS (THE PLATFORM BEHAVIOR HARNESS)
+──────────────────────────────────────────────────────────────────────────────
+
+Acceptance tests answer the only question that matters:
+
+Does the system behave as Ashby?
+
+They must simulate:
+- user inputs
+- scope contexts
+- permission contexts
+- adapter/provider behavior (including failures)
+and validate:
+- policy outcomes
+- truth posture wording constraints
+- state updates
+- artifact creation
+- audit traces
+
+Acceptance tests must include scenario families such as:
+
+- lighting: “turn on the lights in here” under ambiguity
+- security: “unlock the door” requiring confirmation
+- comfort: “it’s freezing” (vibe statement) → clarify into command
+- meetings: schedule changes with confirmation gates
+- inventory: add/remove items, audit trails, correction flows
+- automations: events triggering actions must still respect policy/confirm
+
+Golden tests must validate response posture:
+- it must be impossible for the system to “sound verified” without evidence
+
+Acceptance tests are where the Codex becomes executable.
+
+──────────────────────────────────────────────────────────────────────────────
+6) MIGRATION TESTS (TIME IS A GUARANTEED ADVERSARY)
+──────────────────────────────────────────────────────────────────────────────
+
+Migrations will happen:
+- schema versions evolve
+- scope graphs change
+- device identities are remapped
+- storage layouts move
+- bridges/providers are swapped
+
+Migration tests must cover:
+
+A) FORWARD MIGRATION
+- old persisted shapes → new shapes
+- with explicit audit of what changed
+
+B) ROLLBACK BEHAVIOR (WHEN CLAIMED)
+- if rollback is claimed safe, tests must prove it
+- if rollback is not safe, the release must declare it clearly
+
+C) IDENTITY CONTINUITY
+- device_key continuity must survive migrations
+- scope_id continuity must survive renames/moves
+
+D) NO SILENT SEMANTIC CHANGE
+- migration must not rewrite truth semantics
+- migration must not “clean up” by deleting history silently
+
+Migration tests are how Ashby survives years.
+
+──────────────────────────────────────────────────────────────────────────────
+7) SECURITY TESTS (THE PLATFORM MUST BE SAFE TO PRESERVE)
+──────────────────────────────────────────────────────────────────────────────
+
+Security tests must enforce:
+
+- secret-handles never resolve into raw secret strings in logs
+- plugins cannot escape sandbox
+- connectors cannot access scopes/users they are not permitted to
+- identity/permissions checks are enforced for high-impact actions
+- diagnostic bundles are redacted and bounded
+- exports contain manifests and never include secrets
+
+Security tests are not optional.
+A resurrectable platform must also be preservable safely.
+
+──────────────────────────────────────────────────────────────────────────────
+8) PERFORMANCE AND CHAOS (STABILITY IS A FEATURE OF LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+Performance tests exist to prevent:
+- slow degradation that forces unsafe shortcuts later
+
+Chaos tests exist to ensure:
+- the system stays honest under failure
+
+Performance tests must enforce:
+- bounded latency for policy decisions and routing
+- bounded memory growth (no storage/HouseState bloat)
+- bounded retries (no retry storms)
+
+Chaos tests must enforce:
+- outage honesty
+- partial failure reporting
+- no phantom success
+- staleness surfaces properly under silence
+
+If the system only behaves correctly when everything is perfect,
+it is not Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+9) GOVERNANCE THROUGH TESTS (CONTROL SYNC ENFORCEMENT)
+──────────────────────────────────────────────────────────────────────────────
+
+Tests are how Control Sync becomes real.
+
+When a constitutional rule is changed (by legitimate governance),
+tests must be updated deliberately and explicitly.
+
+The forbidden pattern:
+- change behavior
+- then weaken tests to make it pass
+- without acknowledging constitutional change
+
+Therefore:
+- constitutional tests should be treated as “law tests”
+- changes to law tests require explicit review discipline
+
+If law tests drift casually, the Codex becomes decoration.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+tests/ must:
+- enforce the core Ashby invariants mechanically
+- contain acceptance harnesses that validate end-to-end behavior
+- contain contract tests that tame integrations into stable interfaces
+- contain migration tests that preserve identity and history
+- contain security tests that prevent leaks and sandbox escape
+- contain chaos tests that enforce honest degraded behavior
+- be runnable by future builders with minimal environment assumptions
+
+tests/ must never:
+- be optional to ship changes
+- allow the system to “pass” while violating truth posture or safety law
+- encode hidden product forks as test expectations
+- become a place where meaning changes are hidden by adjusting assertions quietly
+
+tests/ is how Ashby stays Ashby.
+
+END OF 8A.15

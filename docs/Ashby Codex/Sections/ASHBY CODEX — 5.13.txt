@@ -1,0 +1,82 @@
+ASHBY CODEX — 5.13
+COMMANDMENT XII — ASHBY IS A PLATFORM FIRST
+
+Ashby is a platform first.
+
+This commandment exists to prevent Ashby from being defined
+by any single use case, domain, or moment in time.
+
+Ashby is not a product that later became extensible.
+Ashby is an extensible system by design.
+
+Every decision in Ashby must be evaluated through this lens:
+“Does this strengthen the platform, or does it privilege one product?”
+
+If a choice benefits one product
+but harms the platform’s integrity,
+that choice is rejected.
+
+This commandment exists because product-first systems
+inevitably fracture.
+
+When a system is defined by a single product:
+- features become entangled
+- edge cases harden into law
+- temporary hacks become permanent
+- future domains become harder to integrate
+- refactors become existential risks
+
+Ashby avoids this by enforcing platform primacy.
+
+Products in Ashby are expressions.
+They are configurations.
+They are profiles composed of:
+- enabled modules
+- enabled agents
+- execution paths
+- feature flags
+- entitlements
+
+No product owns the engine.
+No product owns truth.
+No product owns state.
+No product owns scope.
+
+The platform owns these things.
+
+This commandment allows Ashby to support:
+- homes and properties
+- businesses and operations
+- creative workflows
+- monitoring systems
+- future domains not yet imagined
+
+without redefining itself.
+
+Platform-first also means restraint.
+
+Ashby does not add core features
+simply because a product needs them.
+Core features are added only when
+multiple future products would require them
+and the addition preserves architectural law.
+
+This commandment protects Ashby from becoming
+a collection of tightly coupled solutions.
+
+Ashby remains coherent
+because the platform comes first.
+
+Any design that treats Ashby
+as “the smart home version,”
+“the meetings version,”
+or “the inventory version”
+violates this commandment.
+
+Ashby is the platform.
+Products are temporary.
+
+This hierarchy must never be reversed.
+
+END OF 5.13
+

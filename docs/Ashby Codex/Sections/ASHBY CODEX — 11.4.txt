@@ -1,0 +1,225 @@
+ASHBY CODEX — 11.4
+VERIFICATION SEMANTICS
+
+Verification is the classification of how strongly Ashby can claim
+that an attempted action produced a real-world outcome.
+
+Verification is not:
+- NLU confidence
+- conversational confidence
+- user satisfaction
+- “command accepted” optimism
+
+Verification is evidence quality.
+
+It exists to prevent the most common failure of agentic systems:
+treating execution attempts as truth.
+
+──────────────────────────────────────────────────────────────────────────────
+EXECUTION IS AN ATTEMPT. VERIFICATION IS KNOWLEDGE.
+──────────────────────────────────────────────────────────────────────────────
+
+Execution is an attempt to change reality.
+
+Knowledge is evidence that reality changed.
+
+A command can be sent successfully and still fail:
+- the network may drop
+- the device may reject the command
+- the device may be offline
+- the vendor may acknowledge receipt without applying the change
+- the state may drift after the command
+
+Verification exists so Ashby never commits the lie:
+“I sent it, therefore it happened.”
+
+Sending is not knowing.
+
+──────────────────────────────────────────────────────────────────────────────
+VERIFICATION VS CONFIDENCE
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby uses the word “confidence” in multiple places.
+These meanings must never be conflated.
+
+1) NLU CONFIDENCE
+- How sure the system is that it understood the input.
+- This determines ACT vs CLARIFY.
+- It does not upgrade truth.
+
+2) VERIFICATION
+- How strong the evidence is that an action produced an outcome.
+- This constrains what may be claimed about the physical world.
+
+3) STATE CONFIDENCE
+- How reliable Ashby’s stored belief is about a specific attribute
+  (per device, per attribute, per scope) over time.
+
+These are separate.
+A system that mixes them becomes dangerously fluent.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL VERIFICATION STATES
+──────────────────────────────────────────────────────────────────────────────
+
+Verification is recorded in ActionResult as one of:
+
+VERIFIED
+LAST_KNOWN
+UNKNOWN
+
+VERIFIED
+Definition:
+- The system has explicit confirmation that the outcome occurred.
+
+Acceptable confirmation (representative, non-exhaustive):
+- device readback after the write
+- authoritative vendor acknowledgement with verified semantics
+- durable artifact confirmation (e.g., file exists after snapshot/save)
+- backend completion confirmation where completion is the outcome
+
+VERIFIED permits declarative language and permits belief upgrades.
+
+LAST_KNOWN
+Definition:
+- The execution attempt was issued successfully, but no confirmation was obtained.
+
+LAST_KNOWN means:
+- the system believes it likely occurred
+- but cannot prove it
+
+LAST_KNOWN requires hedged language and cautious belief storage.
+
+UNKNOWN
+Definition:
+- Evidence is insufficient to claim an outcome.
+
+UNKNOWN may result from:
+- timeouts
+- unreachable devices
+- failed executions
+- restarts without refresh
+- conflicting signals
+- user contradiction
+- readback unsupported or unavailable at the moment
+
+UNKNOWN forbids declarative claims about the outcome.
+
+UNKNOWN is not failure.
+UNKNOWN is honesty.
+
+──────────────────────────────────────────────────────────────────────────────
+TRUTH CLASS IS A SEPARATE ENFORCEMENT LABEL
+──────────────────────────────────────────────────────────────────────────────
+
+Verification describes evidence quality.
+
+Truth class is the enforcement label used by the Truth Gate to decide:
+- what Ashby may say
+- what Ashby may store as belief
+- how uncertainty must be represented
+
+Truth class includes outcomes that are not verification states:
+
+VERIFIED
+LAST_KNOWN
+UNKNOWN
+FAILED
+NO-OP
+
+FAILED is not an evidence upgrade.
+FAILED is an honesty label for an attempted action that did not succeed.
+
+NO-OP is not execution.
+NO-OP is the recognition that the requested state already matches belief
+at an acceptable confidence level.
+
+Truth class is applied per affected belief update, not as a single blanket claim.
+
+──────────────────────────────────────────────────────────────────────────────
+MIXED OUTCOMES ARE NORMAL
+──────────────────────────────────────────────────────────────────────────────
+
+Batch actions frequently produce mixed results:
+- some devices succeed
+- some devices fail
+- some devices can be verified
+- some devices cannot
+
+Ashby must preserve this reality.
+
+Rules:
+- success and failure are recorded per device
+- belief updates are stored per device and per attribute
+- responses must avoid blanket “done” narratives when outcomes differ
+
+Truth is not global.
+
+──────────────────────────────────────────────────────────────────────────────
+AGGREGATING VERIFICATION FOR A SINGLE ACTIONRESULT
+──────────────────────────────────────────────────────────────────────────────
+
+ActionResult contains a single `verification` field.
+
+This field represents the best available evidence classification for the
+successful portion of the attempted action.
+
+Aggregation rules:
+
+- VERIFIED may be returned only if:
+  - all successful devices were confirmed by verified evidence
+  - and no successful device remains unconfirmed
+
+- LAST_KNOWN should be returned if:
+  - execution succeeded
+  - but at least one successful device lacks verified confirmation
+  - and no successful device is explicitly UNKNOWN
+
+- UNKNOWN should be returned if:
+  - verification cannot be established for the successful devices
+  - due to missing readback, conflicting signals, or uncertain completion
+
+Failures do not get “rescued” by aggregation.
+Failures are recorded explicitly in ActionResult.failed and treated as FAILED by the Truth Gate.
+
+This preserves the critical distinction:
+- “some things worked”
+- “some things failed”
+- “some things are unproven”
+
+──────────────────────────────────────────────────────────────────────────────
+UPGRADES, DOWNGRADES, AND DECAY
+──────────────────────────────────────────────────────────────────────────────
+
+Upgrading certainty is expensive.
+
+Rules:
+- VERIFIED may only be reached through explicit confirmation.
+- LAST_KNOWN may not be upgraded to VERIFIED without new evidence.
+- UNKNOWN may not be upgraded without new evidence.
+
+Downgrading is required when uncertainty increases.
+
+Common downgrade triggers:
+- time-based staleness decay
+- restart (never upgrades certainty)
+- contradiction (immediately marks affected beliefs UNKNOWN)
+- adapter failures that impact targeted attributes
+
+Downgrading is not pessimism.
+Downgrading is correctness.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Verification semantics must never:
+- treat “command sent” as proof
+- allow language to exceed evidence
+- collapse partial reality into a blanket claim
+- upgrade certainty without explicit confirmation
+- store FAILED as state confidence (failure typically forces affected beliefs toward UNKNOWN)
+
+Verification is the mechanism that keeps Ashby honest over time.
+
+END OF 11.4

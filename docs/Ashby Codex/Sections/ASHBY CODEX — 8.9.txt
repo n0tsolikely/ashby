@@ -1,0 +1,133 @@
+ASHBY CODEX — 8.9
+PACKAGING, PROFILES, AND PRODUCTS
+
+Packaging defines how Ashby is delivered
+without redefining what Ashby is.
+
+Profiles define behavior.
+Packaging defines distribution.
+Products are composed expressions of both.
+
+──────────────────────────────────────────────────────────────────────────────
+PACKAGING AS DISTRIBUTION
+──────────────────────────────────────────────────────────────────────────────
+
+Packaging determines:
+- how Ashby is deployed
+- how components are bundled
+- how updates are delivered
+- how environments are targeted
+
+Packaging may vary by:
+- hardware platform
+- customer type
+- deployment model
+- regulatory environment
+
+Packaging must never:
+- alter engine law
+- redefine truth semantics
+- change scope behavior
+- introduce hidden coupling
+
+Packaging is operational,
+not architectural.
+
+──────────────────────────────────────────────────────────────────────────────
+PROFILES AS BEHAVIOR SELECTION
+──────────────────────────────────────────────────────────────────────────────
+
+Profiles select behavior.
+
+A profile determines:
+- which modules are enabled
+- which agents are active
+- which execution paths are allowed
+- which automations are permitted
+- which safety constraints apply
+
+Profiles do not:
+- fork code
+- redefine the engine
+- modify truth enforcement
+- bypass governance
+
+Profiles are configuration,
+not divergence.
+
+──────────────────────────────────────────────────────────────────────────────
+PRODUCTS AS COMPOSITION
+──────────────────────────────────────────────────────────────────────────────
+
+Products are composed from:
+- the engine
+- selected modules
+- selected agents
+- profiles
+- packaging
+
+A product is not a fork.
+It is a constrained expression
+of the same platform.
+
+Examples include:
+- a residential automation product
+- an enterprise operations product
+- a creator workflow product
+
+These are representative,
+not exhaustive.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY THIS SEPARATION MATTERS
+──────────────────────────────────────────────────────────────────────────────
+
+Without separation:
+- product needs pollute the engine
+- packaging hacks become law
+- profiles become exceptions
+- rebuildability is lost
+
+Ashby enforces this separation
+to remain a platform.
+
+A product may be discontinued.
+The platform must not be altered.
+
+──────────────────────────────────────────────────────────────────────────────
+UPDATES AND EVOLUTION
+──────────────────────────────────────────────────────────────────────────────
+
+Packaging may change frequently.
+Profiles may evolve.
+Products may come and go.
+
+The engine must remain stable.
+
+If a change requires modifying the engine
+to support a product,
+that change must be evaluated via Control Sync.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Packaging must never:
+- embed domain logic
+- bypass removability
+- hide execution assumptions
+
+Profiles must never:
+- weaken safety constraints
+- redefine scope law
+- introduce special cases
+
+Products must never:
+- redefine the platform
+- hardcode behavior into the engine
+
+This separation allows Ashby
+to ship broadly
+without losing itself.
+
+END OF 8.9

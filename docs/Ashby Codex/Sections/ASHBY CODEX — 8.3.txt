@@ -1,0 +1,145 @@
+ASHBY CODEX — 8.3
+COGNITION SUBSYSTEMS
+
+Cognition subsystems define how Ashby thinks.
+
+They do not define what Ashby is.
+They define how reasoning is structured,
+sequenced,
+and constrained.
+
+Cognition exists to transform intent into action
+without violating truth, state, or scope law.
+
+──────────────────────────────────────────────────────────────────────────────
+THE ROLE OF COGNITION
+──────────────────────────────────────────────────────────────────────────────
+
+Cognition is the internal decision machinery of the engine.
+
+It is responsible for:
+- interpreting normalized intent
+- resolving scope and context
+- selecting policy paths
+- deciding whether to act, clarify, or refuse
+- sequencing reasoning steps
+- preparing ActionRequests
+
+Cognition never executes actions.
+It prepares decisions for execution layers.
+
+──────────────────────────────────────────────────────────────────────────────
+SUBSYSTEM, NOT MONOLITH
+──────────────────────────────────────────────────────────────────────────────
+
+Cognition is not a single algorithm.
+
+It is composed of subsystems,
+each with a bounded responsibility.
+
+This prevents:
+- god-reasoners
+- hidden coupling
+- untraceable decisions
+- brittle logic growth
+
+Each subsystem must be:
+- explicit
+- testable
+- replaceable
+- auditable
+
+──────────────────────────────────────────────────────────────────────────────
+CORE COGNITION SUBSYSTEMS
+──────────────────────────────────────────────────────────────────────────────
+
+Cognition subsystems include, but are not limited to:
+
+- Intent normalization
+- Scope resolution
+- Ambiguity detection
+- Policy evaluation
+- Session management
+- Safety checks
+- Action planning
+- Clarification generation
+
+These are representative categories,
+not a fixed inventory.
+
+The shape is invariant.
+The instances may evolve.
+
+──────────────────────────────────────────────────────────────────────────────
+SEQUENCING AND FLOW
+──────────────────────────────────────────────────────────────────────────────
+
+Cognition is sequential and gated.
+
+Each stage:
+- consumes explicit inputs
+- produces explicit outputs
+- may halt the pipeline
+- may require clarification
+- may refuse to proceed
+
+No stage may:
+- assume success of a later stage
+- skip required checks
+- bypass scope or truth law
+
+This sequencing makes decisions traceable.
+
+──────────────────────────────────────────────────────────────────────────────
+COGNITION AND EXPLAINABILITY
+──────────────────────────────────────────────────────────────────────────────
+
+Cognition must leave a trail.
+
+Every decision must be explainable
+in terms of:
+- which subsystem acted
+- what inputs were considered
+- why a path was chosen
+- why alternatives were rejected
+
+Opaque reasoning is forbidden.
+
+If a decision cannot be explained,
+the cognition design is invalid.
+
+──────────────────────────────────────────────────────────────────────────────
+COGNITION AND GROWTH
+──────────────────────────────────────────────────────────────────────────────
+
+As Ashby grows,
+cognition complexity increases.
+
+Subsystem boundaries prevent collapse.
+
+New reasoning capabilities must:
+- fit within existing subsystems
+- or introduce a new explicit subsystem
+- without modifying unrelated logic
+
+Ad-hoc reasoning is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Cognition subsystems must never:
+- execute actions
+- define truth
+- own state
+- bypass scope checks
+- invent certainty
+
+Cognition prepares decisions.
+The engine governs truth.
+Execution proves reality.
+
+This separation preserves honesty
+even as reasoning becomes more powerful.
+
+END OF 8.3

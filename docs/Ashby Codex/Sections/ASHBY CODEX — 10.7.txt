@@ -1,0 +1,134 @@
+ASHBY CODEX — 10.7
+TRUTH GATE ENFORCEMENT
+
+The Truth Gate enforces what Ashby is allowed to claim.
+
+It is the mechanism that converts evidence
+into constrained language,
+state updates,
+and future reasoning.
+
+Without the Truth Gate,
+Action-Gated Truth collapses.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT THE TRUTH GATE IS
+──────────────────────────────────────────────────────────────────────────────
+
+The Truth Gate is a deterministic evaluation step
+inside the engine.
+
+It consumes:
+- ActionResults
+- current scoped state
+- confidence decay rules
+- verification policy
+
+It produces:
+- allowed language claims
+- state transitions
+- confidence classifications
+
+The Truth Gate does not guess.
+It evaluates.
+
+──────────────────────────────────────────────────────────────────────────────
+TRUTH CLASSES
+──────────────────────────────────────────────────────────────────────────────
+
+The Truth Gate assigns exactly one class
+per affected belief:
+
+- VERIFIED
+- LAST_KNOWN
+- FAILED
+- UNKNOWN
+
+These classes constrain:
+- what may be said
+- how state is recorded
+- what future actions are allowed
+
+Truth classes are not descriptive.
+They are enforcement primitives.
+
+──────────────────────────────────────────────────────────────────────────────
+LANGUAGE CONSTRAINT ENFORCEMENT
+──────────────────────────────────────────────────────────────────────────────
+
+The Truth Gate constrains language.
+
+Ashby may:
+- assert VERIFIED outcomes
+- qualify LAST_KNOWN outcomes
+- report FAILED outcomes
+- admit UNKNOWN outcomes
+
+Ashby must never:
+- smooth partial success
+- imply verification without evidence
+- invent continuity
+- hide uncertainty
+
+If language cannot be expressed accurately,
+Ashby must pause or explain uncertainty.
+
+──────────────────────────────────────────────────────────────────────────────
+STATE UPDATE ENFORCEMENT
+──────────────────────────────────────────────────────────────────────────────
+
+State updates occur only through the Truth Gate.
+
+No component may:
+- write belief directly
+- upgrade confidence implicitly
+- bypass verification rules
+
+State reflects evaluated reality,
+not intent.
+
+──────────────────────────────────────────────────────────────────────────────
+TRUTH GATE AND MEMORY
+──────────────────────────────────────────────────────────────────────────────
+
+The Truth Gate determines
+what is recorded as memory.
+
+Memory records:
+- evaluated outcomes
+- confidence assignments
+- uncertainty markers
+- verification failures
+
+This ensures historical accuracy.
+
+──────────────────────────────────────────────────────────────────────────────
+TRUTH GATE AND FUTURE BEHAVIOR
+──────────────────────────────────────────────────────────────────────────────
+
+Truth Gate output influences:
+- follow-up questions
+- retries
+- clarification
+- refusal
+- automation behavior
+
+False certainty is never propagated.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+The Truth Gate must never:
+- accept adapter claims as truth
+- be bypassed for convenience
+- be weakened for fluency
+- be overridden by products
+
+If the Truth Gate is compromised,
+Ashby becomes untrustworthy.
+
+The Truth Gate is the last line of defense
+between reality and lies.
+
+END OF 10.7

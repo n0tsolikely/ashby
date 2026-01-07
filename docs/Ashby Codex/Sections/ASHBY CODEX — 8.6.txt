@@ -1,0 +1,126 @@
+ASHBY CODEX — 8.6
+MODULES (WHAT)
+
+Modules define WHAT Ashby can do.
+
+They do not define HOW actions are executed.
+They do not define truth.
+They do not define state authority.
+
+Modules exist to describe capability
+within the bounds of Ashby’s core law.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A MODULE IS
+──────────────────────────────────────────────────────────────────────────────
+
+A module is a declarative unit of behavior.
+
+It defines:
+- available actions
+- intent shapes
+- policy constraints
+- supported scope types
+- domain-specific rules
+
+A module describes WHAT is possible
+without describing HOW it is achieved.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT MODULES MUST NEVER DO
+──────────────────────────────────────────────────────────────────────────────
+
+A module must never:
+- execute actions
+- speak to vendors
+- define truth semantics
+- own state authority
+- bypass scope checks
+- assume execution success
+
+Any module that performs these functions
+violates Ashby’s architecture.
+
+──────────────────────────────────────────────────────────────────────────────
+MODULES AND THE ENGINE
+──────────────────────────────────────────────────────────────────────────────
+
+Modules integrate with the engine
+through explicit contracts.
+
+The engine:
+- loads module definitions
+- reasons over module capabilities
+- enforces policy and scope law
+
+Modules:
+- register capabilities
+- expose intent patterns
+- declare constraints
+
+The engine remains generic.
+Modules remain removable.
+
+──────────────────────────────────────────────────────────────────────────────
+MODULES AND SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+Modules are scope-aware by declaration.
+
+A module must explicitly state:
+- which scope types it supports
+- what actions are allowed per scope
+- what safety constraints apply
+
+If a module cannot declare its scope compatibility,
+it is incomplete.
+
+──────────────────────────────────────────────────────────────────────────────
+MODULES AND STATE
+──────────────────────────────────────────────────────────────────────────────
+
+Modules may define domain state models,
+but do not own state authority.
+
+State is:
+- scoped
+- written through the Action Gate
+- governed by engine semantics
+
+Modules may request state transitions.
+They may not enforce them.
+
+──────────────────────────────────────────────────────────────────────────────
+MODULE LIFECYCLE
+──────────────────────────────────────────────────────────────────────────────
+
+Modules must support:
+- installation
+- activation
+- deactivation
+- removal
+
+Removal must:
+- not break the engine
+- not affect other modules
+- degrade state explicitly
+- reflect loss of capability honestly
+
+This is non-negotiable.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+If a capability requires:
+- embedding logic in the engine
+- bypassing Action-Gated Truth
+- coupling to execution layers
+- assuming global state
+
+it does not belong in a module.
+
+Modules define WHAT Ashby can do
+so that HOW may evolve freely.
+
+END OF 8.6

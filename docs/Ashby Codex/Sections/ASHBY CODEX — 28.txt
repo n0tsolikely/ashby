@@ -1,0 +1,235 @@
+ASHBY CODEX — 28
+Preservation Pack #10 — Multi-Agent & Agent Integration
+
+This subsection embeds the corresponding Preservation Pack as a mechanical invariant.
+It is reproduced in full to support rebuild, audit, and long-horizon continuity.
+Unless amended via Control Sync, the rules herein are treated as canonical.
+
+BEGIN PRESERVATION PACK #10
+
+ASHBY PRESERVATION PACK #10 — STUART MODULE INTEGRATION & MULTI-AGENT COEXISTENCE
+Version: 1.0
+Date: 2025-12-22
+Goal: Define exactly how Stuart (meetings agent) and any future agents coexist on the
+Ashby platform WITHOUT contaminating Ashby core logic, state truth, or architectural
+discipline.
+
+This pack ensures Ashby remains a platform, not a one-off app.
+
+──────────────────────────────────────────────────────────────────────────────
+1) CORE PRINCIPLE: ASHBY IS THE PLATFORM, STUART IS A MODULE
+──────────────────────────────────────────────────────────────────────────────
+Ashby:
+  - Owns routing, state, truth, policy, sessions, and transport
+  - Is the only place where execution authority exists
+
+Stuart:
+  - Is a feature module
+  - Never bypasses Ashby core
+  - Never forks the platform
+  - Never owns device execution directly
+
+If Stuart needs to “do something,” he does it THROUGH Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHY STUART MUST NOT BE A SEPARATE PLATFORM
+──────────────────────────────────────────────────────────────────────────────
+If Stuart is split off:
+  - Truth Gate must be re-implemented
+  - State authority fragments
+  - Sessions duplicate
+  - Logging diverges
+  - Memory semantics conflict
+
+By embedding Stuart as a module:
+  - All guarantees are inherited
+  - Bugs fixed once benefit all agents
+  - Operators reason about one system
+
+──────────────────────────────────────────────────────────────────────────────
+3) STUART MODULE SCOPE (WHAT HE IS RESPONSIBLE FOR)
+──────────────────────────────────────────────────────────────────────────────
+Stuart handles:
+  - meeting ingestion
+  - meeting session lifecycle
+  - audio capture requests
+  - transcription requests
+  - diarization requests
+  - summarization requests
+  - decision/action item extraction
+  - meeting storage and retrieval
+
+Stuart does NOT:
+  - control devices directly
+  - manage secrets
+  - implement transport logic
+  - maintain independent memory stores
+
+──────────────────────────────────────────────────────────────────────────────
+4) STUART INTENTS (NORMALIZED)
+──────────────────────────────────────────────────────────────────────────────
+Examples of Stuart-specific intent types:
+
+  - meetings.start
+  - meetings.stop
+  - meetings.pause
+  - meetings.resume
+  - meetings.summary
+  - meetings.list
+  - meetings.search
+
+These intents are parsed by Ashby NLU and routed to Stuart module handler.
+
+──────────────────────────────────────────────────────────────────────────────
+5) STUART SESSION MODEL
+──────────────────────────────────────────────────────────────────────────────
+Stuart requires its own session type, managed by Ashby’s session manager.
+
+Session fields (example):
+{
+  "session_type": "meeting",
+  "active": true,
+  "meeting_id": "uuid",
+  "started_at": "ISO8601",
+  "participants": [],
+  "audio_source": "mic:default",
+  "state": "recording" | "paused" | "stopped"
+}
+
+Rules:
+  - Only one active meeting session per user by default
+  - Session lifecycle is explicit
+  - Session expiration handled by Ashby
+
+──────────────────────────────────────────────────────────────────────────────
+6) AUDIO & TRANSCRIPTION FLOW (HIGH LEVEL)
+──────────────────────────────────────────────────────────────────────────────
+1) User: “Stuart, start a meeting”
+2) Ashby:
+   - parses intent meetings.start
+   - policy confirms intent
+   - creates meeting session
+3) Stuart module:
+   - requests audio capture via IO layer
+   - sends audio chunks to transcription backend
+4) Transcription adapter returns text
+5) Stuart:
+   - stores raw transcript via StorageAdapter
+   - emits ActionResult (verification based on backend response)
+6) Ashby:
+   - applies Truth Gate
+   - responds to user
+
+At no point does Stuart bypass Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+7) STORAGE & MEMORY BOUNDARIES
+──────────────────────────────────────────────────────────────────────────────
+Stuart uses StorageAdapter exclusively.
+
+Storage content:
+  - meeting audio references
+  - transcripts
+  - summaries
+  - decisions
+  - action items
+
+Storage rules:
+  - No secrets stored
+  - No raw credentials
+  - Keys must be deterministic and traceable
+
+Ashby memory remains separate:
+  - preferences
+  - state
+  - last actions
+
+Stuart may write metadata into Ashby memory ONLY if explicitly designed (e.g., “last meeting summary sent”).
+
+──────────────────────────────────────────────────────────────────────────────
+8) TRUTH GATE APPLICATION TO STUART
+──────────────────────────────────────────────────────────────────────────────
+Stuart responses are subject to the SAME Truth Gate rules.
+
+Examples:
+  - If transcription backend fails → Stuart must say it failed
+  - If summary is incomplete → Stuart must hedge
+  - If diarization confidence low → Stuart must disclose uncertainty
+
+Forbidden:
+  - “Meeting recorded perfectly” without verification
+  - “Everyone agreed” without evidence
+
+──────────────────────────────────────────────────────────────────────────────
+9) MULTI-AGENT COEXISTENCE (FUTURE)
+──────────────────────────────────────────────────────────────────────────────
+Ashby may host multiple agent modules:
+  - Stuart (meetings)
+  - Tori (inventory)
+  - Watcher (cameras)
+  - Future agents
+
+Rules:
+  - All agents share:
+      router
+      truth gate
+      state
+      logging
+      security
+  - Agents do NOT share:
+      internal logic
+      private storage keys
+      session semantics unless explicitly bridged
+
+Ashby arbitrates conflicts.
+
+──────────────────────────────────────────────────────────────────────────────
+10) AGENT NAMING & IDENTITY
+──────────────────────────────────────────────────────────────────────────────
+Agent name is metadata, not architecture.
+
+Rules:
+  - Agent identity does not change routing logic
+  - User-facing names may be aliased
+  - Internal module keys remain stable
+
+Example:
+  module_key = "meetings"
+  display_name = "Stuart"
+
+──────────────────────────────────────────────────────────────────────────────
+11) FAILURE MODES & SAFETY
+──────────────────────────────────────────────────────────────────────────────
+If Stuart crashes:
+  - Ashby continues operating
+  - Device control unaffected
+  - Meeting session marked failed
+  - User notified honestly
+
+If Ashby crashes:
+  - All agents stop
+  - State loaded on restart
+  - Confidence degraded appropriately
+
+──────────────────────────────────────────────────────────────────────────────
+12) WHY THIS PACK MATTERS
+──────────────────────────────────────────────────────────────────────────────
+Without this discipline:
+  - Stuart becomes a fork
+  - Architecture fragments
+  - Trust erodes
+
+With this discipline:
+  - Ashby scales horizontally
+  - New agents are cheap to add
+  - Guarantees remain intact
+
+Ashby is the body.
+Agents are organs.
+Truth is the nervous system.
+
+END OF PACK #10
+
+END PRESERVATION PACK #10
+
+END OF 28

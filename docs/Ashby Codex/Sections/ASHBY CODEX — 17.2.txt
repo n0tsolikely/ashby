@@ -1,0 +1,315 @@
+ASHBY CODEX — 17.2
+TIME-BOUND CONTROL MODULES (IRRIGATION-LIKE)
+
+A time-bound control module governs actions that start, persist over time,
+and terminate later.
+
+“Irrigation-like” is representative, not exhaustive.
+This archetype covers any domain where:
+- the user initiates a run
+- the run has a duration or an expected end condition
+- “stop” and “how long is left” are first-class follow-ups
+- duplicate execution can cause real harm
+
+Time-bound control modules exist to make long-running actions safe,
+auditable, and interruptible without pretending certainty.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINING TRAITS
+──────────────────────────────────────────────────────────────────────────────
+
+A module qualifies as time-bound control when the domain has these traits:
+
+1) START/STOP SEMANTICS
+Actions are not instantaneous toggles.
+They have lifecycle: start → running → stop.
+
+2) TIME AS A PARAMETER
+Duration or end time is part of the action meaning.
+“Water for 15 minutes” is materially different from “water.”
+
+3) INTERRUPTIBILITY IS REQUIRED
+The user must be able to:
+- stop
+- extend
+- shorten
+- query remaining time
+without re-specifying everything.
+
+4) SAFETY BOUNDARIES ARE STRONGER
+Overruns, duplicates, or missing stop commands can be dangerous.
+
+5) STATE EVOLUTION WITHOUT USER INPUT
+Time itself changes the correct belief:
+a run that began 10 minutes ago is different from one that began now.
+
+Time-bound modules must model time explicitly, not implicitly.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL RESPONSIBILITIES
+──────────────────────────────────────────────────────────────────────────────
+
+A time-bound control module must:
+
+- Define stable intent shapes and action types (vendor-neutral)
+- Normalize time expressions into canonical units (seconds, timestamps)
+- Enforce domain constraints as policy inputs (max duration, max zones, cooldowns)
+- Produce ActionRequests with explicit:
+  - target_set
+  - start/stop intent
+  - duration / end_time (when applicable)
+- Maintain a domain session type for follow-ups (14.3 archetype)
+- Update HouseState with evidence-bound run state and confidence
+- Treat “expected end” as expectation, not as verified reality
+- Preserve Action-Gated Truth posture for:
+  - start success
+  - stop success
+  - current running state
+
+A time-bound module never claims “it is still running” without evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE INTENTS AND ACTIONS (IRRIGATION-LIKE)
+──────────────────────────────────────────────────────────────────────────────
+
+These are representative, not exhaustive.
+
+Intent shapes commonly required:
+- run.start(duration | end_time)
+- run.stop()
+- run.extend(delta)
+- run.shorten(delta)
+- run.status()
+
+Representative action types:
+- irrigation.start
+- irrigation.stop
+- irrigation.extend
+- irrigation.query_status
+
+Rules:
+- “extend” and “shorten” must remain bounded by safety policy.
+- “status” is not an action on the world; it is an observation request.
+  It must follow truth posture rules for evidence and freshness.
+
+──────────────────────────────────────────────────────────────────────────────
+TIME NORMALIZATION (HUMAN LANGUAGE TO CANONICAL TIME)
+──────────────────────────────────────────────────────────────────────────────
+
+Time-bound modules must normalize time deterministically.
+
+Required behaviors:
+
+A) DURATION PARSING
+Examples (representative):
+- “for 10 minutes” → duration_seconds = 600
+- “for an hour” → duration_seconds = 3600
+- “for a bit” → forbidden unless policy defines a step; otherwise CLARIFY
+
+B) END-TIME PARSING
+Examples:
+- “until 7pm” → end_time = timestamp
+- “until I say stop” → requires explicit policy support; otherwise CLARIFY
+
+C) RELATIVE ADJUSTMENTS
+“add 5 minutes” / “a little longer”:
+- map deltas to configured step sizes or explicit numeric deltas
+- never invent deltas
+
+D) SAFETY CLAMPING AND GATING
+If duration exceeds configured maximum:
+- outcome is CONFIRM (if policy allows with consent) or REFUSE
+- never silently clamp and proceed
+
+Time semantics must be explicit to be safe.
+
+──────────────────────────────────────────────────────────────────────────────
+RUN STATE, EXPECTATION, AND TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Time-bound modules must separate:
+
+- COMMAND ISSUANCE (an attempt to start/stop)
+- BELIEF ABOUT RUNNING (HouseState)
+- EXPECTED END (time-derived expectation)
+- VERIFIED STATE (evidence-derived truth)
+
+Rules:
+
+1) START DOES NOT IMPLY VERIFIED RUNNING
+A successful start request may yield:
+- VERIFIED running only if a readback confirms run state
+- otherwise LAST_KNOWN running, with confidence decay
+
+2) EXPECTED END IS NOT EVIDENCE
+A timer reaching “expected end” does not prove the run stopped.
+It only changes what is plausible.
+
+At expected end:
+- if there is no stop verification, belief must degrade.
+- the system must not claim “it stopped” without evidence.
+
+3) STOP IS ITS OWN ACTION WITH ITS OWN VERIFICATION
+Stopping must be modeled as:
+- an ActionRequest
+- an ActionResult
+- a truth posture outcome
+
+4) RUNNING QUERIES MUST BE HONEST
+If the system cannot verify current run state:
+- it must present uncertainty and offer a refresh
+- it must not narrate assumed continuity
+
+Time-bound control makes lying tempting.
+This archetype forbids it.
+
+──────────────────────────────────────────────────────────────────────────────
+HOUSESTATE INTERACTION (TIME-SENSITIVE BELIEFS)
+──────────────────────────────────────────────────────────────────────────────
+
+Time-bound modules typically update HouseState attributes such as:
+
+- run.active: true/false/unknown
+- run.started_at: timestamp
+- run.expected_end: timestamp (expectation, not verification)
+- run.last_verified_at: timestamp (if applicable)
+- run.confidence: level per platform law
+
+Rules:
+- “expected_end” may exist even when verification is unavailable.
+- confidence must decay over time.
+- restart must degrade confidence or force refresh (12.4, 12.6 law applies).
+- mixed reality across targets is common and must be preserved.
+
+HouseState must remain resilient to missed stop events and manual intervention.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSIONS FOR TIME-BOUND CONTROL
+──────────────────────────────────────────────────────────────────────────────
+
+Time-bound modules must support a time-bound session archetype.
+
+A session exists to anchor:
+- “stop”
+- “extend by 10”
+- “how long is left”
+- “do the next zone”
+without requiring restatement of targets.
+
+Rules:
+- sessions are scope-bound and expirable (14.6)
+- expired sessions cannot authorize stop/extend actions
+- sessions must not broaden target sets
+- sessions must not override safety limits
+
+If the user says “stop” with no lawful anchor:
+- CLARIFY which run or which target_set.
+
+A time-bound session is continuity, not control authority.
+
+──────────────────────────────────────────────────────────────────────────────
+DUPLICATE PREVENTION (CRITICAL IN THIS ARCHETYPE)
+──────────────────────────────────────────────────────────────────────────────
+
+Duplicate “start” requests are hazardous.
+
+Rules:
+- idempotency must suppress duplicate starts within a policy window
+- suppression must not claim the run restarted if it did not
+- deliberate retries must be explicit (“start it again anyway”)
+
+If a start request arrives while a run is believed active:
+- the module must treat it as:
+  - a duplicate request, or
+  - a modification request (extend/shorten),
+  depending on policy and phrasing.
+- it must not silently start a second overlapping run unless explicitly supported.
+
+Overlapping runs are high-risk by default.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE MODES AND SAFE HANDLING
+──────────────────────────────────────────────────────────────────────────────
+
+Common failure modes include:
+- start failed (valve unreachable)
+- stop failed (cannot terminate safely)
+- partial success across zones
+- stale registry targets
+- inability to verify current run state
+
+Rules:
+- failures must be reported per target
+- “unknown” delivery must not be narrated as “running”
+- stopping failures must be elevated as safety-critical when appropriate
+- safe next steps may include:
+  refresh, retry, narrow, or operator intervention
+
+Time-bound domains require honest escalation, not smoothing.
+
+──────────────────────────────────────────────────────────────────────────────
+SAFETY AND CONSENT
+──────────────────────────────────────────────────────────────────────────────
+
+Time-bound actions require stronger safety boundaries.
+
+Representative policy inputs:
+- max_duration per target and per group
+- cooldown windows between runs
+- max simultaneous targets
+- confirmation thresholds for broad actions
+- incident-mode tightening
+
+Rules:
+- long durations require confirmation when configured
+- “until I say stop” must be explicitly allowed; otherwise CLARIFY/REFUSE
+- defaults must never select targets for irrigation-like actions
+  unless the default is explicitly configured and disclosed
+
+Time-bound control is not a convenience domain.
+It is a “damage if wrong” domain.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE MODULE CONTRACT (NON-BINDING SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+Representative capabilities for a time-bound module:
+
+- normalize_time(intent) → canonical_time_params
+- plan_run(intent, scope, policy, sessions, state) → plan_outcome
+- summarize_status(state, freshness) → status_outcome
+
+Where plan_outcome is:
+- ACT with ActionRequest(s), or
+- CLARIFY with a pending gate, or
+- CONFIRM with a pending gate, or
+- REFUSE with reason label
+
+The engine remains the arbiter of policy and truth.
+The module supplies domain semantics.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Time-bound control modules must:
+- model run lifecycle explicitly (start/running/stop)
+- normalize time deterministically
+- treat expected end as expectation, not verification
+- preserve truth posture under missing readback
+- prevent unsafe duplicates and overlapping runs by default
+- support safe follow-ups through sessions without expanding targets
+- remain auditable and vendor-neutral
+
+Time-bound control modules must never:
+- claim “still running” without evidence
+- claim “stopped” because a timer elapsed
+- silently clamp durations and proceed
+- permit overlapping runs without explicit consent and policy support
+- smooth partial success into blanket success
+- bypass safety, scope, session expiry, or Truth Gate constraints
+
+This archetype is where “helpful assumptions” cause harm.
+Ashby forbids them.
+
+END OF 17.2

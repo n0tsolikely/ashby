@@ -1,0 +1,137 @@
+ASHBY CODEX — 8.8
+CONNECTORS (NON-PHYSICAL DOMAINS)
+
+Connectors integrate Ashby with non-physical domains.
+
+They exist to interface with systems
+where execution does not directly touch the physical world,
+but still requires truth, state, and accountability.
+
+Connectors are execution layers.
+They obey the same laws as all HOW components.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A CONNECTOR IS
+──────────────────────────────────────────────────────────────────────────────
+
+A connector is an integration interface
+for abstract or digital domains.
+
+Examples include:
+- calendars
+- messaging systems
+- document stores
+- knowledge bases
+- task systems
+- digital workflows
+
+These examples are representative,
+not exhaustive.
+
+Connectors execute actions
+whose effects are informational rather than physical.
+
+──────────────────────────────────────────────────────────────────────────────
+CONNECTORS VS ADAPTERS
+──────────────────────────────────────────────────────────────────────────────
+
+Connectors and adapters share structure,
+but differ in domain.
+
+Adapters:
+- interact with physical or hardware-backed systems
+- deal with latency, partial actuation, and device failure
+
+Connectors:
+- interact with logical or informational systems
+- deal with consistency, permissions, and abstraction
+
+Despite this difference,
+the same constraints apply.
+
+──────────────────────────────────────────────────────────────────────────────
+TRUTH AND EVIDENCE IN CONNECTORS
+──────────────────────────────────────────────────────────────────────────────
+
+Connectors must produce evidence.
+
+Even in non-physical domains:
+- actions may fail
+- permissions may be denied
+- systems may be unavailable
+- outcomes may be partial
+
+A connector must return ActionResults
+that reflect observable outcomes,
+not intent.
+
+Success must be explicit.
+Failure must be explicit.
+Uncertainty must be explicit.
+
+──────────────────────────────────────────────────────────────────────────────
+CONNECTORS AND STATE
+──────────────────────────────────────────────────────────────────────────────
+
+Connector-driven state is still scoped.
+
+A calendar entry exists within:
+- an organizational scope
+- a user scope
+- a project scope
+
+Connectors must never:
+- write global state
+- infer cross-scope effects
+- bypass scope resolution
+
+State authority remains with the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+CONNECTORS AND SECURITY
+──────────────────────────────────────────────────────────────────────────────
+
+Connectors often interact with sensitive data.
+
+They must:
+- respect scope boundaries
+- enforce permission constraints
+- avoid data leakage
+- report access failures explicitly
+
+Security is not optional.
+
+A connector that hides authorization failure
+is unsafe.
+
+──────────────────────────────────────────────────────────────────────────────
+CONNECTORS AND REMOVABILITY
+──────────────────────────────────────────────────────────────────────────────
+
+Connectors are removable.
+
+If a connector is removed:
+- the engine remains intact
+- related state degrades explicitly
+- explanations reflect reduced capability
+
+No connector may be required
+for Ashby’s core operation.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Connectors must never:
+- define truth
+- own state authority
+- bypass Action-Gated Truth
+- collapse scope boundaries
+- invent success
+
+Non-physical domains
+are still part of reality.
+
+They are governed by the same law.
+
+END OF 8.8

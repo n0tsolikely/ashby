@@ -1,0 +1,141 @@
+ASHBY CODEX — 6.8
+NATIVE OWNERSHIP AS STRATEGY
+
+Native ownership is a strategic choice, not an ideological one.
+
+Ashby prefers to own critical execution paths
+when doing so preserves truth, reliability, and autonomy.
+
+This preference is deliberate.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT NATIVE OWNERSHIP MEANS
+──────────────────────────────────────────────────────────────────────────────
+
+Native ownership means that Ashby:
+- controls the execution logic
+- understands failure modes directly
+- owns verification semantics
+- reduces dependence on opaque systems
+
+Native ownership does not mean:
+- reinventing everything
+- rejecting all vendors
+- avoiding interoperability
+- refusing external services
+
+It means owning what defines behavior.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY NATIVE OWNERSHIP MATTERS
+──────────────────────────────────────────────────────────────────────────────
+
+External systems optimize for their own goals.
+
+They may:
+- change behavior without notice
+- abstract away failure
+- collapse multiple outcomes into success
+- prioritize uptime metrics over truth
+
+When Ashby relies entirely on such systems,
+truth becomes diluted.
+
+Native ownership allows Ashby to:
+- observe execution directly
+- verify outcomes honestly
+- degrade confidence precisely
+- explain failure accurately
+- operate offline when required
+
+This is not about control.
+It is about accountability.
+
+──────────────────────────────────────────────────────────────────────────────
+NATIVE OWNERSHIP VS VENDOR DEPENDENCE
+──────────────────────────────────────────────────────────────────────────────
+
+Vendor systems are useful.
+They accelerate development.
+They reduce initial complexity.
+
+But vendor dependence must never:
+- define Ashby’s truth semantics
+- dictate state transitions
+- constrain explainability
+- prevent offline operation
+- block future evolution
+
+Native ownership is chosen
+when vendor abstraction interferes with these requirements.
+
+──────────────────────────────────────────────────────────────────────────────
+GRADUAL TRANSITION
+──────────────────────────────────────────────────────────────────────────────
+
+Native ownership is not an all-or-nothing decision.
+
+Ashby may:
+- begin with vendor integrations
+- use bridges during transition
+- selectively replace execution paths
+- retain vendors where appropriate
+
+This transition must be incremental,
+deliberate,
+and reversible.
+
+The goal is not purity.
+The goal is resilience.
+
+──────────────────────────────────────────────────────────────────────────────
+OWNERSHIP AND SCOPE
+──────────────────────────────────────────────────────────────────────────────
+
+Native ownership is applied per scope and per capability.
+
+Some scopes may:
+- require strict local control
+- demand offline guarantees
+- operate in safety-critical environments
+
+Other scopes may:
+- tolerate cloud dependence
+- prefer convenience
+- accept reduced verification
+
+Ashby supports both,
+without redefining its core law.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE BOUNDARIES
+──────────────────────────────────────────────────────────────────────────────
+
+Native ownership must never:
+- pollute the engine
+- violate WHAT vs HOW separation
+- bypass the Action Gate
+- introduce unremovable logic
+
+Ownership lives in execution layers,
+not in the core.
+
+──────────────────────────────────────────────────────────────────────────────
+STRATEGIC CONSEQUENCES
+──────────────────────────────────────────────────────────────────────────────
+
+Native ownership is how Ashby:
+- maintains sovereignty
+- survives vendor failure
+- preserves honesty
+- scales into new domains
+
+It is a tool,
+not a requirement,
+but one that must be used deliberately.
+
+Ashby remains adaptable
+because ownership decisions are strategic,
+not reactive.
+
+END OF 6.8

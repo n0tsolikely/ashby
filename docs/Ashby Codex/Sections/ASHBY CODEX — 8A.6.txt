@@ -1,0 +1,300 @@
+ASHBY CODEX — 8A.6
+bridges/
+
+bridges/ is Ashby’s “strangler path.”
+
+A bridge is a temporary subsystem that lets Ashby control and observe a world
+through an existing external hub, controller, or protocol stack while the long-term
+native_vendor/ replacement path is still being built.
+
+bridges/ exists because reality is messy:
+- vendors change APIs
+- devices speak different protocols
+- ecosystems are fragmented
+- and building native integrations for everything on day one is not practical
+
+But bridges are dangerous.
+They are where vendor/protocol complexity tries to crawl back into the platform.
+
+Therefore bridges/ is governed by strict law:
+- bridges may execute
+- bridges may sync external entities into Ashby’s registry
+- bridges may stream events as evidence inputs
+- bridges must never own meaning, truth posture, policy, or long-term identity
+
+bridges/ is allowed to exist.
+bridges/ is not allowed to become permanent by accident.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF bridges/
+──────────────────────────────────────────────────────────────────────────────
+
+bridges/ exists to provide temporary coverage while preserving the long-term platform shape.
+
+Specifically, bridges/ provides:
+
+A) TEMPORARY INTEGRATION COVERAGE
+- talk to a hub (Home Assistant)
+- talk to a protocol controller (early Zigbee coordinator, early Matter controller)
+- execute actions and read state via that hub/controller
+
+B) ENTITY IMPORT AND SYNC (FEEDING THE REGISTRY)
+- discover external entities/devices
+- normalize them into Ashby’s registry representations
+- maintain external_id_map links (external IDs → internal device_key)
+- keep sync up to date
+
+C) EVENT INGESTION (EVIDENCE INPUT STREAMS)
+- subscribe to external event streams
+- translate events into evidence-shaped inputs (timestamps, sources, payloads)
+- feed the platform so HouseState can remain current *when evidence exists*
+
+D) STRANGLER CUTOVER SUPPORT
+- allow Ashby to migrate from bridge-backed control to native_vendor-backed control
+- without rewriting modules, scopes, truth, or state
+
+The entire point is: modules and engine stay unchanged while execution backends evolve.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT A BRIDGE IS (AND IS NOT)
+──────────────────────────────────────────────────────────────────────────────
+
+A bridge IS:
+- an execution and sync backend
+- a vendor/protocol “dialect layer”
+- a source of evidence (ActionResults, readbacks, event payloads)
+- a temporary adaptor that conforms to Ashby’s interface contracts
+
+A bridge IS NOT:
+- a place to implement domain meaning (that’s modules/)
+- a place to implement platform law (that’s engine/)
+- a place to implement truth posture (that’s truth/)
+- a place to implement HouseState semantics (that’s engine/memory + HouseState law)
+- a place to implement product forks or “special customer behavior”
+
+If you find reasoning, policy, or domain planning inside bridges/, Ashby is rotting.
+
+──────────────────────────────────────────────────────────────────────────────
+3) CANONICAL bridges/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+bridges/
+├── home_assistant/                         # hub bridge (broad coverage, temporary)
+│   ├── ha_client.py                        # transport + auth + request wrappers
+│   ├── ha_provider.py                      # interface-compliant execution backend
+│   ├── entity_sync.py                      # import HA entities → Ashby registry
+│   └── ha_events.py                        # websocket/event stream ingestion
+│
+├── zigbee/                                 # early protocol bridge
+│   ├── coordinator_client.py               # talk to coordinator (transport)
+│   └── zigbee_bridge.py                    # interface-compliant backend
+│
+└── matter/                                 # early protocol bridge
+    ├── controller_client.py                # talk to controller (transport)
+    └── matter_bridge.py                    # interface-compliant backend
+
+Notes:
+- The names are canonical at the directory level.
+- New bridge targets may be added only if they obey the same laws and interfaces.
+- A bridge should always have: client (transport), backend (interface), and optional sync/events.
+
+──────────────────────────────────────────────────────────────────────────────
+4) BRIDGE RESPONSIBILITIES (WHAT MUST LIVE HERE)
+──────────────────────────────────────────────────────────────────────────────
+
+4.1 TRANSPORT + AUTH (CLIENT)
+A bridge must implement transport to the external system:
+- HTTP, websocket, local LAN, protocol SDK, etc.
+- authentication and token refresh where applicable
+
+Hard rule:
+- raw secrets never live in code or logs
+- bridges use secret handles and retrieve secrets through approved secret systems
+- token material must be sanitized from all logs and artifacts
+
+4.2 EXECUTION BACKEND (INTERFACE-COMPLIANT)
+A bridge must expose execution through Ashby’s interface contracts.
+
+That means:
+- it accepts an ActionRequest (WHAT) from engine/tool runtime
+- it executes via the external system
+- it returns an ActionResult (evidence) that includes:
+  - status (success/failure/partial)
+  - timestamps
+  - raw backend identifiers (for debugging)
+  - normalized fields (for adapters/contracts)
+  - correlation_id propagation if supported (or local correlation mapping)
+
+Absolute rule:
+- bridges do not “claim success” unless the external system confirms.
+- acknowledgements are not verification.
+- if verification readback is required, bridges must support a readback path or return an explicit “unverified” evidence state.
+
+4.3 ENTITY SYNC (REGISTRY FEED)
+Bridges may discover and sync external entities/devices into Ashby’s registry.
+
+But the bridge must not mint canonical identity itself.
+
+Correct model:
+- bridge discovers external entity_id / device_id
+- bridge proposes a registry record to domain/registry service
+- domain/registry assigns device_key (internal canonical identity)
+- domain/external_id_map stores the mapping:
+  external_id → device_key
+- bridge reuses that mapping forever unless a migration explicitly changes it
+
+Bridges may maintain caches for performance.
+Caches are not authority.
+
+4.4 EVENT INGESTION (EVIDENCE STREAM)
+Bridges that support event streams must:
+- subscribe to external events
+- translate them into evidence-shaped inputs with:
+  - source identity (bridge_key, external ids)
+  - timestamps
+  - payload and parsing results
+  - sequence ids if available
+
+They must also handle:
+- duplicate events
+- missed events
+- reconnection behavior
+- backpressure and bounded queues
+
+Event ingestion must never become:
+- a hidden truth system
+- or a silent state writer
+
+Events are evidence inputs.
+Truth and state updates occur in the engine through Truth Gate + HouseState law.
+
+──────────────────────────────────────────────────────────────────────────────
+5) WHAT MUST NEVER LIVE IN bridges/ (FORBIDDEN CONTENT)
+──────────────────────────────────────────────────────────────────────────────
+
+bridges/ must not contain:
+
+A) DOMAIN PLANNING OR USER INTENT LOGIC
+No “if user says X do Y.”
+No “turn on bedtime mode.”
+No “interpret language.”
+That is modules/ + engine.
+
+B) POLICY OR SAFETY DECISIONS
+Bridges do not decide ACT/CLARIFY/CONFIRM/REFUSE.
+They do not implement confirmation gates.
+
+C) TRUTH POSTURE OR LANGUAGE CLAIMS
+Bridges do not decide what is VERIFIED vs LAST_KNOWN.
+They do not decide how confident the response sounds.
+
+D) HOUSESTATE WRITES
+Bridges do not write beliefs.
+They provide evidence.
+
+E) PRODUCT FORKS
+No tier-specific behavior.
+No customer-specific hacks.
+
+F) SECRET STORAGE OR LEAKAGE
+No secrets in code.
+No tokens in logs.
+No raw payload dumps if they contain secrets or sensitive material.
+
+G) “PERMANENT FIXES”
+A bridge must not become permanent because “it works.”
+If it remains, it must remain bounded, tested, and replaceable.
+
+If any forbidden content exists, bridges/ is infecting the platform.
+
+──────────────────────────────────────────────────────────────────────────────
+6) BRIDGES AND THE STRANGLER PLAN (HOW BRIDGES DIE)
+──────────────────────────────────────────────────────────────────────────────
+
+Bridges exist to be replaced.
+
+A correct bridge strategy includes:
+
+A) PARITY INTERFACE
+Both bridge and native_vendor implementations must satisfy the same adapter contracts.
+Modules must not know which backend was used.
+
+B) SHADOW READ (OPTIONAL)
+During cutover, native_vendor may observe (read-only) while bridge executes,
+to validate normalization and mapping without risk.
+
+C) DUAL EVIDENCE COMPARISON (OPTIONAL)
+Compare readbacks from bridge and native vendor for the same device_key to detect drift.
+
+D) CUTOVER BY ROUTING POLICY
+The selection between bridge vs native vendor must occur via:
+- domain/resolution adapter_resolver
+- or a similar routing policy that is explicit and logged
+Not by hidden hacks inside modules.
+
+E) SAFE ROLLBACK
+If native vendor path fails, routing can revert to bridge without losing identity continuity.
+
+The bridge is a replaceable limb.
+The platform body remains unchanged.
+
+──────────────────────────────────────────────────────────────────────────────
+7) DEPENDENCY LAW (BRIDGES IMPORT RULES)
+──────────────────────────────────────────────────────────────────────────────
+
+bridges/ may depend on:
+- external SDKs/protocol libraries (only inside bridges/)
+- shared schemas/contracts (adapter interfaces, ActionResult types)
+- domain registry interfaces (not domain planning)
+- observability utilities (sanitized logging)
+
+bridges/ must not depend on:
+- engine/ internals (bridges are backends, not law)
+- modules/ (bridges must not become feature logic)
+- connectors/ (bridges are smart-home/protocol/hub layer, not SaaS integration)
+- product/profile branching logic
+
+If bridges depend on engine internals, the boundary is broken.
+If bridges depend on modules, removability is broken.
+
+──────────────────────────────────────────────────────────────────────────────
+8) REQUIRED TEST SURFACES FOR bridges/
+──────────────────────────────────────────────────────────────────────────────
+
+bridges/ must be protected by tests that enforce “temporary but correct”:
+
+- contract compliance tests (adapter interface invariants)
+- evidence integrity tests (ActionResult shape, timestamps, failure modes)
+- verification behavior tests (ack vs verified vs readback-required)
+- entity sync tests (registry mapping stability, idempotency)
+- event stream tests (duplication handling, reconnection, ordering)
+- offline/degraded tests (honest failure classification; no fake success)
+- sanitization tests (no token leakage in logs)
+- cutover tests (bridge and native vendor parity where applicable)
+
+A bridge without tests is a time bomb.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+bridges/ must:
+- provide temporary execution and sync coverage
+- conform to Ashby’s interface contracts (WHAT/HOW separation)
+- emit ActionResults as evidence, not narrative
+- feed registry mapping without owning identity
+- ingest events as evidence inputs with bounded, observable behavior
+- remain replaceable by native_vendor paths without changing modules/ or engine/
+
+bridges/ must never:
+- implement domain planning or user intent logic
+- implement policy outcomes or safety gates
+- implement truth posture or response language rules
+- write HouseState beliefs
+- leak secrets in code/logs/artifacts
+- become permanent by accidental coupling or untested sprawl
+
+bridges/ is a temporary limb.
+Do not let it rewrite the body.
+
+END OF 8A.6

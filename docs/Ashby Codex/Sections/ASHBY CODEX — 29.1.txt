@@ -1,0 +1,201 @@
+ASHBY CODEX — 29.1
+ASHBY AS THE BODY
+
+Ashby is the body.
+
+The “body” is the shared, non-negotiable platform substrate that makes any
+agent, module, bridge, or product possible without forking the system.
+
+Ashby is not an agent.
+Ashby is the platform that hosts agents.
+
+If Ashby becomes “just another agent,” the platform collapses:
+truth fragments, state fragments, policy fragments, and the system becomes
+a collection of incompatible assistants.
+
+The body metaphor is architectural law, not branding.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINITION: WHAT “THE BODY” INCLUDES
+──────────────────────────────────────────────────────────────────────────────
+
+The Ashby body includes the components that must remain singular and shared:
+
+1) THE ENGINE (SACRED CORE)
+- interprets intent
+- applies policy (act vs clarify vs confirm vs refuse vs chat)
+- produces plans (ActionRequests)
+- enforces WHAT vs HOW separation
+
+2) THE ROUTER (EXECUTION ORCHESTRATION)
+- selects adapters by capability
+- routes execution attempts deterministically
+- maintains execution evidence boundaries
+
+3) THE TRUTH GATE (REALITY ENFORCEMENT)
+- converts evidence into constrained truth classes
+- governs language constraints and state updates
+- prevents false certainty and fluency-driven lies
+
+4) HOUSESTATE (STATE AUTHORITY)
+- the canonical “belief store” for what the system thinks is true
+- with confidence, decay, and mixed-reality support
+- shared across all modules and agents
+
+5) SESSIONS (CONTINUITY AUTHORITY)
+- the bounded continuity mechanism
+- with expiry, safety, and scoped anchoring
+- shared infrastructure even when session semantics differ
+
+6) SECURITY & SECRETS HANDLING (BOUNDARY ENFORCEMENT)
+- secret storage rules
+- sanitization rules
+- least-privilege and key handling invariants
+
+7) LOGGING & OBSERVABILITY (RECONSTRUCTION ABILITY)
+- correlation, traceability, and auditability
+- required for failure analysis and resurrection
+
+8) SCOPES (WORLD MODEL)
+- the authority boundary for targets, permissions, and state
+- where “what exists” is defined
+
+These together form the body.
+
+Anything that bypasses these components is not “integrated.”
+It is a fork.
+
+──────────────────────────────────────────────────────────────────────────────
+SINGLE-BODY INVARIANT
+──────────────────────────────────────────────────────────────────────────────
+
+There is exactly one Ashby body per running instance of Ashby.
+
+Rules:
+- modules do not ship their own engines
+- agents do not ship their own routers
+- no agent is allowed to implement “its own truth”
+- no agent is allowed to implement a parallel HouseState
+- no agent is allowed to store secrets outside the platform’s secret boundaries
+
+Multiple “bodies” means multiple realities.
+
+Ashby refuses multi-reality.
+
+──────────────────────────────────────────────────────────────────────────────
+WHERE AUTHORITY LIVES
+──────────────────────────────────────────────────────────────────────────────
+
+Authority is the right to cause effects and claim reality.
+
+In Ashby:
+
+- Execution authority lives in the body (engine + router + adapters).
+- Truth authority lives in the body (Truth Gate + HouseState).
+- Continuity authority lives in the body (sessions + expiry + scope binding).
+- Governance authority lives in the body (Control Sync and invariants).
+
+Agents may propose.
+Agents may request.
+Agents may reason.
+
+Agents may not:
+- decide policy outcomes
+- decide scope boundaries
+- decide truth posture
+- decide what is “verified”
+- write state directly
+- execute vendor calls directly
+
+If an agent “acts” without going through the body, the platform is compromised.
+
+──────────────────────────────────────────────────────────────────────────────
+THE BODY AS A SHARED SET OF GUARANTEES
+──────────────────────────────────────────────────────────────────────────────
+
+The body exists so that every capability inherits the same guarantees:
+
+- Action-Gated Truth
+- scoped authority
+- deterministic execution routing
+- auditability
+- security constraints
+- removability
+- offline capability (where possible)
+- anti-guessing law
+
+An agent is allowed to be powerful only because the body makes power safe.
+
+Without the body, “agent intelligence” becomes dangerous confidence.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT THE BODY PROVIDES TO AGENTS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby provides shared infrastructure to agents:
+
+A) INPUT NORMALIZATION
+Agents do not parse raw transport; they receive normalized intent inputs.
+
+B) POLICY OUTCOME TYPES
+Agents do not invent outcome categories; they return into Act/Clarify/Confirm/Refuse.
+
+C) EXECUTION MECHANISMS
+Agents do not call vendors; they create ActionRequests, which the router executes.
+
+D) EVIDENCE PIPELINE
+Agents do not decide truth; they supply evidence via ActionResults and artifacts,
+which the Truth Gate evaluates.
+
+E) STATE & SESSION PRIMITIVES
+Agents do not define “memory” as a personal concept; they use platform primitives.
+
+This is how many agents can coexist without divergence.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT THE BODY NEVER PROVIDES
+──────────────────────────────────────────────────────────────────────────────
+
+The body never provides:
+- a license for an agent to override platform law
+- private backdoors into state
+- secret-sharing between agents by default
+- hidden execution pathways for “agent convenience”
+
+Convenience is not architecture.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE CONTAINMENT (BODY VS ORGAN FAILURE)
+──────────────────────────────────────────────────────────────────────────────
+
+The body is the system.
+
+Rules:
+- if an agent fails, the body must continue
+- if the body fails, all agents stop (and must resume safely under restart law)
+
+This is not pessimism.
+This is correct responsibility assignment.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby as the body must:
+- remain the single shared platform substrate
+- own routing, policy, truth, state, sessions, security, and logs
+- enforce WHAT vs HOW separation across all agents
+- prevent agents from defining reality or execution authority
+- keep guarantees uniform across modules and agents
+
+Ashby as the body must never:
+- allow parallel truth systems
+- allow parallel state authority
+- allow “agent-only” execution channels
+- allow agent identity to redefine architecture
+- collapse platform governance into personalities
+
+Ashby is the body.
+Without the body, there is no Ashby.
+
+END OF 29.1

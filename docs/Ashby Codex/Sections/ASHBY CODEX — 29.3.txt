@@ -1,0 +1,206 @@
+ASHBY CODEX — 29.3
+SHARED TRUTH AND STATE
+
+Multi-agent systems fail when each agent carries its own reality.
+
+Ashby prevents this by enforcing shared truth and shared state.
+
+Shared truth means:
+- there is one Truth Gate law
+- there is one set of truth classes
+- evidence is evaluated the same way regardless of which agent produced it
+
+Shared state means:
+- there is one HouseState authority per scope
+- confidence, decay, and mixed reality are unified
+- no agent may create a competing belief store
+
+This is the nervous system of the body.
+
+──────────────────────────────────────────────────────────────────────────────
+THE SINGLE TRUTH GATE INVARIANT
+──────────────────────────────────────────────────────────────────────────────
+
+Truth Gate enforcement is singular.
+
+Rules:
+- agents may produce evidence (ActionResults, artifacts, readbacks)
+- only the Truth Gate assigns truth class (VERIFIED / LAST_KNOWN / UNKNOWN / FAILED)
+- only Truth Gate output may update HouseState beliefs
+- language must be constrained by Truth Gate class, per target / per record
+
+No agent may:
+- “upgrade” truth because it feels confident
+- treat a backend acknowledgement as verification unless policy allows
+- collapse mixed reality into a single narrative
+- claim global truth while holding only local evidence
+
+Truth is not a personality trait.
+Truth is an evaluated outcome.
+
+──────────────────────────────────────────────────────────────────────────────
+THE SINGLE HOUSESTATE INVARIANT
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState is shared across agents.
+
+Rules:
+- agents read HouseState through the same scoped interfaces
+- agents do not write HouseState directly
+- agents cannot maintain “shadow beliefs” that override HouseState
+- state conflicts are resolved by evidence and policy, not by agent preference
+
+If two agents disagree:
+- the system does not “choose a winner”
+- the system evaluates evidence
+- it may mark conflicting beliefs as UNKNOWN
+- it may ask the user to clarify reality
+- it must preserve the contradiction explicitly
+
+Shared state is what prevents multi-agent gaslighting.
+
+──────────────────────────────────────────────────────────────────────────────
+SHARED POLICY DOES NOT MEAN SHARED BEHAVIOR
+──────────────────────────────────────────────────────────────────────────────
+
+Agents may differ in domain logic and workflows.
+
+They may not differ in platform law.
+
+Rules:
+- policy evaluation is consistent across all agents
+- scope authority is consistent across all agents
+- confirmation/clarification gates operate the same way across all agents
+- forbidden phrases and truth posture rules apply to all outputs
+
+An agent may have a different voice.
+It may not have different truth.
+
+──────────────────────────────────────────────────────────────────────────────
+STATE OWNERSHIP: WHO OWNS WHAT
+──────────────────────────────────────────────────────────────────────────────
+
+Shared state requires explicit ownership boundaries.
+
+Three kinds of “state” exist:
+
+A) PLATFORM BELIEFS (HOUSESTATE)
+- shared, scoped, and evaluated
+- represents what the system believes about the world
+- subject to decay, confidence, and mixed reality
+
+B) PLATFORM MEMORY (PREFERENCES / CONTEXT MARKERS)
+- small cross-domain memory markers
+- must never override HouseState
+- may store “last chosen device,” “preferred unit,” “last meeting id”
+- must be auditable and bounded
+
+C) AGENT ARTIFACT STATE (DOMAIN OUTPUTS)
+- transcripts, summaries, indexed documents, inventories, task lists
+- stored through StorageAdapter or domain stores (if explicitly governed)
+- subject to permission and scope law
+
+Rules:
+- an artifact is not a belief
+- a belief is not an artifact
+- memory markers cannot be used as evidence
+- evidence must still pass Truth Gate
+
+Confusing these categories creates false certainty.
+
+──────────────────────────────────────────────────────────────────────────────
+CROSS-AGENT INTEROPERABILITY (SAFE SHARING)
+──────────────────────────────────────────────────────────────────────────────
+
+Agents can cooperate safely only through explicit, governed mechanisms.
+
+Allowed cooperation patterns include:
+
+1) SHARED STATE READS
+Agent A may read HouseState produced by Agent B’s outcomes
+because the state is platform-owned and Truth-Gate evaluated.
+
+2) ARTIFACT REFERENCES (NOT ARTIFACT COPYING)
+Agent A may reference an artifact created by Agent B
+only through a stable identifier and permission checks.
+It must not bypass visibility rules by copying data into its own memory.
+
+3) EXPLICIT BRIDGES
+If two agents must share a semantic concept (e.g., “meeting_id”),
+the bridge must be explicit and versioned.
+
+4) CONTROLLED SESSION BRIDGING (RARE)
+Session semantics do not merge by default.
+If bridging is required, it must be explicit, scoped, and safe.
+Bridging must never expand authority.
+
+Cooperation without contracts is contamination.
+
+──────────────────────────────────────────────────────────────────────────────
+CONFLICT ARBITRATION (WHEN AGENTS COLLIDE)
+──────────────────────────────────────────────────────────────────────────────
+
+Conflicts are inevitable:
+- two agents propose incompatible actions
+- two agents interpret an entity differently
+- two agents have different artifacts that imply different facts
+
+Ashby arbitrates conflicts through the body:
+
+- policy resolves action conflicts (what is allowed to happen)
+- scope resolves authority conflicts (what is allowed to affect what)
+- Truth Gate resolves reality conflicts (what may be claimed)
+- HouseState preserves mixed reality (what is believed per confidence)
+
+Rules:
+- conflicts must be made visible
+- conflicts must not be “smoothed”
+- conflicts must not be resolved by agent confidence or verbosity
+- if resolution requires human input, CLARIFY is correct
+
+The body arbitrates.
+Organs do not rule each other.
+
+──────────────────────────────────────────────────────────────────────────────
+STALENESS AND DECAY APPLY TO ALL AGENTS
+──────────────────────────────────────────────────────────────────────────────
+
+Staleness is not per-agent.
+It is platform law.
+
+Rules:
+- if a belief decays, it decays for everyone
+- if a belief is UNKNOWN, it is UNKNOWN for everyone
+- no agent may present a stale belief as fresh
+- agents must surface staleness honestly in language
+
+This is required to prevent “agent A says it’s on” while “agent B says unknown.”
+
+Shared decay prevents fragmentation.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Shared truth and state must:
+- enforce a single Truth Gate across all agents
+- enforce a single HouseState authority per scope
+- apply truth classes and language constraints uniformly
+- preserve contradictions as mixed reality when evidence conflicts
+- prevent agents from overriding platform beliefs
+- keep artifacts and beliefs distinct
+- enforce staleness/decay uniformly across all agents
+
+Shared truth and state must never:
+- allow agent-specific truth systems
+- allow agent-specific belief stores to override HouseState
+- allow agent verbosity to substitute for evidence
+- collapse mixed outcomes into blanket claims
+- leak artifacts across agents without permission checks
+- treat memory markers as proof
+
+Truth is the nervous system.
+State is the shared map.
+Without them, multi-agent Ashby cannot exist.
+
+END OF 29.3

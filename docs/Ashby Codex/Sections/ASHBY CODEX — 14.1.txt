@@ -1,0 +1,178 @@
+ASHBY CODEX — 14.1
+WHY SESSIONS EXIST
+
+Sessions exist to make Ashby usable across multiple turns without sacrificing law.
+
+Real users do not speak in complete specifications every time.
+They speak in continuations:
+- “make it brighter”
+- “do the same in the kitchen”
+- “turn it off now”
+- “actually, never mind”
+- “what about the other one?”
+
+Without sessions, Ashby would be forced to:
+- ask for clarification every turn
+- repeat target resolution constantly
+- lose continuity after each message
+- behave as if every interaction is a first interaction
+
+That produces friction, not intelligence.
+
+Sessions exist to preserve continuity while keeping boundaries explicit.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A SESSION IS
+──────────────────────────────────────────────────────────────────────────────
+
+A session is a short-lived, scoped continuity object that carries bounded context
+from one turn to the next.
+
+A session may preserve:
+- which domain/module is active
+- which targets were last resolved
+- which parameters are being adjusted
+- whether Ashby is awaiting clarification
+- safe defaults for follow-up commands
+
+A session is not memory.
+A session is not belief.
+A session is not permission.
+
+A session is an interaction bridge.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY SESSIONS MUST BE STRUCTURED
+──────────────────────────────────────────────────────────────────────────────
+
+Unstructured continuity produces drift.
+
+If “context” is just text history and vibes:
+- meaning changes silently
+- policy becomes unpredictable
+- scope boundaries blur
+- ambiguous phrases get resolved by assumption
+- the system becomes impossible to audit
+
+Sessions exist to make continuity explicit and inspectable.
+
+They are the lawful way to carry context.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSIONS ARE ALWAYS SCOPED
+──────────────────────────────────────────────────────────────────────────────
+
+A session exists only inside a scope.
+
+Rules:
+- a session cannot authorize action outside its scope
+- a session cannot be applied across scopes
+- a session cannot create global targets
+- a session cannot override scope resolution
+
+If scope cannot be determined, a session cannot be safely applied.
+
+Sessions inherit scope boundaries.
+They do not weaken them.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSIONS DO NOT UPGRADE TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Sessions carry continuity, not evidence.
+
+Rules:
+- a session must not upgrade confidence in HouseState
+- a session must not imply verification
+- a session must not convert last-known beliefs into verified claims
+- a session must not hide staleness
+
+Sessions may select targets based on last interaction,
+but truth posture remains governed by evidence and decay.
+
+A session can remember “what we were doing.”
+It cannot claim “what is true.”
+
+──────────────────────────────────────────────────────────────────────────────
+SESSIONS REDUCE CLARIFICATION WITHOUT GUESSING
+──────────────────────────────────────────────────────────────────────────────
+
+Sessions exist so that Ashby can interpret follow-ups safely.
+
+Examples of what sessions enable (representative):
+- “make it brighter” applies to the last resolved light target set
+- “turn it off” applies to the active device group from the last action
+- “do it again” repeats a bounded prior intent when safe
+- “what’s the status?” queries the current belief about the session’s targets
+
+Sessions allow these without inventing new targets.
+
+If the session does not provide sufficient context safely:
+- Ashby must clarify
+- not guess
+
+Sessions are the alternative to guessing.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSIONS ARE MODULE-OWNED BUT PLATFORM-GOVERNED
+──────────────────────────────────────────────────────────────────────────────
+
+Different modules require different session semantics.
+
+Examples (representative):
+- lights adjustment session
+- comfort session
+- meeting capture session
+- pending clarification session
+
+Modules may define their own session fields.
+But session lifecycle, scope binding, expiry, and safety are platform law.
+
+Rules:
+- sessions are created and managed through the platform session manager
+- modules may not invent private session persistence mechanisms
+- session expiration behavior is governed by platform safety rules
+- sessions may not bypass policy or truth gate
+
+This prevents fragmentation.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT SESSIONS MUST NOT BECOME
+──────────────────────────────────────────────────────────────────────────────
+
+Sessions must not become:
+- permanent memory
+- a hidden global state store
+- a way to bypass clarification
+- a way to bypass scope law
+- a way to bypass policy enforcement
+- a way to “sticky apply” targets beyond safety boundaries
+
+If a session starts accumulating long-term identity data,
+it is no longer a session.
+It is drift.
+
+Sessions are short-lived continuity tools.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Sessions must:
+- exist to reduce friction without sacrificing law
+- remain explicitly structured
+- remain scope-bound
+- remain time-bound and expirable
+- never upgrade truth or confidence
+- fall back to clarification when context is insufficient
+
+Sessions must never:
+- authorize unscoped action
+- leak across scopes
+- hide uncertainty
+- become an informal memory system
+- bypass platform governance
+
+Sessions are how Ashby stays coherent without becoming reckless.
+
+END OF 14.1

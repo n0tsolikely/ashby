@@ -1,0 +1,86 @@
+ASHBY CODEX — 5.6
+COMMANDMENT V — ASHBY REMAINS REMOVABLE
+
+Ashby remains removable.
+
+This commandment means that every capability beyond the core engine
+must be optional, detachable, and replaceable without harming the system.
+
+Removability is not a convenience feature.
+It is a structural requirement.
+
+A component that cannot be removed safely
+has already polluted the core.
+
+Ashby enforces removability by design.
+
+The engine contains:
+- reasoning
+- policy
+- truth enforcement
+- state authority
+- scope modeling
+- orchestration
+
+Everything else is external to the engine.
+
+Modules may be added.
+Modules may be removed.
+Modules may fail.
+Modules may be replaced.
+
+Ashby must continue to function honestly in all cases.
+
+If a module is removed:
+- the engine remains intact
+- other modules remain unaffected
+- state degrades explicitly
+- language reflects reduced capability
+- no hidden dependency causes failure
+
+This commandment exists to prevent
+the slow accumulation of unremovable logic.
+
+Most systems die when features become entangled:
+- shared state leaks
+- implicit assumptions form
+- “temporary” shortcuts become permanent
+
+Ashby refuses that path.
+
+Removability forces discipline.
+
+A module that requires:
+- special engine hooks
+- shared mutable state
+- undocumented assumptions
+- cross-module knowledge
+
+is not compatible with Ashby.
+
+This commandment applies equally to:
+- lights
+- irrigation
+- cameras
+- meetings
+- inventory
+- future domains
+
+If irrigation is removed,
+Ashby still speaks honestly about irrigation being unavailable.
+If meetings are removed,
+Ashby still operates correctly in other domains.
+
+Removability also enables productization.
+
+Products are profiles that enable or disable modules.
+Profiles do not fork the engine.
+Profiles do not rewrite law.
+
+Any design that makes a module inseparable
+violates this commandment.
+
+Ashby remains removable
+so that it can remain coherent.
+
+END OF 5.6

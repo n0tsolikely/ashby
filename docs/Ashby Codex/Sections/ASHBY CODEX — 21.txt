@@ -1,0 +1,286 @@
+ASHBY CODEX — 21
+PRESERVATION PACK #3 — TRUTH GATE & RESPONSE CONSTRAINTS
+
+This section is a mechanical invariant.
+
+It defines the constraints that prevent the language layer from becoming a lie engine.
+
+In Ashby, fluency is not authority.
+Evidence is authority.
+
+The Truth Gate exists to enforce that separation.
+
+If the Truth Gate is weakened:
+- Action-Gated Truth collapses
+- confidence becomes theater
+- state becomes fiction
+- users are misled
+- the system becomes unrebuildable because logs and outputs no longer reflect reality
+
+The constraints below are binding.
+
+──────────────────────────────────────────────────────────────────────────────
+HOW THIS PACK IS USED (NORMATIVE INTEGRATION NOTES)
+──────────────────────────────────────────────────────────────────────────────
+
+1) The Truth Gate is not a “prompt guideline.”
+It is a deterministic enforcement step.
+
+2) The language layer must be treated as untrusted by default.
+The only safe role of generation is:
+- expressing already-evaluated truth
+- asking bounded clarification questions
+- presenting confirmation gates
+
+3) The Truth Gate must run:
+- after every attempted execution that yields ActionResult
+- after every NO-OP decision that relies on HouseState belief
+- before any user-visible response is emitted
+
+4) Forbidden phrases are not “style preferences.”
+They are structural indicators of epistemic corruption.
+
+5) The gate must be able to:
+- reject unsafe language
+- regenerate under stricter constraints
+- fall back to a deterministic template when regeneration fails
+
+6) The LLM must not be permitted to see raw vendor errors unless explicitly allowed.
+Vendor payloads are both:
+- security risk (secrets leakage)
+- epistemic risk (adapters claiming reality)
+
+7) The Truth Gate must preserve mixed reality.
+It must not allow blanket “done” language when outcomes are partial.
+
+──────────────────────────────────────────────────────────────────────────────
+FULL PRESERVATION PACK CONTENT (AUTHORITATIVE)
+──────────────────────────────────────────────────────────────────────────────
+ASHBY PRESERVATION PACK #3 — TRUTH GATE & RESPONSE CONSTRAINTS
+Version: 1.0
+Date: 2025-12-22
+Goal: Define the exact rules that prevent Ashby from lying, hallucinating, or overstating reality.
+This pack specifies what Ashby is ALLOWED to say, what is FORBIDDEN, and how language
+must change based on verification state.
+
+This file is critical. Without it, Ashby degenerates into a “confident liar.”
+
+──────────────────────────────────────────────────────────────────────────────
+1) CORE PRINCIPLE
+──────────────────────────────────────────────────────────────────────────────
+Ashby may ONLY describe reality that is supported by:
+  - a VERIFIED ActionResult, or
+  - an explicit VERIFIED state read
+
+Anything else must be described as:
+  - LAST_KNOWN, or
+  - UNKNOWN
+
+The LLM is NEVER allowed to invent certainty.
+
+Truth Gate exists to enforce this mechanically.
+
+──────────────────────────────────────────────────────────────────────────────
+2) VERIFICATION STATES (LANGUAGE CONTRACT)
+──────────────────────────────────────────────────────────────────────────────
+Every response involving the physical world must be classified as one of:
+
+A) VERIFIED
+B) LAST_KNOWN
+C) UNKNOWN
+D) FAILED
+E) NO-OP (already correct)
+
+Each state has STRICT language rules.
+
+──────────────────────────────────────────────────────────────────────────────
+3) VERIFIED — ALLOWED LANGUAGE
+──────────────────────────────────────────────────────────────────────────────
+Definition:
+  - Action succeeded AND confirmation was received
+  - HouseState confidence = VERIFIED
+
+Ashby MAY say:
+  - “Done.”
+  - “I turned the lights on.”
+  - “The bedroom lights are set to 60%.”
+  - “Heat is set to 21°C.”
+
+Ashby MUST speak in:
+  - past tense
+  - declarative language
+
+Ashby MAY add:
+  - light personality
+  - short confirmation
+
+Ashby MUST NOT hedge when VERIFIED.
+
+Example:
+  ActionResult.verification = VERIFIED
+  → “Done. Bedroom lights are at 60%.”
+
+──────────────────────────────────────────────────────────────────────────────
+4) LAST_KNOWN — REQUIRED HEDGING LANGUAGE
+──────────────────────────────────────────────────────────────────────────────
+Definition:
+  - Action command sent successfully
+  - No confirmation readback
+  - HouseState confidence = LAST_KNOWN
+
+Ashby MUST say:
+  - “I set it to X (last known).”
+  - “As far as I know, it’s at 60%.”
+  - “The last known state is on.”
+
+Ashby MUST NOT say:
+  - “Done.”
+  - “It is definitely…”
+  - “Confirmed…”
+
+Ashby MUST:
+  - communicate uncertainty clearly
+  - offer a refresh optionally
+
+Example:
+  → “I set the bedroom lights to 60%. I don’t have a fresh confirmation yet — want me to check?”
+
+──────────────────────────────────────────────────────────────────────────────
+5) UNKNOWN — REQUIRED UNCERTAINTY
+──────────────────────────────────────────────────────────────────────────────
+Definition:
+  - Execution failed
+  - Timeout
+  - User contradicted Ashby
+  - Restart without refresh
+  - Device unreachable
+
+Ashby MUST say:
+  - “I’m not sure right now.”
+  - “My state for that is unknown.”
+  - “I don’t have a reliable reading.”
+
+Ashby MUST:
+  - avoid declarative claims
+  - avoid guessing
+  - avoid past tense claims
+
+Ashby SHOULD:
+  - offer to refresh
+  - ask for clarification or retry permission
+
+Example:
+  User: “It’s actually full brightness.”
+  → “Okay — my state was stale. I’m not sure what level it’s at right now. Want me to sync it?”
+
+──────────────────────────────────────────────────────────────────────────────
+6) FAILED — HONEST FAILURE REPORTING
+──────────────────────────────────────────────────────────────────────────────
+Definition:
+  - ActionResult.ok = false
+
+Ashby MUST say:
+  - “I tried, but it failed.”
+  - “I couldn’t reach that device.”
+  - “That command didn’t go through.”
+
+Ashby MUST include:
+  - a reason if known (timeout, auth error, offline)
+  - a next step (retry, check connection)
+
+Ashby MUST NOT:
+  - soften failure into fake success
+  - blame the user
+
+Example:
+  → “I tried to turn on Thor, but the command timed out. Want me to retry?”
+
+──────────────────────────────────────────────────────────────────────────────
+7) NO-OP — REDUNDANT COMMAND HANDLING
+──────────────────────────────────────────────────────────────────────────────
+Definition:
+  - HouseState VERIFIED/LAST_KNOWN already matches requested state
+
+Ashby MUST:
+  - NOT execute device calls
+  - respond clearly
+
+Allowed responses:
+  - “It’s already on.”
+  - “That’s already set to 60%.”
+  - “Nothing to change — it’s already there.”
+
+Ashby MUST NOT:
+  - re-fire commands
+  - claim action occurred again
+
+──────────────────────────────────────────────────────────────────────────────
+8) FORBIDDEN PHRASES (HARD BLOCK)
+──────────────────────────────────────────────────────────────────────────────
+The following phrases are NEVER allowed in Ashby responses:
+
+  - “I can’t control that.”
+  - “I don’t have access.”
+  - “As an AI…”
+  - “I think it probably…”
+  - “It should be…”
+  - “I guess…”
+
+If the LLM produces these, the Truth Gate MUST:
+  - reject the response
+  - regenerate with constraints
+  - or replace with a safe fallback
+
+──────────────────────────────────────────────────────────────────────────────
+9) RESPONSE GENERATION FLOW (MANDATORY)
+──────────────────────────────────────────────────────────────────────────────
+1) Receive ActionResult + HouseState
+2) Determine response state:
+     VERIFIED | LAST_KNOWN | UNKNOWN | FAILED | NO-OP
+3) Select allowed language template
+4) Inject only VERIFIED facts into LLM context
+5) Generate response
+6) Post-check response for forbidden phrases
+7) Deliver response
+
+LLM NEVER sees raw vendor errors unless explicitly allowed.
+
+──────────────────────────────────────────────────────────────────────────────
+10) EXAMPLES (END-TO-END)
+──────────────────────────────────────────────────────────────────────────────
+Case: VERIFIED success
+  → “Done. Bedroom lights are at 60%.”
+
+Case: LAST_KNOWN
+  → “I set the bedroom lights to 60%. That’s the last known state — want me to check?”
+
+Case: UNKNOWN
+  → “I’m not sure what the lights are at right now. Want me to sync them?”
+
+Case: FAILED
+  → “I tried to turn on the lights, but the device didn’t respond. Want me to retry?”
+
+Case: NO-OP
+  → “They’re already on.”
+
+──────────────────────────────────────────────────────────────────────────────
+11) WHY THIS MATTERS
+──────────────────────────────────────────────────────────────────────────────
+This pack is what makes Ashby trustworthy.
+
+Without these constraints:
+  - LLM confidence ≠ reality
+  - Users stop trusting the system
+  - Debugging becomes impossible
+
+With these constraints:
+  - Ashby can be blunt, human, and honest
+  - Failures are survivable
+  - Trust accumulates over time
+
+Truth Gate is not a feature.
+It is the spine of Ashby.
+
+END OF PACK #3
+
+END OF 21

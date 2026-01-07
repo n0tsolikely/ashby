@@ -1,0 +1,120 @@
+ASHBY CODEX — 10.6
+ACTIONRESULT AS REALITY
+
+ActionResult is the only representation of reality
+that Ashby is allowed to trust.
+
+It is not a convenience object.
+It is not a logging artifact.
+It is the authoritative evidence boundary
+between execution and belief.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT AN ACTIONRESULT IS
+──────────────────────────────────────────────────────────────────────────────
+
+An ActionResult represents the observable outcome
+of a single attempted action.
+
+It records:
+- what was attempted
+- how execution was invoked
+- what was observed
+- what failed or succeeded
+- what uncertainty remains
+- timing and correlation data
+
+ActionResult does not interpret meaning.
+It records evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY ACTIONRESULT IS AUTHORITATIVE
+──────────────────────────────────────────────────────────────────────────────
+
+Without ActionResult,
+systems infer success.
+
+Inference creates lies.
+
+ActionResult forces Ashby to confront reality
+as it occurred,
+not as it was intended.
+
+No action may influence state,
+truth,
+or language
+without an ActionResult.
+
+──────────────────────────────────────────────────────────────────────────────
+ACTIONRESULT AND CONFIDENCE
+──────────────────────────────────────────────────────────────────────────────
+
+ActionResult feeds the Truth Gate.
+
+From ActionResult,
+the engine derives:
+- VERIFIED outcomes
+- LAST_KNOWN outcomes
+- FAILED outcomes
+- UNKNOWN outcomes
+
+Confidence is not reported by adapters.
+Confidence is assigned by the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+ACTIONRESULT AND PARTIAL SUCCESS
+──────────────────────────────────────────────────────────────────────────────
+
+Partial success is explicit.
+
+An ActionResult may represent:
+- some targets succeeded
+- some targets failed
+- some targets are uncertain
+
+Partial success must never
+be collapsed into success.
+
+Ambiguity is preserved.
+
+──────────────────────────────────────────────────────────────────────────────
+ACTIONRESULT AND MEMORY
+──────────────────────────────────────────────────────────────────────────────
+
+ActionResults are recorded as memory.
+
+They form the factual history
+that explanations and audits rely on.
+
+Memory without ActionResult
+is fiction.
+
+──────────────────────────────────────────────────────────────────────────────
+ACTIONRESULT AND RETRIES
+──────────────────────────────────────────────────────────────────────────────
+
+Retries produce additional ActionResults.
+
+Each attempt is recorded.
+
+A later success does not erase
+earlier failure.
+
+This prevents retroactive rewriting of history.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+No component may:
+- invent ActionResults
+- bypass ActionResult creation
+- merge ActionResults implicitly
+- discard ActionResults silently
+
+ActionResult is the spine of execution truth.
+
+If ActionResult is compromised,
+Ashby cannot be trusted.
+
+END OF 10.6

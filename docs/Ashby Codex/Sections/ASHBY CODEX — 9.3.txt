@@ -1,0 +1,116 @@
+ASHBY CODEX — 9.3
+WHAT THE ROUTER MUST NEVER BECOME
+
+The router must never become a decision-maker.
+
+This prohibition is absolute.
+
+The router exists to move decisions
+into execution and return evidence.
+Nothing more.
+
+──────────────────────────────────────────────────────────────────────────────
+FORBIDDEN RESPONSIBILITIES
+──────────────────────────────────────────────────────────────────────────────
+
+The router must never:
+
+- interpret user intent
+- decide policy outcomes
+- select actions based on meaning
+- assign confidence levels
+- update state or memory
+- generate explanations
+- decide what Ashby should claim
+
+If any of these behaviors appear,
+the router has been corrupted.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY ROUTERS ACCIDENTALLY GROW BRAINS
+──────────────────────────────────────────────────────────────────────────────
+
+Router corruption is common.
+
+It begins with convenience:
+- “just handle this case here”
+- “the engine doesn’t know about this yet”
+- “it’s faster to decide here”
+
+These shortcuts feel harmless.
+They are not.
+
+They create:
+- hidden policy
+- duplicated logic
+- untraceable behavior
+- brittle refactors
+- erosion of trust
+
+Once logic enters the router,
+it rarely leaves.
+
+──────────────────────────────────────────────────────────────────────────────
+THE GOD-ROUTER FAILURE MODE
+──────────────────────────────────────────────────────────────────────────────
+
+A router that reasons becomes a god-router.
+
+God-routers:
+- know too much
+- do too much
+- cannot be removed
+- cannot be tested in isolation
+- silently diverge from engine law
+
+This failure mode is terminal.
+
+If the router becomes a second engine,
+Ashby ceases to be coherent.
+
+──────────────────────────────────────────────────────────────────────────────
+EARLY WARNING SIGNS
+──────────────────────────────────────────────────────────────────────────────
+
+The following are warning signs of router corruption:
+
+- branching on semantic intent
+- special-casing domains
+- embedding retry logic with interpretation
+- modifying ActionRequests
+- altering execution meaning
+- generating partial explanations
+
+Any of these require immediate correction.
+
+──────────────────────────────────────────────────────────────────────────────
+CORRECTIVE ACTION
+──────────────────────────────────────────────────────────────────────────────
+
+When router logic grows:
+
+- extract reasoning into the engine
+- extract policy into cognition subsystems
+- extract execution specifics into adapters
+
+The router must shrink,
+not grow.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+The router must never:
+
+- become a decision authority
+- compete with the engine
+- define behavior
+- mask failure
+- invent success
+
+The router is mechanical.
+
+If it begins to think,
+the architecture has failed.
+
+END OF 9.3

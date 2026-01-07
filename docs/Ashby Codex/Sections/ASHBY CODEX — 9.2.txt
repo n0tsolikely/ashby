@@ -1,0 +1,133 @@
+ASHBY CODEX — 9.2
+WHAT THE ROUTER IS
+
+The router is the execution coordinator of Ashby.
+
+It is not the engine.
+It does not reason.
+It does not decide truth.
+
+The router exists to connect
+engine decisions
+to execution reality
+without altering meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+THE ROLE OF THE ROUTER
+──────────────────────────────────────────────────────────────────────────────
+
+The router is responsible for:
+
+- receiving engine decisions
+- dispatching ActionRequests to appropriate HOW layers
+- managing execution flow
+- collecting ActionResults
+- returning evidence to the engine
+
+The router answers the question:
+“Where does this ActionRequest go?”
+
+It does not answer:
+“Should this happen?”
+“What does this mean?”
+“Did this succeed?”
+
+Those questions belong to the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+ROUTER INPUTS AND OUTPUTS
+──────────────────────────────────────────────────────────────────────────────
+
+The router consumes:
+- ActionRequests from the engine
+- resolved scope identifiers
+- execution policies
+- adapter availability information
+
+The router produces:
+- dispatched execution calls
+- collected ActionResults
+- explicit failure signals
+- execution metadata
+
+The router never produces:
+- user-facing language
+- confidence levels
+- state updates
+- truth claims
+
+──────────────────────────────────────────────────────────────────────────────
+ROUTER AS ORCHESTRATOR, NOT LOGIC
+──────────────────────────────────────────────────────────────────────────────
+
+The router orchestrates.
+
+It may:
+- select an adapter based on capability
+- handle retries and fallbacks
+- manage timeouts
+- sequence multiple execution steps
+
+It must never:
+- infer intent
+- alter policy decisions
+- upgrade confidence
+- collapse outcomes into success
+- hide partial failure
+
+If the router begins to reason,
+the architecture has failed.
+
+──────────────────────────────────────────────────────────────────────────────
+ROUTER AND FAILURE HANDLING
+──────────────────────────────────────────────────────────────────────────────
+
+Failure handling in the router
+is mechanical, not interpretive.
+
+The router must:
+- surface adapter failure explicitly
+- report timeouts accurately
+- preserve partial results
+- avoid masking errors
+
+The router must not:
+- retry indefinitely
+- convert failure into silence
+- invent recovery narratives
+
+Failure is evidence.
+Interpretation belongs to the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+ROUTER AND SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+The router enforces scope routing.
+
+It ensures that:
+- execution is sent only to scope-compatible adapters
+- no adapter receives out-of-scope commands
+- execution boundaries are respected
+
+The router does not define scope.
+It enforces scope decisions made by the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+The router must never:
+- own state authority
+- define truth semantics
+- generate user responses
+- bypass Action-Gated Truth
+- contain vendor-specific reasoning
+
+If logic grows inside the router,
+it must be extracted.
+
+The router is a bridge,
+not a brain.
+
+END OF 9.2

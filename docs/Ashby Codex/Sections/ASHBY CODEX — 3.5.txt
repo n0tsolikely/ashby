@@ -1,0 +1,80 @@
+ASHBY CODEX — 3.5
+THE END-STATE VISION
+
+The end-state of Ashby is not a feature set.
+It is not a list of integrations.
+It is not a market category.
+
+The end-state of Ashby is a system that can be trusted
+to act in the world without supervision,
+because its behavior is constrained by law.
+
+In its completed form, Ashby is:
+
+A platform that:
+- coordinates many systems
+- spans many domains
+- hosts many agents
+- operates across many scopes
+- remains honest under uncertainty
+- survives growth without collapse
+
+Ashby’s end-state is defined by **properties**, not capabilities.
+
+In the end-state, Ashby:
+- owns its belief about the world
+- knows when that belief is stale
+- degrades confidence over time
+- refuses to invent certainty
+- explains its actions clearly
+- remains rebuildable from principles alone
+
+Ashby is not expected to know everything.
+It is expected to know what it knows.
+
+Ashby is not expected to succeed always.
+It is expected to account for failure.
+
+Ashby is not expected to be fast at all times.
+It is expected to be correct.
+
+The end-state includes:
+- multiple agents coexisting under one truth system
+- modules spanning physical and digital domains
+- local-first operation where required
+- cloud-assisted operation where chosen
+- vendor independence through abstraction
+- products defined by profiles, not forks
+
+In the end-state, a user can ask:
+- “What happened last night?”
+- “Why did you do that?”
+- “What are you unsure about?”
+- “What changed since yesterday?”
+and receive answers grounded in evidence.
+
+In the end-state, a builder can:
+- add a new module without touching the engine
+- replace a vendor without changing behavior
+- introduce a new agent without forking the platform
+- reason about the system without tribal knowledge
+
+Ashby’s end-state is not omniscience.
+It is **integrity**.
+
+A system that:
+- never lies
+- never hides uncertainty
+- never collapses into exception-driven design
+- never loses its identity under success
+
+Ashby is designed so that reaching this end-state
+does not require a rewrite.
+
+It requires execution.
+
+The Codex exists to ensure that
+when Ashby reaches its end-state,
+it is still recognizably Ashby.
+
+END OF 3.5

@@ -1,0 +1,378 @@
+ASHBY CODEX — 26
+Preservation Pack #8 — Interface & Execution Contracts
+
+This subsection embeds the corresponding Preservation Pack as a mechanical invariant.
+It is reproduced in full to support rebuild, audit, and long-horizon continuity.
+Unless amended via Control Sync, the rules herein are treated as canonical.
+
+BEGIN PRESERVATION PACK #8
+
+ASHBY PRESERVATION PACK #8 — MODULE/ADAPTER INTERFACE CONTRACTS (PROTOCOLS)
+Version: 1.0
+Date: 2025-12-22
+Goal: Define the exact interface contracts that enforce WHAT vs HOW separation.
+If these contracts are preserved, Ashby stays modular and swappable. If they drift,
+Ashby collapses back into a god-file + vendor spaghetti.
+
+This pack includes:
+  - Core types used across contracts
+  - Adapter protocol definitions for:
+      LightsAdapter
+      PlugsAdapter
+      ThermostatAdapter
+      CamerasAdapter
+      StorageAdapter (for Stuart/meetings)
+  - Contract rules: verification, failures, capability mismatch
+  - Examples of correct usage from modules/services
+
+IMPORTANT:
+  - Modules must depend only on interfaces, never on vendor SDKs.
+  - Adapters must translate vendor specifics into standardized ActionResult.
+  - No interface may include secrets or vendor payloads as required fields.
+
+──────────────────────────────────────────────────────────────────────────────
+1) CORE CONTRACT PRINCIPLES
+──────────────────────────────────────────────────────────────────────────────
+1) Direction of dependency is one-way:
+   modules/* → interfaces/* ← adapters/*
+   (modules import interfaces; adapters implement interfaces)
+
+2) Interfaces describe capability, not implementation.
+   A lights module must be able to call “set_level” without knowing Tuya exists.
+
+3) Interfaces return standardized ActionResult, always.
+   No “None” returns.
+   No “fire and forget.”
+
+4) Interfaces accept canonical types:
+   - device_keys
+   - canonical values (brightness 0–1000, temp in °C)
+   - optional correlation_id for tracing
+
+5) Verification is part of the contract:
+   - adapter must tell the system whether confirmation happened
+
+6) Capability mismatch must be explicit:
+   - if device doesn’t support brightness, return failure stage “capability_mismatch”
+
+──────────────────────────────────────────────────────────────────────────────
+2) SHARED TYPES (MUST BE CONSISTENT ACROSS ALL INTERFACES)
+──────────────────────────────────────────────────────────────────────────────
+These types are referenced by all interfaces.
+
+2.1 TargetSet
+Represents resolved targets in a standardized way.
+
+{
+  "devices": ["thor_bulb", "sky_bulb"],
+  "zone_id": "zone2" | null,
+  "category": "lights" | null,
+  "role": "ambient" | null
+}
+
+Rules:
+  - devices list is required (may be empty only if upstream bug; treat as failure)
+  - zone/category/role are informational, not authoritative
+
+2.2 ActionResult (canonical)
+Re-stated here for interface completeness:
+
+{
+  "ok": true | false,
+  "attempted": ["device_key"...],
+  "succeeded": ["device_key"...],
+  "failed": [
+    {
+      "device_key": "thor_bulb",
+      "stage": "set_brightness",
+      "error": "timeout",
+      "raw": "sanitized_vendor_error"
+    }
+  ],
+  "value": { ... },                 // canonical params attempted
+  "verification": "VERIFIED" | "LAST_KNOWN" | "UNKNOWN",
+  "retries": 0,
+  "executed_at": "ISO8601"
+}
+
+Rules:
+  - attempted must include every device the adapter tried
+  - succeeded is subset of attempted
+  - ok = failed empty
+  - verification is “best possible truth” for the whole action
+  - adapters may optionally include per-device verification in failed.raw, but do not change canonical shape
+
+2.3 FailureStage conventions (standardize stage strings)
+Adapters should use consistent stages:
+  - "on:switch" / "off:switch"
+  - "set_brightness"
+  - "set_temperature"
+  - "snapshot"
+  - "record_start" / "record_stop"
+  - "capability_mismatch"
+  - "device_lookup"
+  - "vendor_api"
+  - "verification_read"
+
+This makes logs analyzable.
+
+──────────────────────────────────────────────────────────────────────────────
+3) LIGHTS ADAPTER CONTRACT
+──────────────────────────────────────────────────────────────────────────────
+File: interfaces/lights.py
+
+Purpose:
+  - Provide generic operations over lights.
+
+Canonical brightness rules:
+  - brightness is ALWAYS 0–1000 scale at interface boundary
+  - adapter must translate to vendor scale (0–255, 0–100, etc.)
+  - adapter must implement “ensure_on” semantics correctly:
+      - if brightness > 0, the light must end up ON
+
+Required methods:
+
+3.1 set_level(target: TargetSet, level: int, correlation_id: str | None) -> ActionResult
+Semantics:
+  - if level == 0:
+      - treated as OFF
+      - ensure state ends OFF
+  - if level > 0:
+      - ensure ON
+      - then set brightness
+
+Verification:
+  - If vendor supports readback, adapter SHOULD verify.
+  - If not, adapter returns LAST_KNOWN.
+
+Failure conditions:
+  - device missing -> failed.stage = "device_lookup"
+  - device cannot brightness -> "capability_mismatch"
+  - vendor error -> "vendor_api"
+  - verification failed -> ok may remain true but verification = LAST_KNOWN or UNKNOWN depending on certainty
+
+3.2 turn_on(target: TargetSet, correlation_id) -> ActionResult
+Semantics:
+  - turn on to last known brightness or default brightness
+  - should NOT max brightness unless explicitly requested by module
+
+3.3 turn_off(target: TargetSet, correlation_id) -> ActionResult
+Semantics:
+  - ensure off; brightness becomes 0 in HouseState after VERIFIED/LAST_KNOWN
+
+Optional methods (future):
+  - set_scene(target, scene_id)
+  - set_color_temp(target, kelvin)
+  - set_rgb(target, rgb_tuple)
+
+Example interface (python pseudo):
+
+class LightsAdapter(Protocol):
+    def set_level(self, target: TargetSet, level: int, correlation_id: str | None = None) -> ActionResult: ...
+    def turn_on(self, target: TargetSet, correlation_id: str | None = None) -> ActionResult: ...
+    def turn_off(self, target: TargetSet, correlation_id: str | None = None) -> ActionResult: ...
+
+──────────────────────────────────────────────────────────────────────────────
+4) PLUGS ADAPTER CONTRACT
+──────────────────────────────────────────────────────────────────────────────
+File: interfaces/plugs.py
+
+Purpose:
+  - Provide generic on/off for plugs/outlets.
+
+Required methods:
+
+4.1 set_on(target: TargetSet, on: bool, correlation_id) -> ActionResult
+
+Semantics:
+  - if on=True → ensure plug on
+  - if on=False → ensure plug off
+
+Capability mismatch:
+  - If a device is not controllable → failure stage "capability_mismatch"
+
+Verification:
+  - If vendor supports readback, verify.
+  - else LAST_KNOWN.
+
+Example:
+
+class PlugsAdapter(Protocol):
+    def set_on(self, target: TargetSet, on: bool, correlation_id: str | None = None) -> ActionResult: ...
+
+──────────────────────────────────────────────────────────────────────────────
+5) THERMOSTAT ADAPTER CONTRACT
+──────────────────────────────────────────────────────────────────────────────
+File: interfaces/thermostat.py
+
+Purpose:
+  - Provide safe temperature set operations.
+
+Canonical temperature:
+  - use degrees Celsius as canonical internal unit
+  - adapter translates if vendor expects other units
+
+Required methods:
+
+5.1 set_heat_c(target: TargetSet, heat_c: float, correlation_id) -> ActionResult
+Semantics:
+  - sets heat setpoint
+  - should return VERIFIED if API returns success and device acknowledged
+  - should return LAST_KNOWN if only command send is known
+
+5.2 read_temperature_c(target: TargetSet, correlation_id) -> (ActionResult + temp)
+Two patterns allowed:
+  Pattern A: include value in ActionResult.value.temperature_c
+  Pattern B: return tuple (ActionResult, float|None)
+
+Preferred:
+  - Pattern A for consistency.
+
+Example:
+
+class ThermostatAdapter(Protocol):
+    def set_heat_c(self, target: TargetSet, heat_c: float, correlation_id: str | None = None) -> ActionResult: ...
+    def read_temperature_c(self, target: TargetSet, correlation_id: str | None = None) -> ActionResult: ...
+
+Notes:
+  - Thermostat devices often support “read current temp” and “set setpoint.”
+  - HouseState must store both last_known_temp_c and setpoint.
+
+──────────────────────────────────────────────────────────────────────────────
+6) CAMERAS ADAPTER CONTRACT
+──────────────────────────────────────────────────────────────────────────────
+File: interfaces/cameras.py
+
+Purpose:
+  - Provide generic camera actions (snapshot, record, status).
+
+Required methods (baseline):
+
+6.1 snapshot(target: TargetSet, correlation_id) -> ActionResult
+Semantics:
+  - capture a still image
+  - ActionResult.value may include a file path or storage key (NOT a raw URL with secrets)
+  - verification should be VERIFIED if file exists and saved
+
+6.2 start_recording(target: TargetSet, duration_sec: int | None, correlation_id) -> ActionResult
+Semantics:
+  - start recording or request clip for duration
+  - may be immediate or scheduled
+  - must return ActionResult with verification state
+
+6.3 stop_recording(target: TargetSet, correlation_id) -> ActionResult (optional if device supports)
+
+Optional methods:
+  - status(target) -> ActionResult
+  - list_recent_clips(target, window) -> ActionResult
+
+Example:
+
+class CamerasAdapter(Protocol):
+    def snapshot(self, target: TargetSet, correlation_id: str | None = None) -> ActionResult: ...
+    def start_recording(self, target: TargetSet, duration_sec: int | None = None, correlation_id: str | None = None) -> ActionResult: ...
+    def stop_recording(self, target: TargetSet, correlation_id: str | None = None) -> ActionResult: ...
+
+Security note:
+  - Never embed camera credentials in returned paths or URLs.
+  - If a URL is needed, return a reference token and let IO layer resolve access.
+
+──────────────────────────────────────────────────────────────────────────────
+7) STORAGE ADAPTER CONTRACT (FOR STUART/MEETINGS)
+──────────────────────────────────────────────────────────────────────────────
+File: interfaces/storage.py
+
+Purpose:
+  - Provide a uniform storage mechanism for meeting records, transcripts, summaries.
+
+Required methods:
+
+7.1 put_object(key: str, bytes_or_text, metadata: dict, correlation_id) -> ActionResult
+7.2 get_object(key: str, correlation_id) -> ActionResult (value includes payload or pointer)
+7.3 list_objects(prefix: str, correlation_id) -> ActionResult (value includes list of keys)
+
+Storage may be:
+  - local filesystem
+  - sqlite
+  - cloud bucket
+
+Modules must not care.
+
+Example:
+
+class StorageAdapter(Protocol):
+    def put_object(self, key: str, data: bytes | str, metadata: dict | None = None, correlation_id: str | None = None) -> ActionResult: ...
+    def get_object(self, key: str, correlation_id: str | None = None) -> ActionResult: ...
+    def list_objects(self, prefix: str, correlation_id: str | None = None) -> ActionResult: ...
+
+──────────────────────────────────────────────────────────────────────────────
+8) CONTRACT RULES FOR ADAPTER IMPLEMENTATIONS
+──────────────────────────────────────────────────────────────────────────────
+Adapters must:
+
+1) Validate device exists in registry
+   - else fail stage "device_lookup"
+
+2) Validate capability
+   - else fail stage "capability_mismatch"
+
+3) Execute vendor calls
+   - map vendor errors into taxonomy (timeout, auth_failed, unreachable, etc.)
+
+4) Return ActionResult always
+   - even on total failure
+   - never raise raw vendor exceptions upstream unless wrapped and sanitized
+
+5) Provide best possible verification
+   - If readback is available, use it (VERIFIED).
+   - If not, return LAST_KNOWN.
+   - If uncertain due to failure, return UNKNOWN.
+
+6) NEVER leak secrets
+   - sanitize raw payloads before storing in failed.raw
+
+──────────────────────────────────────────────────────────────────────────────
+9) MODULE USAGE PATTERN (HOW MODULES SHOULD CALL ADAPTERS)
+──────────────────────────────────────────────────────────────────────────────
+Modules should:
+  - interpret Intent into ActionRequest
+  - resolve targets via domain resolution
+  - call the adapter through the interface
+  - receive ActionResult
+  - return ActionResult upward
+
+Modules should NOT:
+  - catch and swallow errors without ActionResult
+  - improvise success
+  - bypass truth gating
+
+Example (lights module service):
+
+def set_level(target: TargetSet, level: int, correlation_id: str):
+    res = lights_adapter.set_level(target, level, correlation_id)
+    return res
+
+Router then:
+  - updates HouseState based on res
+  - passes res into truth gate
+
+──────────────────────────────────────────────────────────────────────────────
+10) WHY THIS PACK MATTERS
+──────────────────────────────────────────────────────────────────────────────
+These contracts are what make Ashby a PLATFORM.
+
+They ensure:
+  - Tuya can be swapped
+  - Nest can be swapped
+  - Reolink can be swapped
+  - Modules remain stable
+  - Router stays thin
+  - Vendors don’t infect core logic
+
+If you preserve these interfaces, you preserve Ashby’s long-term scalability.
+
+END OF PACK #8
+
+END PRESERVATION PACK #8
+
+END OF 26

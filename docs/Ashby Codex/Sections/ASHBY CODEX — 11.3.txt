@@ -1,0 +1,260 @@
+ASHBY CODEX — 11.3  
+ACTIONRESULT
+
+ActionResult is the canonical representation of execution outcome.
+
+It is evidence.
+
+ActionResult is not:
+- a logging convenience
+- a best-effort narrative
+- a “probably worked” signal
+
+ActionResult is the boundary that prevents lies.
+
+Without ActionResult,
+systems infer success.
+
+Inference creates fiction.  
+Fiction destroys trust.  
+Trust loss destroys Ashby.
+
+──────────────────────────────────────────────────────────────────────────────  
+PURPOSE OF ACTIONRESULT  
+──────────────────────────────────────────────────────────────────────────────
+
+ActionResult exists to ensure that:
+
+- state is updated only from evidence
+- language is constrained by evidence
+- partial success is preserved
+- failure is explicit
+- uncertainty is carried forward honestly
+- debugging remains possible under stress
+
+ActionResult makes reality legible.
+
+It answers:
+“What actually happened when we tried?”
+
+──────────────────────────────────────────────────────────────────────────────  
+ACTIONRESULT AS THE EVIDENCE BOUNDARY  
+──────────────────────────────────────────────────────────────────────────────
+
+Execution occurs at the edges:
+adapters, bridges, and connectors
+touch external systems.
+
+The engine does not.
+
+ActionResult is the only allowed artifact
+that crosses back from execution
+into the engine.
+
+No action may influence:
+- belief
+- truth class
+- memory
+- response language
+
+without an ActionResult.
+
+──────────────────────────────────────────────────────────────────────────────  
+CANONICAL ACTIONRESULT STRUCTURE  
+──────────────────────────────────────────────────────────────────────────────
+
+The canonical structure below is normative.
+
+Shape is invariant.  
+Fields marked required are mandatory.
+
+Canonical form (JSON-like):
+
+{
+  "ok": true | false,
+
+  "attempted": ["<device_key>", "..."],          // required
+  "succeeded": ["<device_key>", "..."],          // required
+  "failed": [                                    // required
+    {
+      "device_key": "<device_key>",
+      "stage": "<failure_stage>",
+      "error": "<failure_reason>",
+      "raw": "<sanitized_detail>"
+    }
+  ],
+
+  "value": {                                     // required
+    "brightness": <int 0..1000> | null,
+    "temperature_c": <float> | null,
+    "delta": <int -1000..1000> | null,
+    "duration_sec": <int> | null,
+    "...": null
+  },
+
+  "verification": "VERIFIED" | "LAST_KNOWN" | "UNKNOWN",   // required
+  "retries": <int>,                                         // required
+
+  "executed_at": "<ISO8601 timestamp>",                     // required
+  "correlation_id": "<correlation_id>"                      // required
+}
+
+Notes:
+- `failed` may be empty.
+- `raw` must be sanitized and must never contain secrets.
+- verification is “best possible evidence classification,” not a promise.
+
+──────────────────────────────────────────────────────────────────────────────  
+FIELD SEMANTICS  
+──────────────────────────────────────────────────────────────────────────────
+
+OK  
+`ok` is true only when the adapter reports no failures.
+
+Rule:
+- ok = true ONLY if failed is empty.
+
+ATTEMPTED  
+`attempted` lists the devices the execution layer tried to act upon.
+
+Rules:
+- attempted must include every concrete device targeted by execution.
+- attempted must not include devices that were never invoked.
+- attempted is evidence of attempted control, not proof of outcome.
+
+SUCCEEDED  
+`succeeded` lists the devices that execution reports as successful.
+
+Rules:
+- succeeded must be a subset of attempted.
+- succeeded may be empty.
+
+FAILED  
+`failed` records per-device failures with explicit reasons.
+
+Rules:
+- failed entries must include:
+  - device_key
+  - stage
+  - error
+- raw detail may be included but must be sanitized.
+- failed entries must never contain secrets.
+
+`failed` exists to prevent blanket claims.
+
+If one device fails,
+Ashby must not speak as if all devices succeeded.
+
+VALUE  
+`value` records the canonical values that were attempted or requested.
+
+Rules:
+- values are canonical units.
+- value is not a guarantee of achieved state.
+- value is the planned outcome for audit and response construction.
+
+VERIFICATION  
+`verification` classifies how strongly the execution layer can confirm outcome.
+
+Verification values:
+- VERIFIED: confirmed by explicit readback or equivalent acknowledgement
+- LAST_KNOWN: command accepted but no confirmation was obtained
+- UNKNOWN: uncertainty remains due to failure, contradiction, or lack of reliable evidence
+
+Verification does not replace ok/failure reporting.
+Verification refines what may be claimed.
+
+RETRIES  
+`retries` records how many retry attempts were performed.
+
+Rules:
+- retries is evidence for debugging.
+- retries does not upgrade truth.
+
+EXECUTED_AT  
+`executed_at` records when execution completed.
+
+Rules:
+- executed_at supports reconstruction.
+- executed_at does not upgrade truth.
+
+CORRELATION_ID  
+`correlation_id` binds ActionResult to the originating request lifecycle.
+
+Rules:
+- correlation_id must match the ActionRequest correlation_id.
+- correlation_id must be present in logs.
+- correlation_id enables post-mortem reconstruction from one identifier.
+
+──────────────────────────────────────────────────────────────────────────────  
+PARTIAL SUCCESS IS FIRST-CLASS  
+──────────────────────────────────────────────────────────────────────────────
+
+Partial success is normal.
+
+External systems fail intermittently.  
+Networks degrade.  
+Devices go offline.
+
+Ashby must preserve partial reality.
+
+Rules:
+- ActionResult must record successes and failures separately.
+- Responses must acknowledge partial success explicitly.
+- State updates must be per-device, not global.
+
+If partial success is smoothed over,
+Ashby becomes a liar.
+
+──────────────────────────────────────────────────────────────────────────────  
+NO EXCEPTIONS RULE  
+──────────────────────────────────────────────────────────────────────────────
+
+Execution layers must return ActionResult in all cases.
+
+Rules:
+- adapters must not raise raw vendor exceptions upstream
+- errors must be mapped into:
+  - a failure_reason (taxonomy)
+  - a failure_stage
+  - sanitized raw detail (optional)
+- catastrophic failures still produce ActionResult:
+  ok = false
+  verification = UNKNOWN
+
+If ActionResult is missing, the system is blind.
+
+──────────────────────────────────────────────────────────────────────────────  
+NO-OP TRACEABILITY  
+──────────────────────────────────────────────────────────────────────────────
+
+If planning produces NO-OP,
+execution does not occur.
+
+For traceability,
+the engine may record a synthetic ActionResult with:
+- ok = true
+- attempted = []
+- succeeded = []
+- failed = []
+- verification derived from the evidence used to justify NO-OP
+- correlation_id preserved
+
+A synthetic result must never be presented as execution evidence.
+
+──────────────────────────────────────────────────────────────────────────────  
+ABSOLUTE CONSTRAINTS  
+──────────────────────────────────────────────────────────────────────────────
+
+ActionResult must:
+- exist for every executed action
+- preserve partial success
+- preserve explicit failures
+- record uncertainty honestly
+- never contain secrets
+- never be replaced by inferred success
+
+ActionResult is the evidence boundary.
+Without it, Ashby cannot be Ashby.
+
+END OF 11.3

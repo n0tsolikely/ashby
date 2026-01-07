@@ -1,0 +1,96 @@
+ASHBY CODEX — 0.5
+WHAT THIS CODEX IS NOT
+
+This Codex is not a snapshot of Ashby at a moment in time.
+
+It does not describe:
+- the current state of the repository
+- the current set of enabled modules
+- the current list of supported vendors
+- the current UI or transport options
+- the current hardware configuration
+
+Those things are expected to change.
+
+This Codex is not invalidated when:
+- a new module is added
+- an old module is removed
+- a vendor API changes
+- a protocol becomes obsolete
+- a new agent is introduced
+- a product profile is retired
+- a new profile is created
+
+If any of those events require changing this Codex,
+then the system has already violated Ashby’s design principles.
+
+This Codex is also not a tutorial.
+
+It does not teach:
+- how to install dependencies
+- how to run commands
+- how to configure devices
+- how to deploy to hardware
+- how to build a UI
+- how to write integrations step-by-step
+
+Those belong in:
+- setup guides
+- onboarding flows
+- README files
+- developer documentation
+- support materials
+
+This Codex is not permissive.
+
+It does not say:
+“Do whatever works.”
+“Fix it later.”
+“Just this once.”
+
+Ashby fails when those phrases are allowed.
+
+This Codex is not flexible at the core.
+
+Flexibility exists at the edges:
+- modules
+- adapters
+- vendors
+- agents
+- profiles
+- products
+
+The engine is not flexible.
+Truth enforcement is not flexible.
+State authority is not flexible.
+Scope ownership is not flexible.
+
+This Codex is not an invitation to experiment inside the engine.
+
+Experimentation belongs:
+- in modules
+- in adapters
+- in bridges
+- behind feature flags
+- inside profiles
+- under controlled conditions
+
+This Codex is also not neutral.
+
+It takes positions.
+
+It explicitly rejects:
+- silent failure
+- false certainty
+- hardcoded reality
+- monolithic growth
+- convenience-driven architecture
+- systems that cannot explain themselves
+
+If you disagree with those positions,
+you are free to build something else.
+
+But if you are building Ashby,
+this Codex is not optional.
+
+END OF 0.5

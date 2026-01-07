@@ -1,0 +1,103 @@
+ASHBY CODEX — 4.4
+WHAT WOULD BREAK ASHBY (AND WHY WE PREVENT IT)
+
+Ashby is not fragile by accident.
+It is resilient by intention.
+
+That resilience comes from knowing exactly
+what would cause the system to fail irreparably.
+
+There are specific failure modes that,
+if allowed,
+would destroy Ashby’s identity even if the software continued to run.
+
+The first failure mode is **truth dilution**.
+
+If Ashby is ever allowed to:
+- claim an action occurred without verification
+- smooth over uncertainty to preserve conversational flow
+- reconstruct certainty after restart
+- hide partial failure behind generic success language
+
+Then Ashby ceases to be trustworthy.
+
+Once trust is lost,
+no amount of capability matters.
+
+The second failure mode is **state fragmentation**.
+
+If different parts of the system begin to:
+- maintain private versions of state
+- infer state instead of recording it
+- bypass the authoritative HouseState
+- disagree silently about reality
+
+Then Ashby becomes a collection of opinions,
+not a system.
+
+The third failure mode is **engine pollution**.
+
+If optional features,
+vendor logic,
+domain-specific behavior,
+or product concerns are allowed into the engine,
+the core becomes unremovable and unfixable.
+
+This leads inevitably to:
+- god-files
+- hidden coupling
+- brittle refactors
+- fear-driven development
+
+The fourth failure mode is **exception-based growth**.
+
+When new capabilities are added by saying:
+- “just this once”
+- “this case is special”
+- “we’ll clean it up later”
+
+The architecture begins to rot.
+
+Exceptions accumulate.
+Boundaries blur.
+Eventually, no one understands the system well enough to change it safely.
+
+The fifth failure mode is **governance collapse**.
+
+If foundational changes are made:
+- without Control Sync
+- without explicit documentation
+- without acknowledging consequences
+
+Then Ashby becomes whatever the last change happened to make it.
+
+These failure modes are not hypothetical.
+They are common.
+They are how most ambitious systems die.
+
+Ashby prevents them through law.
+
+By enforcing:
+- Action-Gated Truth
+- single state authority
+- strict WHAT vs HOW separation
+- removability as a requirement
+- scope ownership
+- explicit governance
+
+Ashby does not rely on discipline alone.
+It relies on structure that makes violations difficult.
+
+The purpose of this Codex is not to prevent change.
+It is to prevent these specific failures.
+
+Anything that avoids these failure modes
+can be added safely.
+
+Anything that introduces them
+must be rejected or redesigned.
+
+This clarity is what allows Ashby to grow
+without fear.
+
+END OF 4.4

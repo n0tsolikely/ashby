@@ -1,0 +1,92 @@
+ASHBY CODEX — 2.4
+ASHBY AS A LONG-LIVED SYSTEM
+
+Ashby is designed to exist longer than any single implementation,
+any single hardware platform, and any single generation of technology.
+
+Most software is built with an implicit assumption:
+that it will be replaced.
+
+Ashby is built with the opposite assumption:
+that it will persist.
+
+A long-lived system must survive:
+- changes in hardware
+- changes in vendors
+- changes in protocols
+- changes in models
+- changes in ownership
+- changes in scale
+- changes in context
+
+Ashby is designed to absorb those changes without rewriting its core.
+
+This is why Ashby enforces discipline where other systems allow convenience.
+
+Short-lived systems optimize for:
+- speed of development
+- ease of modification
+- rapid iteration
+- immediate usability
+
+Long-lived systems optimize for:
+- clarity of boundaries
+- stability of core law
+- explicit ownership of state
+- explainability under failure
+- controlled evolution
+
+Ashby chooses the second set deliberately.
+
+A long-lived system must also be rebuildable.
+
+Rebuildability is not the same as maintainability.
+
+Maintainability assumes continuity.
+Rebuildability assumes loss.
+
+Ashby is designed so that:
+- its core concepts can be reconstructed from text
+- its behavior can be derived from law
+- its architecture can be inferred from principles
+- its future can be extended without guesswork
+
+This is why Ashby has:
+- explicit world models
+- canonical data structures
+- enforced truth semantics
+- mechanical invariants
+- governance rules for change
+
+A long-lived system must also be honest about decay.
+
+Ashby does not pretend that knowledge lasts forever.
+State degrades.
+Confidence decays.
+Verification expires.
+
+Ashby treats decay as a first-class concern,
+not an edge case.
+
+Finally, a long-lived system must resist the temptation
+to accumulate exceptions.
+
+Exceptions are convenient.
+Exceptions feel pragmatic.
+Exceptions are how systems die slowly.
+
+Ashby allows extension,
+but resists exception.
+
+New capabilities must fit the platform,
+not bend it.
+
+Ashby is designed to be a system
+that can be returned to,
+understood,
+and trusted,
+years after its creation.
+
+That is what it means for Ashby to be long-lived.
+
+END OF 2.4

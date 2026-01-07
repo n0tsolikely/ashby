@@ -1,0 +1,160 @@
+ASHBY CODEX — 6.10
+UNDERSTANDABILITY AS A REQUIREMENT
+
+Understandability is a requirement, not a byproduct.
+
+Ashby is not allowed to become a system
+that only its original authors can understand.
+
+If a system cannot be understood,
+it cannot be trusted.
+If it cannot be trusted,
+it cannot be allowed to act.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT UNDERSTANDABILITY MEANS
+──────────────────────────────────────────────────────────────────────────────
+
+Understandability means that a competent builder,
+without tribal knowledge,
+can:
+
+- reason about why Ashby acted or refused
+- trace how an action moved through the system
+- identify where state changed
+- see what evidence supported a belief
+- determine what Ashby is unsure about
+- predict how a change will propagate
+
+Understandability does not mean simplicity.
+Ashby may be complex.
+
+It means legibility.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY UNDERSTANDABILITY IS NON-NEGOTIABLE
+──────────────────────────────────────────────────────────────────────────────
+
+Systems fail silently when they become opaque.
+
+Opacity leads to:
+- fear-driven development
+- superstition instead of debugging
+- reliance on folklore
+- hesitation to change anything
+- eventual abandonment or rewrite
+
+Ashby rejects opacity.
+
+Ashby is designed to be:
+- inspected
+- reasoned about
+- explained
+- rebuilt
+
+This is only possible if understandability
+is treated as a first-class constraint.
+
+──────────────────────────────────────────────────────────────────────────────
+STRUCTURAL REQUIREMENTS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby enforces understandability through structure.
+
+The system must:
+- have clear boundaries between layers
+- use explicit data models
+- record decisions and outcomes
+- avoid implicit behavior
+- make state transitions observable
+- expose confidence explicitly
+
+Implicit behavior is forbidden.
+
+If something matters,
+it must be represented explicitly.
+
+──────────────────────────────────────────────────────────────────────────────
+UNDERSTANDABILITY UNDER FAILURE
+──────────────────────────────────────────────────────────────────────────────
+
+Failure is where understandability matters most.
+
+When Ashby fails,
+it must be possible to determine:
+- what failed
+- where it failed
+- why it failed
+- what evidence exists
+- what is now uncertain
+
+Ashby must not:
+- hide failures
+- collapse errors into success
+- require log archaeology
+- depend on guesswork
+
+Failure must be explainable
+in terms of recorded facts.
+
+──────────────────────────────────────────────────────────────────────────────
+UNDERSTANDABILITY AND GROWTH
+──────────────────────────────────────────────────────────────────────────────
+
+As systems grow,
+they tend to trade clarity for speed.
+
+Ashby refuses this trade.
+
+Growth must not:
+- obscure reasoning
+- entangle responsibilities
+- hide dependencies
+- introduce magical behavior
+
+If a new capability reduces understandability,
+it is rejected or redesigned.
+
+──────────────────────────────────────────────────────────────────────────────
+ENFORCEMENT
+──────────────────────────────────────────────────────────────────────────────
+
+Understandability is enforced by:
+
+- strict layering
+- explicit contracts
+- canonical data models
+- recorded ActionResults
+- scoped state
+- traceable decisions
+- refusal of clever shortcuts
+
+“Clever” designs that cannot be explained
+are architectural violations.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSEQUENCES
+──────────────────────────────────────────────────────────────────────────────
+
+If Ashby becomes unintelligible,
+it becomes unsafe.
+
+Therefore:
+
+If a design choice reduces understandability,
+it is rejected.
+
+If a shortcut hides behavior,
+it is rejected.
+
+If a feature cannot be explained clearly,
+it does not belong in Ashby.
+
+Ashby remains durable
+because it remains understandable.
+
+Understandability is not optional.
+
+It is a requirement for agency.
+
+END OF 6.10

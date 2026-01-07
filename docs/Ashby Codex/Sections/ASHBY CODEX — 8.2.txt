@@ -1,0 +1,146 @@
+ASHBY CODEX — 8.2
+ENGINE (SACRED CORE)
+
+The engine is the sacred core of Ashby.
+
+It is the only component that defines identity.
+Everything else is replaceable.
+The engine is not.
+
+The Architecture Tree exists primarily
+to protect the engine from pollution.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT THE ENGINE IS
+──────────────────────────────────────────────────────────────────────────────
+
+The engine is the reasoning and governance core.
+
+It owns:
+- intent interpretation
+- policy evaluation
+- scope resolution
+- truth enforcement
+- state authority
+- memory semantics
+- session law
+- explainability guarantees
+- Control Sync governance
+
+The engine decides WHAT Ashby is allowed to do
+and WHAT Ashby is allowed to claim.
+
+The engine never decides HOW anything is executed.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT THE ENGINE IS NOT
+──────────────────────────────────────────────────────────────────────────────
+
+The engine is not:
+- a vendor integration layer
+- a protocol handler
+- a device controller
+- a hardware abstraction
+- a product feature hub
+- a convenience layer
+
+If a component can be removed
+without changing Ashby’s identity,
+it does not belong in the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+ENGINE DEPENDENCY DIRECTION
+──────────────────────────────────────────────────────────────────────────────
+
+All dependencies point inward.
+
+The engine may:
+- define interfaces
+- declare contracts
+- consume abstract results
+
+The engine must never:
+- import adapters
+- import vendors
+- import bridges
+- import connectors
+- depend on execution details
+
+Execution layers depend on the engine.
+The engine never depends on them.
+
+This ensures:
+- replaceability
+- testability
+- rebuildability
+- clarity of authority
+
+──────────────────────────────────────────────────────────────────────────────
+ENGINE AND TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Truth enforcement lives exclusively in the engine.
+
+Only the engine may:
+- interpret ActionResults
+- assign confidence levels
+- update HouseState
+- constrain language
+- degrade certainty
+- mark unknowns
+
+No other layer may claim truth.
+
+──────────────────────────────────────────────────────────────────────────────
+ENGINE AND MEMORY
+──────────────────────────────────────────────────────────────────────────────
+
+Memory semantics are engine-owned.
+
+The engine defines:
+- what is remembered
+- how memory is scoped
+- how confidence decays
+- how history is recalled
+- how loss is represented
+
+Memory storage may live elsewhere.
+Memory meaning lives here.
+
+──────────────────────────────────────────────────────────────────────────────
+ENGINE AND GOVERNANCE
+──────────────────────────────────────────────────────────────────────────────
+
+The engine enforces governance.
+
+Changes to:
+- engine responsibilities
+- truth semantics
+- scope law
+- state authority
+
+require Control Sync.
+
+This prevents accidental redefinition.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+The engine must never:
+- contain optional behavior
+- special-case domains
+- encode vendor logic
+- accept execution shortcuts
+- allow truth leakage
+- become a god-object
+
+Any violation of engine sanctity
+is an architectural failure.
+
+The engine remains small,
+disciplined,
+and sacred
+so that Ashby remains Ashby.
+
+END OF 8.2

@@ -1,0 +1,81 @@
+ASHBY CODEX — 0.4
+WHAT THIS CODEX IS
+
+This Codex is the authoritative definition of Ashby.
+
+It is not commentary.
+It is not inspiration.
+It is not a design diary.
+
+It is a binding description of:
+- how Ashby is structured
+- how Ashby behaves
+- how Ashby grows
+- how Ashby avoids collapse
+- how Ashby must be rebuilt if lost
+
+This Codex defines Ashby at the level **below implementation** and **above code**.
+
+Code may change.
+Vendors may change.
+Protocols may change.
+Products may change.
+
+Ashby’s governing law must not.
+
+This Codex contains:
+- philosophy where judgment is required
+- architecture where placement matters
+- mechanical law where behavior must never drift
+- examples where pattern recognition is necessary
+- constraints where freedom would otherwise cause damage
+
+This Codex is intentionally explicit about boundaries.
+
+When the Codex says something belongs in the engine,
+it means it must live there even if that is inconvenient.
+
+When the Codex says something must not live in the engine,
+it means it must never be placed there even if it “works.”
+
+When the Codex says something is an example,
+it means the example demonstrates a class, not a limit.
+
+This Codex does NOT contain:
+- marketing language
+- user-facing explanations
+- onboarding tutorials
+- feature promises
+- UI instructions
+- vendor-specific documentation
+
+Those belong elsewhere.
+
+This Codex also does not attempt to predict the future in detail.
+
+It does not list:
+- every possible module
+- every possible agent
+- every possible vendor
+- every possible protocol
+
+Instead, it defines a system that can absorb those things
+without changing its identity.
+
+If you find yourself asking:
+“Where should this go?”
+“What layer owns this?”
+“Does this violate Ashby’s law?”
+
+The answer exists in this Codex.
+
+If the answer does not exist,
+that indicates a Control Sync is required.
+
+This Codex is not meant to be rewritten casually.
+It is revised only when reality demands it,
+and only with full awareness of the consequences.
+
+This document is Ashby’s spine.
+
+END OF 0.4

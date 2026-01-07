@@ -1,0 +1,149 @@
+ASHBY CODEX — 10.4
+PLANNING VS EXECUTION
+
+Planning and execution are separate phases in Ashby.
+
+This separation exists to ensure that
+decision-making remains honest,
+traceable,
+and independent of execution side effects.
+
+No action may be executed
+before it has been fully planned.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT PLANNING IS
+──────────────────────────────────────────────────────────────────────────────
+
+Planning is the process of determining:
+- what actions are required
+- in what order
+- within which scopes
+- under which constraints
+- with what success criteria
+
+Planning answers:
+“What should happen?”
+
+Planning occurs entirely within the engine
+and cognition subsystems.
+
+Planning produces:
+- one or more ActionRequests
+- explicit scope bindings
+- explicit success criteria
+- explicit safety constraints
+
+Planning never touches the external world.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT EXECUTION IS
+──────────────────────────────────────────────────────────────────────────────
+
+Execution is the process of attempting
+to realize a planned action in the real world.
+
+Execution answers:
+“What actually happened?”
+
+Execution:
+- is performed by adapters, bridges, or connectors
+- interacts with external systems
+- produces observable results
+- may partially succeed or fail
+
+Execution never decides meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY THIS SEPARATION IS REQUIRED
+──────────────────────────────────────────────────────────────────────────────
+
+When planning and execution are mixed:
+- intent becomes mutable
+- failure becomes ambiguous
+- retries distort meaning
+- truth becomes narrative
+
+Ashby prevents this by enforcing a hard boundary.
+
+A plan may exist without execution.
+Execution must never exist without a plan.
+
+──────────────────────────────────────────────────────────────────────────────
+PLANS AS AUDITABLE ARTIFACTS
+──────────────────────────────────────────────────────────────────────────────
+
+Plans must be auditable.
+
+A plan must clearly state:
+- intended action
+- target scope
+- required permissions
+- safety assumptions
+- expected evidence
+
+If execution deviates,
+the deviation is visible.
+
+This allows Ashby to:
+- explain partial success
+- identify failure modes
+- avoid retroactive reinterpretation
+
+──────────────────────────────────────────────────────────────────────────────
+EXECUTION FEEDBACK
+──────────────────────────────────────────────────────────────────────────────
+
+Execution produces ActionResults.
+
+ActionResults are:
+- evidence
+- not confirmation
+- not truth
+
+ActionResults are returned to the engine,
+where truth is gated,
+state is updated,
+and memory is recorded.
+
+Execution feedback never alters the plan retroactively.
+
+──────────────────────────────────────────────────────────────────────────────
+MULTI-STEP PLANS
+──────────────────────────────────────────────────────────────────────────────
+
+Some intents require multiple actions.
+
+Planning may:
+- sequence actions
+- define dependencies
+- specify rollback behavior
+- define partial success semantics
+
+Execution must respect this sequence.
+
+If a step fails,
+planning does not change.
+State reflects reality.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Planning must never:
+- assume execution success
+- skip safety checks
+- depend on vendor behavior
+
+Execution must never:
+- reinterpret intent
+- alter plan meaning
+- hide failure
+- invent success
+
+Planning defines intention.
+Execution reveals reality.
+
+This separation preserves truth.
+
+END OF 10.4

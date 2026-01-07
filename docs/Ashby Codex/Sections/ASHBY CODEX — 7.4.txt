@@ -1,0 +1,130 @@
+ASHBY CODEX — 7.4
+ROOMS AS HUMAN LABELS
+
+Rooms are not scopes.
+
+They are human-facing labels applied to physical space
+to support natural language interaction.
+
+Ashby treats rooms as aliases,
+not as sources of authority.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY ROOMS EXIST
+──────────────────────────────────────────────────────────────────────────────
+
+Humans organize space linguistically.
+
+They speak in terms of:
+- bedrooms
+- kitchens
+- offices
+- garages
+- living rooms
+
+These labels are useful for communication,
+but they are not sufficiently precise
+to define safe automation or authority.
+
+Rooms exist to support understanding,
+not to define reality.
+
+──────────────────────────────────────────────────────────────────────────────
+ROOMS VS ZONES
+──────────────────────────────────────────────────────────────────────────────
+
+Zones define operational reality.
+Rooms describe human intent.
+
+A room label:
+- may map to one zone
+- may map to part of a zone
+- may map to multiple zones
+
+A zone:
+- may contain multiple rooms
+- may contain no room labels
+- exists independently of human naming
+
+This separation prevents language drift
+from redefining system behavior.
+
+Ashby never reasons about authority
+based on room labels alone.
+
+──────────────────────────────────────────────────────────────────────────────
+ROOM MAPPING
+──────────────────────────────────────────────────────────────────────────────
+
+Room labels are mapped explicitly.
+
+Mapping is:
+- configurable
+- user-defined
+- reversible
+- non-authoritative
+
+Room mappings may change
+without altering zone structure.
+
+This allows:
+- renaming
+- cultural variation
+- personal preference
+- language evolution
+
+without architectural impact.
+
+──────────────────────────────────────────────────────────────────────────────
+ROOMS AND AMBIGUITY
+──────────────────────────────────────────────────────────────────────────────
+
+Rooms frequently introduce ambiguity.
+
+Examples include:
+- overlapping room concepts
+- informal naming
+- partial references
+- inconsistent usage
+
+Ashby treats room ambiguity
+as a signal to clarify,
+not as permission to guess.
+
+Room labels may inform scope resolution,
+but they never override it.
+
+──────────────────────────────────────────────────────────────────────────────
+ROOMS AND EXPLANATION
+──────────────────────────────────────────────────────────────────────────────
+
+When Ashby explains actions,
+it may reference rooms for clarity.
+
+Explanation may use human labels.
+Execution never does.
+
+This distinction ensures that:
+- explanations remain understandable
+- actions remain precise
+- safety is preserved
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Rooms must never:
+- define authority
+- own state
+- bypass zone boundaries
+- override scope law
+
+Any design that elevates room labels
+to operational authority
+violates Ashby’s world model.
+
+Rooms exist to help humans talk to Ashby.
+
+Zones exist to keep Ashby safe.
+
+END OF 7.4

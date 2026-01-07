@@ -1,0 +1,70 @@
+ASHBY CODEX — 2.1
+WHAT ASHBY IS
+
+Ashby is an agentic platform designed to operate in the real world
+with honesty, memory, and discipline.
+
+Ashby is a system whose primary responsibility is not conversation,
+but **correct action over time**.
+
+At its core, Ashby is defined by five properties:
+
+First, Ashby is **stateful**.
+Ashby maintains an internal model of the world.
+That model persists across interactions.
+That model survives restarts.
+That model degrades honestly when uncertainty increases.
+
+Second, Ashby is **truth-bound**.
+Ashby is not allowed to claim an outcome without evidence.
+Ashby’s language is constrained by execution results.
+Ashby’s confidence is mechanically enforced.
+
+Third, Ashby is **modular**.
+Everything Ashby does beyond its core engine exists as a removable module.
+Modules may be added, removed, upgraded, or replaced
+without altering Ashby’s identity.
+
+Fourth, Ashby is **scope-aware**.
+All actions, state, and authority exist inside scopes.
+Scopes define containment, permission, and context.
+Ashby never acts outside a defined scope.
+
+Fifth, Ashby is **platform-first**.
+Products are built from profiles.
+Capabilities are enabled by configuration.
+Ashby is not defined by any single use case.
+
+Ashby is designed to operate:
+- online or offline
+- locally or with cloud assistance
+- in homes, businesses, or other environments
+- with physical systems that may fail or contradict each other
+
+Ashby is not optimized for impressiveness.
+Ashby is optimized for survivability.
+
+This means Ashby prioritizes:
+- explicit uncertainty over false confidence
+- explainability over fluency
+- structure over convenience
+- discipline over speed
+
+Ashby is an operating layer that sits between intelligence
+and the physical or digital systems it controls.
+
+It translates intent into action.
+It records outcomes.
+It updates belief.
+It speaks only within what it knows.
+
+If language is removed, Ashby still functions.
+If a module is removed, Ashby still functions.
+If an integration fails, Ashby still functions honestly.
+
+Ashby is designed so that its core remains intact
+even when everything around it changes.
+
+That is what Ashby is.
+
+END OF 2.1

@@ -1,0 +1,376 @@
+ASHBY CODEX — 18.5
+VERIFICATION RESPONSIBILITY
+
+Verification is not a feature.
+Verification is the mechanism that prevents Ashby from becoming a narrator.
+
+Execution attempts do not equal reality.
+Execution attempts produce evidence.
+Verification is the discipline of classifying that evidence.
+
+This subsection defines who is responsible for verification work,
+what verification can and cannot mean,
+and how execution evidence becomes truthful outcomes.
+
+Verification responsibility is shared,
+but authority is singular:
+Truth is assigned only by the engine through the Truth Gate.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINITIONS (CANONICAL)
+──────────────────────────────────────────────────────────────────────────────
+
+ATTEMPT
+A single execution try against an external system.
+
+ACKNOWLEDGEMENT
+A signal that a request was received by some system.
+Acknowledgement is not proof of outcome.
+
+READBACK
+A later observation of state from a source that is authorized to report state.
+
+EVIDENCE
+Any artifact that may support a claim about outcome, including:
+- a readback value
+- an event emitted by a device or bridge
+- a confirmed state from a local authority
+- a vendor response (sanitized) indicating acceptance or rejection
+Evidence is graded by quality and scope.
+
+VERIFICATION CLASS
+The classification applied to an outcome based on evidence quality.
+The canonical classes are defined in Verification Semantics (11.4).
+
+VERIFICATION RESPONSIBILITY
+The obligation to:
+- attempt verification when possible,
+- report the evidence honestly,
+- and never mislabel evidence as stronger than it is.
+
+Adapters and bridges produce evidence.
+The engine assigns verification semantics.
+
+──────────────────────────────────────────────────────────────────────────────
+THE NON-NEGOTIABLE BOUNDARY: WHO MAY CLAIM TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters may never claim user-facing truth.
+Adapters may never produce VERIFIED language.
+Adapters may never speak “done” as certainty.
+
+The engine is the only component that:
+- assigns verification class for user-facing truth
+- updates HouseState confidence
+- chooses permissible language under Truth Gate law
+
+However, adapters still have verification responsibilities,
+because the engine cannot manufacture evidence that was never collected.
+
+If adapters do not preserve evidence,
+the engine is forced into UNKNOWN more often than necessary.
+
+Verification responsibility exists to maximize honesty and usefulness simultaneously.
+
+──────────────────────────────────────────────────────────────────────────────
+THE EXECUTION-EVIDENCE-TRUTH CHAIN (AUTHORITATIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+Verification responsibility is understood by the chain:
+
+1) MODULE (WHAT)
+- defines meaning and parameters
+- produces ActionRequest(s)
+- does not talk to vendors
+
+2) ROUTER (HOW)
+- selects adapter(s) by capability
+- does not reinterpret meaning
+
+3) ADAPTER (HOW)
+- attempts execution against external system(s)
+- may attempt verification steps (readback/events) when available
+- returns ActionResult evidence
+
+4) ENGINE + TRUTH GATE
+- interprets ActionResult(s) as evidence
+- assigns verification semantics (VERIFIED / LAST_KNOWN / UNKNOWN / FAILED)
+- updates HouseState as belief, not fantasy
+- constructs user output under truth law
+
+The adapter is the only place that can touch the external system.
+Therefore the adapter is the only place that can collect certain evidence.
+
+The engine is the only place that may convert evidence into claims.
+Therefore the engine is the only place that may speak truth.
+
+Both responsibilities must be honored.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT ADAPTERS ARE RESPONSIBLE FOR
+──────────────────────────────────────────────────────────────────────────────
+
+An adapter’s verification responsibilities are:
+
+1) EVIDENCE PRESERVATION
+For each attempted target, the adapter must return:
+- what capability/action was attempted
+- canonical parameters attempted
+- the adapter execution mode (local / cloud / bridge) when relevant to truth risk
+- timestamps (attempted_at, completed_at if available)
+- per-target outcome: success / failure / unknown delivery
+
+Adapters must not collapse per-target evidence into one blob.
+Mixed reality must be preserved.
+
+2) OPTIONAL VERIFICATION STEPS (WHEN AVAILABLE)
+If the adapter can safely and reasonably obtain readback or event confirmation,
+it should attempt to do so.
+
+Examples (representative, not exhaustive):
+- read-after-write (query current state after setting)
+- event subscription confirmation (device reports update)
+- bridge confirmation (local authority reports applied)
+- state checksum confirmation (rare, but possible)
+
+If a verification attempt is made, the adapter must report:
+- verification method used
+- whether verification succeeded
+- what was observed (canonical values)
+- any timeouts or partials
+
+3) VERIFICATION HINTS (EVIDENCE GRADE INDICATORS)
+Adapters may include a “verification hint” per target that describes the evidence grade,
+such as:
+- verified_by_readback
+- accepted_no_readback
+- unknown_delivery
+- failed_precondition
+- failed_execution
+
+The adapter may provide a suggested verification class only as an evidence hint,
+not as a user claim.
+The engine may downgrade (never upgrade beyond evidence),
+or may combine with other evidence sources.
+
+4) SANITIZATION AND SECRETS SAFETY
+Evidence must never include:
+- secrets
+- access tokens
+- raw vendor payloads that may contain identifiers or private data
+- unbounded logs
+
+Adapters must return sanitized errors and minimal required metadata.
+
+5) TIME BOUNDARIES AND WAIT WINDOWS
+Adapters must not wait arbitrarily long to “confirm” success.
+If verification requires waiting (eventual consistency),
+the adapter must:
+- respect policy-defined wait budgets
+- return UNKNOWN if the budget is exceeded
+- never block the entire platform indefinitely
+
+Time budgets exist to prevent the adapter from becoming a second engine.
+
+6) HONEST “UNKNOWN” IS A VALID OUTCOME
+If the adapter cannot verify and cannot even confirm delivery reliably,
+it must return UNKNOWN delivery evidence.
+
+Unknown is not failure.
+Unknown is honesty.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT THE ENGINE IS RESPONSIBLE FOR
+──────────────────────────────────────────────────────────────────────────────
+
+The engine is responsible for verification semantics and truth claims.
+
+Responsibilities:
+
+1) VERIFICATION CLASS ASSIGNMENT
+Given ActionResult evidence, assign verification class per target
+using canonical semantics (11.4) and Truth Gate law (13.x).
+
+2) HOUSESTATE UPDATES AS BELIEF
+Update HouseState only in ways justified by evidence.
+Do not upgrade confidence because the system “wanted it to work.”
+
+3) LANGUAGE CONSTRUCTION
+Select phrasing that matches verification class.
+- VERIFIED language when truly verified
+- LAST_KNOWN language when plausible but not confirmed
+- UNKNOWN language when unknown
+- FAILED language when failed
+
+4) STALENESS AND DECAY
+Even verified facts decay over time.
+The engine governs freshness windows.
+Adapters must not “refresh truth” via narrative.
+
+5) POLICY ENFORCEMENT BASED ON VERIFICATION CAPABILITY
+Some actions may require verification.
+If an adapter cannot provide verification and policy requires it,
+the engine must:
+- CONFIRM risk (“I can’t verify this change—still proceed?”), or
+- CLARIFY alternatives (“Use the local bridge instead?”), or
+- REFUSE (for high-risk domains)
+
+Verification capability is a policy input.
+It is not a loophole.
+
+6) CORRELATION AND AUDIT
+The engine must preserve correlation identifiers across:
+- plan → execution → evidence → state update → response
+This allows reconstruction of what actually occurred.
+
+The engine is responsible for truth.
+The adapter is responsible for evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+VERIFICATION MODES (PRACTICAL REALITY)
+──────────────────────────────────────────────────────────────────────────────
+
+Different domains and integrations provide different verification modes.
+
+Canonical modes:
+
+A) STRONG READBACK (BEST)
+The adapter can read state from an authoritative source after write.
+If the observed state matches the planned state,
+evidence supports VERIFIED.
+
+B) EVENT-CONFIRMATION (GOOD)
+The adapter receives a state-change event from the target/bridge that confirms application.
+Event streams can be delayed or dropped, so semantics must remain careful.
+
+C) ACKNOWLEDGEMENT-ONLY (WEAK)
+The adapter receives an “accepted” response but no state readback.
+This supports, at best, LAST_KNOWN depending on policy and history.
+
+D) WRITE-ONLY (WEAKEST)
+The adapter cannot confirm acceptance or read state.
+This often yields UNKNOWN delivery, especially under network uncertainty.
+
+E) OUT-OF-BAND VERIFICATION (COMBINED)
+Sometimes verification comes from a different subsystem:
+- a state ingestion pipeline
+- a local bridge event bus
+- a sensor module
+In such cases, the engine combines evidence, but must remain explicit.
+
+Verification mode is part of the execution system’s reality.
+Ashby must never pretend that a weak mode is strong.
+
+──────────────────────────────────────────────────────────────────────────────
+MULTI-TARGET AND MIXED VERIFICATION
+──────────────────────────────────────────────────────────────────────────────
+
+In multi-target execution, verification may differ per target.
+
+Rules:
+- verification class is per target
+- HouseState updates are per target
+- user language must not collapse mixed truth into a single claim
+
+Example (representative):
+- 3 devices: 1 verified by readback, 1 acknowledgement-only, 1 unreachable
+The response must reflect mixed reality explicitly.
+
+If a summary must be provided, it must be anchored to per-target truth,
+not a blanket statement.
+
+Mixed reality is normal.
+Lying to simplify is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+RETRIES, DUPLICATES, AND VERIFICATION
+──────────────────────────────────────────────────────────────────────────────
+
+Retries are dangerous because they can fabricate “confidence.”
+
+Rules:
+- retries must be driven by policy and idempotency discipline
+- “retry succeeded” does not upgrade truth unless verified by evidence
+- duplicate submissions due to transport must not create multiple executions
+- deliberate retries requested by user are allowed, but must be auditable
+
+Verification must never be:
+- inferred from the number of attempts
+- inferred from time passing
+- inferred from “no error returned”
+
+Evidence is required.
+
+──────────────────────────────────────────────────────────────────────────────
+CROSS-ADAPTER VERIFICATION (SPECIAL CASE)
+──────────────────────────────────────────────────────────────────────────────
+
+Sometimes one adapter writes and another reads
+because:
+- one path can execute but not read
+- another path can read but not execute
+
+This is allowed only under strict rules:
+
+- it must be explicitly planned as a two-step plan (10.4)
+- both steps must be auditable
+- correlation identifiers must link them
+- the engine must treat the read as a separate evidence event
+- the adapter must not secretly call a second adapter
+
+No adapter may orchestrate other adapters.
+All orchestration is engine/planning work.
+
+Cross-adapter verification exists to increase honesty,
+not to hide architectural problems.
+
+──────────────────────────────────────────────────────────────────────────────
+HIGH-RISK DOMAINS AND “VERIFICATION REQUIRED” POLICY
+──────────────────────────────────────────────────────────────────────────────
+
+Some domains require verification more often than others.
+
+Representative examples:
+- security systems (arming/disarming)
+- doors/locks
+- cameras (privacy-critical recording state)
+- heating (safety limits)
+- irrigation (time-bound safety and water waste)
+
+Rules:
+- if a domain is high-risk, policy may require verified outcomes
+- if verification is unavailable, the system must not silently proceed as if verified
+- the system must either:
+  - obtain confirmation from the user acknowledging unverifiable execution, or
+  - refuse execution when risk is unacceptable
+
+Verification is a safety boundary.
+It is not optional when consequences are large.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Verification responsibility must:
+- preserve the boundary: adapters collect evidence, engine assigns truth
+- require per-target evidence and per-target verification semantics
+- attempt verification when safely available, within time budgets
+- remain honest about weak modes (ack-only, write-only)
+- prevent retries from laundering uncertainty into confidence
+- preserve correlation and auditability across the pipeline
+- never allow execution evidence to become narrative truth
+
+Verification responsibility must never:
+- allow adapters to claim VERIFIED to the user
+- allow acknowledgement to be treated as proof
+- collapse mixed reality into a blanket statement
+- hide unknown delivery behind fluent language
+- block indefinitely waiting for confirmation
+- let adapters orchestrate other adapters silently
+- upgrade truth because the system “feels confident”
+
+Execution reveals reality.
+Verification measures knowledge of that reality.
+Ashby speaks only what it knows.
+
+END OF 18.5

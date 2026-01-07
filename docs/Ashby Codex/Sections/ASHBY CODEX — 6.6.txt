@@ -1,0 +1,145 @@
+ASHBY CODEX — 6.6
+REMOVABLE MODULES
+
+All modules in Ashby are removable.
+
+This is not an optimization.
+It is law.
+
+Any capability beyond the engine must be optional,
+detachable, and replaceable
+without damaging Ashby’s integrity.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY REMOVABILITY IS REQUIRED
+──────────────────────────────────────────────────────────────────────────────
+
+Systems collapse when features become permanent residents of the core.
+
+Permanent features create:
+- hidden dependencies
+- implicit assumptions
+- shared mutable state
+- fear-driven refactors
+- architectural paralysis
+
+Ashby prevents this outcome by enforcing removability.
+
+If something cannot be removed safely,
+it does not belong in Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A MODULE IS
+──────────────────────────────────────────────────────────────────────────────
+
+A module is a unit of capability that:
+- defines WHAT actions exist in a domain
+- declares intent shapes and policies
+- integrates with scopes
+- relies on the engine for truth and state
+- does not execute HOW directly
+
+Modules describe behavior.
+They do not perform execution.
+
+Execution occurs elsewhere.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A MODULE MUST NEVER DO
+──────────────────────────────────────────────────────────────────────────────
+
+A module must never:
+- own state authority
+- write directly to HouseState
+- bypass the Action Gate
+- speak to vendors
+- import execution logic
+- assume presence of other modules
+- depend on shared mutable state
+
+Any module that requires these behaviors
+is invalid by definition.
+
+──────────────────────────────────────────────────────────────────────────────
+REMOVAL BEHAVIOR
+──────────────────────────────────────────────────────────────────────────────
+
+When a module is removed:
+
+- the engine remains intact
+- other modules remain unaffected
+- state related to the module degrades explicitly
+- memory reflects loss of capability
+- language reflects unavailability honestly
+
+Ashby must not:
+- crash
+- lie
+- infer behavior
+- reconstruct missing capability
+
+Removal is treated as a legitimate state,
+not an error.
+
+──────────────────────────────────────────────────────────────────────────────
+REMOVABILITY AND GROWTH
+──────────────────────────────────────────────────────────────────────────────
+
+Removability enables safe growth.
+
+It allows:
+- experimentation without risk
+- product profiles without forks
+- domain isolation
+- clean deprecation
+- replacement without rewrites
+
+If a new capability cannot be added
+as a removable module,
+the design is wrong.
+
+──────────────────────────────────────────────────────────────────────────────
+ENFORCEMENT
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby enforces removability structurally.
+
+The engine does not:
+- import modules directly
+- assume module presence
+- special-case module logic
+
+Modules register capabilities.
+The engine reasons generically.
+
+This ensures that:
+- absence is always safe
+- presence is always explicit
+- coupling is visible
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSEQUENCES
+──────────────────────────────────────────────────────────────────────────────
+
+Violating removability guarantees
+creates irreversible architectural damage.
+
+Once a module becomes inseparable:
+- the engine is polluted
+- future refactors become dangerous
+- products harden into architecture
+
+Therefore:
+
+If a module cannot be removed,
+it is rejected.
+
+If a shortcut prevents removal,
+the shortcut is rejected.
+
+Ashby remains coherent
+because nothing beyond the engine is permanent.
+
+Removability is how Ashby stays alive.
+
+END OF 6.6

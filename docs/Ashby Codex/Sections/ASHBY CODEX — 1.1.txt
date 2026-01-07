@@ -1,0 +1,95 @@
+ASHBY CODEX — 1.1
+THE PROBLEM ASHBY EXISTS TO SOLVE
+
+Modern systems that claim to be “intelligent” fail in the same fundamental way:
+they speak with confidence without owning reality.
+
+They issue commands without verification.
+They report outcomes without evidence.
+They guess state.
+They mask uncertainty.
+They prioritize fluency over truth.
+
+This failure is not cosmetic.
+It is structural.
+
+When a system cannot reliably answer the question:
+“Did that actually happen?”
+it cannot be trusted to act in the physical world.
+
+Most assistants optimize for:
+- speed of response
+- conversational smoothness
+- perceived intelligence
+- user satisfaction in the moment
+
+They do not optimize for:
+- state authority
+- execution verification
+- long-term consistency
+- survivability under growth
+- correctness under failure
+
+As a result, they collapse when:
+- devices fail intermittently
+- networks degrade
+- users contradict them
+- systems restart
+- integrations change
+- features accumulate
+
+They either lie politely or fail silently.
+
+Both outcomes destroy trust.
+
+The problem Ashby exists to solve is not “controlling devices by voice.”
+That problem has already been solved, poorly, many times.
+
+The problem Ashby exists to solve is this:
+
+How do you build an agentic system that:
+- takes real actions in the world
+- remembers what it believes
+- knows when it is uncertain
+- never lies about outcomes
+- remains understandable as it grows
+- does not collapse into a god-system
+- can be rebuilt from principles alone
+
+This is not a UX problem.
+It is not a model problem.
+It is not an integration problem.
+
+It is a **truth and state problem**.
+
+Any system that:
+- separates language from execution
+- treats state as optional
+- treats verification as “nice to have”
+- allows ambiguity to be hidden
+will eventually betray its users.
+
+Ashby exists to enforce a different standard.
+
+Ashby exists to prove that:
+- intelligence can be honest
+- uncertainty can be explicit
+- systems can explain themselves
+- growth does not require rewriting the core
+- offline capability can coexist with cloud convenience
+- platform discipline enables long-term freedom
+
+Ashby is built for environments where:
+- failures matter
+- history matters
+- state matters
+- trust accumulates slowly
+- and lies are unacceptable
+
+If that problem does not matter,
+Ashby is unnecessary.
+
+If that problem matters,
+Ashby is required.
+
+END OF 1.1

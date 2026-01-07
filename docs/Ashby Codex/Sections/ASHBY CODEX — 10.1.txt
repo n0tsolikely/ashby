@@ -1,0 +1,124 @@
+ASHBY CODEX — 10.1
+INPUT AND TRANSPORT NEUTRALITY
+
+Ashby is input-agnostic and transport-neutral.
+
+No interface defines behavior.
+No transport defines meaning.
+
+This neutrality is required to prevent
+interface-driven logic
+and transport-driven assumptions.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT TRANSPORT NEUTRALITY MEANS
+──────────────────────────────────────────────────────────────────────────────
+
+Transport neutrality means that:
+- voice input
+- text input
+- API calls
+- scheduled triggers
+- agent-to-agent messages
+
+are all treated as equivalent sources of intent.
+
+Meaning is derived from content,
+not from where it came from.
+
+The engine must never:
+- branch on transport type
+- special-case interfaces
+- assume reliability based on channel
+
+──────────────────────────────────────────────────────────────────────────────
+INPUT AS RAW SIGNAL
+──────────────────────────────────────────────────────────────────────────────
+
+Input is a raw signal.
+
+It may be:
+- ambiguous
+- incomplete
+- contradictory
+- malformed
+- delayed
+
+The engine is responsible for:
+- normalization
+- interpretation
+- clarification
+- refusal when required
+
+Input sources do not perform interpretation.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY THIS LAW EXISTS
+──────────────────────────────────────────────────────────────────────────────
+
+Systems that bind logic to interfaces
+become brittle.
+
+They grow:
+- voice-specific hacks
+- UI-specific behavior
+- API-only shortcuts
+
+Eventually, behavior diverges
+based on how something was said,
+not what was meant.
+
+Ashby forbids this.
+
+──────────────────────────────────────────────────────────────────────────────
+ENGINE ENFORCEMENT
+──────────────────────────────────────────────────────────────────────────────
+
+The engine enforces neutrality by:
+- accepting normalized input only
+- applying identical cognition paths
+- producing transport-agnostic decisions
+
+Transports may:
+- add metadata
+- add context hints
+- report delivery constraints
+
+They may not:
+- alter meaning
+- decide policy
+- suppress clarification
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE AND NEUTRALITY
+──────────────────────────────────────────────────────────────────────────────
+
+Transport failure is not semantic failure.
+
+If a transport drops:
+- intent is not reinterpreted
+- truth is not upgraded
+- state is not assumed
+
+Failures are reported as evidence,
+not smoothed over.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+No transport may:
+- define truth
+- bypass cognition
+- invent intent
+- suppress uncertainty
+
+Transport is a pipe.
+
+Meaning lives elsewhere.
+
+This neutrality allows Ashby
+to evolve interfaces
+without rewriting law.
+
+END OF 10.1

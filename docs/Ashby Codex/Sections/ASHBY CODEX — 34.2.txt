@@ -1,0 +1,220 @@
+ASHBY CODEX — 34.2
+When It Is Forbidden
+
+Control Sync is constitutional governance.
+
+Because it is powerful, it must be rare.
+
+Control Sync is forbidden whenever it is being used as:
+- a shortcut
+- a justification
+- an emotional release valve
+- a substitute for disciplined implementation
+
+This subsection defines when Control Sync must not be invoked.
+
+──────────────────────────────────────────────────────────────────────────────
+1) CONTROL SYNC IS FORBIDDEN FOR NORMAL IMPLEMENTATION WORK
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is forbidden for ordinary iteration.
+
+Ordinary iteration includes (representative):
+- implementing a module using existing interfaces
+- adding a new adapter/provider under existing contracts
+- fixing a bug in a provider
+- improving performance without changing correctness semantics
+- extending a connector while preserving evidence shapes
+- adding new tests to enforce existing invariants
+- refactoring internal code while preserving boundaries and behavior
+
+If the change does not modify an invariant,
+Control Sync is forbidden.
+
+The platform constitution is not rewritten to accommodate routine engineering.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CONTROL SYNC IS FORBIDDEN AS A RESPONSE TO PANIC
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is forbidden during “implementation panic.”
+
+Implementation panic is the moment when a problem feels urgent and the temptation is:
+- “just move this into the engine”
+- “just skip the Truth Gate for now”
+- “just write directly to state”
+- “just treat the bridge output as truth”
+- “just add a special-case flag”
+
+These are drift impulses.
+
+The correct response to panic is:
+- pause execution changes
+- use kill switches or rollbacks
+- add observability
+- fix the implementation within existing law
+- escalate only if the law is genuinely insufficient
+
+Panic is not authority.
+Panic is the environment where forks are born.
+
+──────────────────────────────────────────────────────────────────────────────
+3) CONTROL SYNC IS FORBIDDEN TO HIDE PRODUCT DIFFERENCES
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is forbidden as a mechanism to embed product identity in core.
+
+Forbidden motivations include:
+- “Enterprise needs different truth posture”
+- “Consumer wants fewer confirmations, remove them everywhere”
+- “This tier should behave differently in the engine”
+- “This profile should have different state semantics”
+
+Productization is achieved by:
+- profiles
+- flags
+- entitlements
+within the existing constitution.
+
+If the proposed “Control Sync” exists to make two products behave as two platforms,
+it is forbidden.
+
+Ashby is one platform.
+Products are configurations.
+
+──────────────────────────────────────────────────────────────────────────────
+4) CONTROL SYNC IS FORBIDDEN TO PATCH OVER BAD BOUNDARIES
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is forbidden when the real problem is architectural hygiene.
+
+Examples (representative):
+- a module has vendor logic and it is inconvenient to remove it
+- adapters are reasoning and it is hard to disentangle
+- engine imports bridge code because it was “faster”
+
+These are implementation violations.
+
+The correct response is:
+- restore boundaries
+- move code to lawful layers
+- add boundary tests to prevent recurrence
+
+Control Sync is not a license to ratify violations.
+Ratifying violations destroys the constitution.
+
+──────────────────────────────────────────────────────────────────────────────
+5) CONTROL SYNC IS FORBIDDEN TO RELAX TRUTH OR SAFETY FOR CONVENIENCE
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is forbidden when the motivation is convenience.
+
+Convenience motivations include:
+- wanting to claim success without verification
+- wanting to hide UNKNOWN
+- wanting to collapse mixed outcomes into a polished narrative
+- wanting to reduce confirmations by weakening policy categories
+- wanting to allow direct execution bypasses for speed
+
+Truth posture is the core promise.
+
+If the change weakens truth or safety to be “nicer,” it is forbidden.
+
+A correct system may be inconvenient.
+An incorrect system is not Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+6) CONTROL SYNC IS FORBIDDEN TO FIX A SINGLE BUG
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is forbidden for single-bug resolution.
+
+Bug fixes are implemented under existing law.
+
+If a bug reveals an invariant deficiency, that is a different claim:
+- the invariant itself is insufficient
+- multiple features are blocked by the deficiency
+- the deficiency cannot be resolved without redefining the law
+
+Only then can Control Sync be considered.
+
+Most problems are not constitutional.
+Treating them as constitutional is governance failure.
+
+──────────────────────────────────────────────────────────────────────────────
+7) CONTROL SYNC IS FORBIDDEN WITHOUT A COMPLETE AMENDMENT PACKAGE
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is forbidden if it does not produce a complete constitutional update.
+
+A lawful Control Sync requires:
+- explicit amendment language
+- alignment across all canonical artifacts impacted
+- updated acceptance tests where behavior is affected
+- migration implications explicitly handled
+- versioned sign-off
+
+If the proposal is:
+- vague
+- incomplete
+- “we’ll update docs later”
+- “we’ll fix tests later”
+then Control Sync is forbidden.
+
+A half-sync is worse than no sync.
+It creates ambiguity.
+
+──────────────────────────────────────────────────────────────────────────────
+8) CONTROL SYNC IS FORBIDDEN WHEN A SAFER TOOL EXISTS
+──────────────────────────────────────────────────────────────────────────────
+
+Many urgent situations have safer tools than constitutional revision.
+
+Allowed safer tools include:
+- kill switches (disable unsafe execution paths)
+- feature flags (rollout control)
+- profile adjustments (enable/disable modules)
+- routing preference changes (prefer a safer provider)
+- rollback to known-good behavior
+- increased observability to diagnose reality
+
+If a safer tool can resolve the situation without changing invariants,
+Control Sync is forbidden.
+
+Control Sync is not an operational lever.
+It is a constitutional lever.
+
+──────────────────────────────────────────────────────────────────────────────
+9) THE GOVERNANCE TEST (A SINGLE QUESTION)
+──────────────────────────────────────────────────────────────────────────────
+
+Before invoking Control Sync, ask:
+
+“Will the Codex become false if we do not change the constitution?”
+
+If the answer is no:
+Control Sync is forbidden.
+
+If the answer is yes:
+Control Sync may be required, but only under the full procedure.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is forbidden when:
+- the change is routine engineering under existing invariants
+- the change is a panic response
+- the change is a product/tier fork attempt
+- the change is a ratification of boundary violations
+- the change weakens truth or safety for convenience
+- the change is a single-bug patch
+- the amendment package is incomplete
+- a safer operational tool exists
+
+Control Sync is rare because Ashby’s constitution must be stable.
+
+Stability is not stagnation.
+Stability is continuity.
+
+END OF 34.2

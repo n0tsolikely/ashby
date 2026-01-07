@@ -1,0 +1,347 @@
+ASHBY CODEX — 8A.7
+native_vendor/
+
+native_vendor/ is Ashby’s long-term execution foundation.
+
+Where bridges/ is the temporary strangler path,
+native_vendor/ is the deliberate replacement path:
+direct, vendor-specific integrations that conform to Ashby’s interface contracts,
+normalize vendor dialects into Ashby meaning,
+and remove reliance on external hubs where possible.
+
+native_vendor/ is how Ashby grows up:
+- stable vendor integrations
+- stable identity mapping
+- stable evidence generation
+- stable normalization into canonical domain models
+
+But “native” must not mean “lawless.”
+
+native_vendor/ is still execution.
+It must not own planning, policy, truth posture, or HouseState authority.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF native_vendor/
+──────────────────────────────────────────────────────────────────────────────
+
+native_vendor/ exists to:
+
+A) REPLACE BRIDGES OVER TIME
+Each native vendor integration should eventually remove the need for a bridge for that vendor’s devices.
+
+B) PROVIDE DIRECT EXECUTION AND READBACK
+Native vendor integrations must support:
+- sending commands
+- reading device state
+- receiving device events (webhooks, streams) where available
+
+C) NORMALIZE VENDOR DIALECTS INTO CANONICAL MODELS
+Vendors do not agree on:
+- capability names
+- value ranges
+- units
+- error codes
+- device identity shapes
+- state semantics
+
+native_vendor/ must convert vendor dialects into:
+- Ashby’s canonical adapter contract units
+- Ashby’s canonical domain models
+
+D) PRESERVE IDENTITY CONTINUITY
+Vendor device IDs come and go.
+Ashby’s device_key must not.
+
+native_vendor/ must preserve stable mapping from external IDs to device_key
+through reauths, renames, re-discovery, and partial vendor outages.
+
+native_vendor/ is not about “supporting a vendor.”
+It’s about making the platform resilient to vendor chaos.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL native_vendor/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+native_vendor/
+├── tuya/
+│   ├── oauth.py
+│   ├── discovery.py
+│   ├── normalizer.py
+│   └── provider.py
+│
+├── noma_iq_ayla/
+│   ├── oauth.py
+│   ├── discovery.py
+│   ├── normalizer.py
+│   └── provider.py
+│
+├── nest_google_sdm/
+│   ├── oauth.py
+│   ├── devices.py                           # vendor object wrappers
+│   └── provider.py
+│
+├── reolink/
+│   ├── client.py
+│   ├── discovery.py
+│   └── provider.py
+│
+└── (placeholder)_vendor_X/
+    ├── oauth.py
+    ├── discovery.py
+    ├── normalizer.py
+    └── provider.py
+
+Notes:
+- The vendor folder name is canonical and stable.
+- Each vendor must implement the same conceptual pieces:
+  auth (if needed), discovery, normalization, provider (execution).
+- Some vendors may have extra components:
+  events.py (webhooks/streams), rate_limit.py, paging.py, etc.
+  Those belong inside the vendor folder, not in engine/ or modules/.
+
+──────────────────────────────────────────────────────────────────────────────
+3) VENDOR INTEGRATION SUBSYSTEMS (WHAT MUST LIVE HERE)
+──────────────────────────────────────────────────────────────────────────────
+
+3.1 AUTH (oauth.py / auth.py)
+If a vendor uses OAuth or similar:
+- implement auth flows and token refresh
+- store tokens via secret handles (never raw token storage in code)
+- support revocation/rotation
+- enforce least privilege where vendor permits
+
+Auth code must:
+- avoid logging raw tokens
+- sanitize request/response payloads
+- expose “auth status” as a capability (connected / expired / needs reauth)
+without inventing causes
+
+3.2 DISCOVERY (discovery.py)
+Discovery is how Ashby learns what exists.
+
+Discovery must:
+- enumerate vendor devices/entities
+- convert them into “registry candidate records”
+- call domain registry interfaces to register/update records
+- maintain external_id_map references (external device id → device_key)
+
+Discovery must be idempotent:
+- running discovery twice must not create duplicate identities
+- device_key continuity must be preserved
+
+Discovery must handle partial truth:
+- vendor outages
+- partial pagination
+- rate limiting
+- stale caches
+And report failures honestly (as evidence / diagnostics), not as pretend success.
+
+3.3 NORMALIZATION (normalizer.py)
+Normalization is the most important part of native_vendor/.
+
+Normalization must:
+- translate vendor state into canonical models/units
+- translate vendor command parameters from canonical units into vendor dialect
+- enforce canonical ranges at the boundary (adapter contracts are law)
+
+Example:
+If Ashby’s lights brightness is 0–1000,
+the normalizer must translate to 0–255, 0–100, etc.
+Normalization belongs here, not in modules, not in engine.
+
+Normalization must never:
+- “guess” missing state
+- silently clamp without recording (clamps should be explicit and test-covered)
+- invent capabilities that vendor does not support
+
+3.4 PROVIDER (provider.py)
+provider.py is the execution backend.
+
+provider must:
+- implement the adapter interface contract(s) for that vendor’s devices
+- execute operations (set brightness, lock door, set thermostat, etc.)
+- return ActionResults as evidence (including failures)
+- support verification readbacks where required
+- handle idempotency and duplicate prevention when applicable
+
+provider must not:
+- plan multi-step routines (modules do that)
+- decide policy outcomes (engine does that)
+- speak to the user (engine response layer does that)
+
+native_vendor providers are muscles, not brains.
+
+3.5 EVENTS (events.py / webhook.py) (OPTIONAL)
+If the vendor supports streaming updates:
+- implement ingestion here
+- feed evidence into the platform eventing/state update path
+
+Events must:
+- be timestamped
+- include stable vendor identifiers
+- deduplicate safely
+- never write HouseState directly
+
+──────────────────────────────────────────────────────────────────────────────
+4) IDENTITY LAW INSIDE native_vendor/ (THE DEVICE_KEY MUST WIN)
+──────────────────────────────────────────────────────────────────────────────
+
+Vendors will lie about identity.
+Not maliciously—structurally.
+
+Common vendor identity hazards:
+- device IDs change after reset
+- user accounts change ownership
+- devices disappear temporarily
+- “same device” appears as a new object
+- names/rooms change frequently
+
+Ashby’s identity law:
+- device_key is canonical
+- vendor IDs are external references
+- mappings live in domain/external_id_map
+- vendor integration must never treat vendor ID as the primary key of Ashby reality
+
+Therefore native_vendor/ must:
+- consult external_id_map before registering anything “new”
+- preserve mappings even when devices go offline
+- detect collisions and surface them as ambiguity, not overwrite identity
+- treat “rename/move” as metadata changes, not identity changes
+
+Identity drift is one of the easiest ways to destroy resurrection correctness.
+native_vendor/ must be paranoid about it.
+
+──────────────────────────────────────────────────────────────────────────────
+5) WHAT MUST NEVER LIVE IN native_vendor/ (FORBIDDEN CONTENT)
+──────────────────────────────────────────────────────────────────────────────
+
+native_vendor/ must not contain:
+
+A) DOMAIN PLANNING OR INTENT INTERPRETATION
+No language parsing.
+No routine planning.
+No “bedtime mode” logic.
+That’s modules/ + engine.
+
+B) POLICY OR SAFETY DECISIONS
+No CONFIRM logic.
+No refusal logic.
+No “I think the user meant…”
+That’s engine/cognition/policy.
+
+C) TRUTH POSTURE
+native_vendor/ returns evidence and raw results.
+Truth Gate decides whether claims are VERIFIED, LAST_KNOWN, UNKNOWN, FAILED.
+
+D) HOUSESTATE AUTHORITY
+native_vendor/ does not write beliefs.
+It provides evidence.
+The engine updates HouseState.
+
+E) PRODUCT FORKS
+No tier-specific behavior.
+No customer-specific hacks.
+
+F) SECRET LEAKAGE
+No tokens in logs.
+No raw payload dumps that contain credentials.
+No “debug mode” that becomes permanent leakage.
+
+native_vendor/ must be powerful but disciplined.
+
+──────────────────────────────────────────────────────────────────────────────
+6) CUTOVER FROM BRIDGES TO native_vendor (THE REPLACEMENT PLAYBOOK)
+──────────────────────────────────────────────────────────────────────────────
+
+native_vendor/ is successful only if it can replace bridges without rewriting the platform.
+
+Replacement must preserve:
+- device_key continuity
+- scope bindings
+- HouseState belief continuity (with staleness preserved)
+- module behavior (modules should not change)
+
+Therefore the replacement strategy requires:
+
+A) PARITY CONTRACTS
+Native vendor providers must satisfy the same adapter contracts as bridges.
+
+B) MAPPING COMPATIBILITY
+external_id_map must link both the old bridge external IDs and the new vendor external IDs
+to the same device_key when they refer to the same physical device.
+
+C) SHADOW VALIDATION (OPTIONAL)
+- readback comparison between bridge and native vendor for the same device_key
+- drift detection before cutover
+
+D) ROUTING POLICY CUTOVER
+- selection between bridge vs native_vendor occurs via explicit resolver policy
+- logged and reversible
+
+E) CLEAN DISABLEMENT
+Once native path is stable, the bridge path can be disabled/uninstalled without breaking the body
+(see removability guarantees).
+
+Cutover is not a rewrite.
+It is a backend swap under stable law.
+
+──────────────────────────────────────────────────────────────────────────────
+7) DEPENDENCY LAW (native_vendor IMPORT RULES)
+──────────────────────────────────────────────────────────────────────────────
+
+native_vendor/ may depend on:
+- vendor SDKs and API clients (only within vendor folders)
+- shared schemas/contracts (adapter interfaces, ActionResult types)
+- domain registry interfaces (for identity mapping + registration)
+- observability utilities (sanitized)
+
+native_vendor/ must not depend on:
+- engine/ internals (native_vendor is backend, not law)
+- modules/ (no feature logic)
+- connectors/ (different integration class)
+- product branching logic
+
+native_vendor must remain isolated so it can be updated, swapped, or removed safely.
+
+──────────────────────────────────────────────────────────────────────────────
+8) REQUIRED TEST SURFACES FOR native_vendor/
+──────────────────────────────────────────────────────────────────────────────
+
+native_vendor/ must be protected by tests that enforce correctness under vendor chaos:
+
+- adapter contract tests (units, ranges, required methods)
+- normalization tests (vendor dialect ↔ canonical units)
+- auth tests (token refresh, expiry, revocation, sanitized logging)
+- discovery tests (idempotency, pagination, rate limiting, partial outages)
+- identity mapping tests (no duplicate device_key creation, collision handling)
+- verification tests (readback path correctness; ack ≠ verified)
+- event ingestion tests (dedupe, ordering, reconnect)
+- offline/degraded tests (honest failures, no fake success)
+
+A vendor integration that is not test-hardened will eventually lie or drift.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+native_vendor/ must:
+- provide long-term vendor-specific execution backends
+- preserve WHAT/HOW separation (execution only; no planning)
+- normalize vendor dialects into canonical contracts/models
+- produce ActionResults as evidence (not narrative)
+- preserve device_key identity continuity through external_id_map
+- support discovery and (when available) event ingestion as evidence inputs
+- remain replaceable and test-hardened
+
+native_vendor/ must never:
+- contain domain planning, intent parsing, or user dialogue logic
+- decide policy outcomes or safety gates
+- decide truth posture or claim verification without evidence
+- write HouseState beliefs directly
+- leak secrets in logs or artifacts
+- fork behavior by product tier or customer hacks
+
+native_vendor/ is how Ashby escapes bridges.
+Do it right or don’t do it.
+
+END OF 8A.7

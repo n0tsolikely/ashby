@@ -1,0 +1,276 @@
+ASHBY CODEX — 18.6
+WHAT ADAPTERS MUST NEVER DO
+
+Adapters are the HOW layer.
+They touch the world.
+They are therefore the most dangerous place for meaning to leak.
+
+This subsection defines the forbidden behaviors that prevent adapters
+from becoming:
+- a second engine
+- a vendor-shaped world model
+- a narrative generator
+- a covert policy system
+
+If adapters are permitted to decide meaning,
+Ashby collapses.
+
+──────────────────────────────────────────────────────────────────────────────
+1) ADAPTERS MUST NEVER DEFINE REALITY
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- define zones, rooms, or scopes
+- interpret human labels (“bedroom”, “kitchen”) as authoritative
+- create or modify scope hierarchies
+- decide what “in here” means
+- declare group membership (“all lights”) by vendor grouping
+
+Adapters may accept device_keys and scope metadata as informational only.
+Reality is defined by scopes and canonical configs.
+
+If an adapter defines reality, reality becomes vendor-specific.
+That violates the world model.
+
+──────────────────────────────────────────────────────────────────────────────
+2) ADAPTERS MUST NEVER INTERPRET USER LANGUAGE OR INTENT
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- parse natural language
+- interpret “a little” into deltas
+- interpret “again” into repetition
+- interpret “the other one” into a target
+- infer missing parameters
+
+Adapters receive canonical ActionRequests only.
+
+If an adapter interprets language, the WHAT/HOW boundary is broken.
+
+──────────────────────────────────────────────────────────────────────────────
+3) ADAPTERS MUST NEVER DECIDE POLICY OUTCOMES
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never decide:
+- ACT vs CLARIFY vs CONFIRM vs REFUSE
+- safety gating
+- blast radius thresholds
+- permissions and entitlements
+- whether a request is “allowed”
+
+Adapters may return failure evidence such as:
+- not_permitted (as reported by external system)
+- auth_failed
+- capability_mismatch
+
+But they must not translate those into platform decisions.
+The engine decides outcomes.
+
+If adapters decide policy, governance becomes untestable.
+
+──────────────────────────────────────────────────────────────────────────────
+4) ADAPTERS MUST NEVER GENERATE USER-FACING LANGUAGE OR CLAIM TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- produce user-facing sentences
+- say “done,” “set,” “turned on,” “success” as truth claims
+- hide uncertainty behind optimistic phrasing
+- collapse mixed reality into a single narrative
+
+Adapters return evidence.
+The engine speaks.
+
+Truth is not a string.
+Truth is a governed posture enforced by the Truth Gate.
+
+──────────────────────────────────────────────────────────────────────────────
+5) ADAPTERS MUST NEVER UPDATE HOUSESTATE OR CANONICAL RECORDS
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- write directly to HouseState
+- persist canonical domain records
+- mutate the device registry
+- create aliases
+- update zones/rooms/groups
+
+Adapters may cache ephemeral execution details for performance,
+but caches are not canonical state and must not change meaning.
+
+State authority belongs to HouseState and governed stores.
+Adapters are not allowed to become “the database.”
+
+──────────────────────────────────────────────────────────────────────────────
+6) ADAPTERS MUST NEVER SILENTLY EXPAND OR MODIFY TARGET SETS
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- add extra devices beyond the target_set
+- replace device_keys with vendor group identifiers
+- “helpfully include” linked devices
+- reinterpret category or role metadata into additional selection
+
+If the target_set is wrong, that is upstream.
+Adapters must fail or report mismatch, not correct silently.
+
+Silent expansion is one of the fastest paths to catastrophic behavior.
+
+──────────────────────────────────────────────────────────────────────────────
+7) ADAPTERS MUST NEVER CREATE NEW MEANING THROUGH FALLBACKS
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- switch local→cloud or cloud→local on their own
+- reroute to a different backend because it “usually works”
+- attempt alternative capabilities without explicit planning
+- degrade verification mode silently
+
+Fallback is a platform policy decision.
+Execution mode changes truth risk.
+Therefore execution mode changes are governance events.
+
+Adapters may expose health and availability evidence.
+They may not decide reroutes.
+
+──────────────────────────────────────────────────────────────────────────────
+8) ADAPTERS MUST NEVER HIDE PARTIAL FAILURE OR MIXED REALITY
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- return a single “success” when some targets failed
+- omit failed devices from attempted lists
+- collapse multiple errors into one generic label
+- discard relevant failure stages
+
+Per-target outcomes and per-target evidence are mandatory.
+
+Mixed reality is normal.
+Lying to simplify is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+9) ADAPTERS MUST NEVER CREATE DUPLICATE EXECUTION THROUGH UNCONTROLLED RETRIES
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- retry indefinitely
+- retry without respecting idempotency discipline
+- convert transport resubmits into multiple executions
+- perform “background retries” that are not auditable
+
+Retries are a policy-governed behavior:
+- bounded
+- logged
+- correlated
+- designed per capability (some actions are unsafe to repeat)
+
+If retries are uncontrolled, the adapter becomes an autonomous agent.
+
+──────────────────────────────────────────────────────────────────────────────
+10) ADAPTERS MUST NEVER LEAK SECRETS OR RAW VENDOR PAYLOADS
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- log access tokens
+- return raw vendor error payloads that include secrets or identifiers
+- accept secrets as normal parameters (secrets belong in secret stores)
+- echo user-provided secrets back into output fields
+
+All sensitive material must be handled through the platform’s security mechanisms.
+
+Adapters may return sanitized diagnostic crumbs.
+They may not become an exfiltration surface.
+
+──────────────────────────────────────────────────────────────────────────────
+11) ADAPTERS MUST NEVER HARD-CODE VENDOR COUPLING INTO INTERFACES
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never require:
+- vendor-specific IDs in module interfaces
+- vendor-specific payload shapes as inputs
+- vendor-specific state semantics as canonical truth
+
+Vendor coupling is permitted only inside the adapter implementation boundary,
+and must be translated into canonical types at the interface.
+
+If vendor coupling leaks upward, modules become unremovable.
+
+──────────────────────────────────────────────────────────────────────────────
+12) ADAPTERS MUST NEVER BECOME ORCHESTRATORS (NO SECOND ENGINE)
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- create multi-step plans
+- sequence multiple actions beyond the one ActionRequest they were given
+- execute compensating actions without explicit plan
+- coordinate across devices to “achieve a goal”
+- manage long-lived job state as a planner
+
+Adapters may:
+- implement the specific execution semantics of the capability
+- perform bounded internal sub-steps required to attempt execution safely
+  (e.g., ensure-on before set-level if the contract requires it)
+
+But they must not invent new actions or new goals.
+
+Planning is engine work.
+Execution is adapter work.
+
+──────────────────────────────────────────────────────────────────────────────
+13) ADAPTERS MUST NEVER ASK QUESTIONS OR OPEN USER GATES
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must never:
+- ask clarifying questions
+- request confirmation from the user
+- hold pending gates
+- interpret user replies
+
+If execution requires clarification, the adapter must return evidence that
+the request could not be executed (e.g., invalid_parameters, capability_mismatch),
+and the engine must decide the next step.
+
+Adapters are not conversational entities.
+
+──────────────────────────────────────────────────────────────────────────────
+14) ADAPTERS MUST NEVER CHANGE THE PLATFORM’S FAILURE TAXONOMY
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters may map vendor error structures into canonical failure evidence,
+but must never invent new platform meanings.
+
+Rules:
+- error stages and labels must remain within the canonical taxonomy
+- raw vendor codes may be included only as sanitized, non-authoritative diagnostics
+- “unknown” must remain possible; do not force a label when evidence is missing
+
+If adapters improvise taxonomy, debugging and governance collapse.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must:
+- accept only canonical ActionRequests and target device_keys
+- attempt execution and return evidence honestly per target
+- remain deterministic and auditable
+- protect secrets and sanitize outputs
+- respect idempotency and bounded retries as policy-governed behaviors
+
+Adapters must never:
+- define scopes, reality, or group membership
+- interpret user language or invent parameters
+- decide policy outcomes or gating
+- generate user-facing claims or upgrade truth
+- update HouseState or canonical domain records
+- silently expand targets or silently reroute execution paths
+- hide partial failures or collapse mixed reality
+- perform uncontrolled retries or background execution
+- leak secrets or raw vendor payloads
+- hardcode vendor coupling into interfaces
+- become planners, orchestrators, or conversational agents
+
+Adapters are the hands of Ashby.
+They must never become the mind.
+
+END OF 18.6

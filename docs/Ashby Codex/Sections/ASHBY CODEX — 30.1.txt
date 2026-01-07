@@ -1,0 +1,389 @@
+ASHBY CODEX — 30.1
+Meetings-Style Agent (Stuart-Like)
+
+This subsection describes a representative “meetings agent” archetype.
+It is an example of how a heavy-compute, artifact-producing agent can exist inside Ashby
+without forking Ashby’s truth, state, routing, or governance.
+
+Names are illustrative.
+The architectural pattern is canonical.
+
+A meetings-style agent exists to convert ephemeral human events into durable, retrievable artifacts:
+- audio capture
+- transcript
+- diarization (optional)
+- summary
+- decisions
+- action items
+- search and retrieval
+
+The meetings agent is not a special system.
+It is a module that inherits the body.
+
+──────────────────────────────────────────────────────────────────────────────
+1) THE MEETINGS AGENT’S PURPOSE (WHAT IT MAKES POSSIBLE)
+──────────────────────────────────────────────────────────────────────────────
+
+Meetings are a domain where:
+- reality happens in speech
+- evidence is time-sequenced
+- “truth” is rarely binary
+- outputs are not device-state, but structured human memory
+
+A meetings agent must therefore be:
+- pipeline-driven (multi-stage processing)
+- artifact-centric (stores durable outputs)
+- evidence-aware (knows what is captured vs inferred)
+- interruption-tolerant (recording may pause, devices may crash)
+- honest about uncertainty (diarization confidence, ASR confidence, missing audio)
+
+A correct meetings agent does not attempt to “sound sure.”
+It attempts to preserve evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT IS CANONICAL VS WHAT IS REPRESENTATIVE
+──────────────────────────────────────────────────────────────────────────────
+
+CANONICAL (INVARIANTS):
+- The meetings agent is a removable module.
+- It uses Ashby sessions, Ashby routing, Ashby Truth Gate, Ashby logging.
+- It does not implement independent memory, state, or truth semantics.
+- It does not bypass adapter contracts.
+- It stores artifacts through the StorageAdapter only.
+- It reports outcomes through ActionResult evidence, never narrative certainty.
+
+REPRESENTATIVE (EXAMPLES ONLY):
+- “Stuart” as a user-facing name.
+- The exact intent strings shown below.
+- The exact pipeline stages and ordering (as long as boundaries hold).
+- The underlying transcription/diarization model choices.
+
+The Codex preserves the pattern.
+Implementations may evolve without violating Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+3) NORMALIZED INTENTS (MEETINGS DOMAIN)
+──────────────────────────────────────────────────────────────────────────────
+
+A meetings agent is invoked through normalized meeting intents.
+
+Representative intent types include:
+- meetings.start
+- meetings.stop
+- meetings.pause
+- meetings.resume
+- meetings.status
+- meetings.summary
+- meetings.list
+- meetings.search
+- meetings.open(meeting_id)
+- meetings.export(format)
+
+Rules:
+- intents are parsed by Ashby’s intent extraction layer, not by the agent
+- routing occurs by module_key, not by display name
+- the agent receives a canonical Intent object and returns plans/artifacts/evidence
+
+The meetings agent must never accept raw transport payloads as its authority.
+
+──────────────────────────────────────────────────────────────────────────────
+4) SESSION MODEL (MEETING SESSIONS)
+──────────────────────────────────────────────────────────────────────────────
+
+Meetings require a session because the interaction is inherently multi-turn and time-bound.
+
+A meeting session is owned by Ashby’s session manager and is scoped.
+
+Representative session fields:
+{
+  "session_type": "meeting",
+  "active": true,
+  "meeting_id": "uuid",
+  "scope_id": "scope:…",
+  "started_at": "ISO8601",
+  "ended_at": "ISO8601 | null",
+  "title": "string | null",
+  "participants": ["string"...] | [],
+  "audio_source": "mic:default | input:usb | input:stream | null",
+  "state": "recording | paused | stopping | stopped | failed",
+  "artifacts": {
+     "audio_key": "storage_key | null",
+     "transcript_key": "storage_key | null",
+     "summary_key": "storage_key | null",
+     "decisions_key": "storage_key | null",
+     "action_items_key": "storage_key | null",
+     "index_key": "storage_key | null"
+  },
+  "correlation_id": "string",
+  "created_by": "user_id | system",
+  "policy": {
+     "allow_cloud": true | false,
+     "retention_days": int,
+     "redaction": "off | basic | strict"
+  }
+}
+
+Session invariants:
+- session lifecycle transitions are explicit
+- session expiration and safety are owned by Ashby
+- a session cannot silently “linger” in recording state without health checks
+- by default, only one active meeting session per user (policy may revise)
+
+State machine (canonical shape):
+- recording → paused → recording (resume)
+- recording/paused → stopping → stopped
+- any state → failed (on unrecoverable pipeline failure)
+
+A meetings agent may request a clarification to finalize metadata
+(title, participants), but it must never block safe stop behavior.
+
+──────────────────────────────────────────────────────────────────────────────
+5) PIPELINE SHAPE (RECORD → TRANSCRIBE → STRUCTURE → STORE → RETRIEVE)
+──────────────────────────────────────────────────────────────────────────────
+
+A meetings agent is a pipeline orchestrator inside module boundaries.
+
+The pipeline is modular internally, but the external boundary remains consistent:
+- requests are expressed as ActionRequests
+- execution uses adapters
+- results are ActionResults
+- artifacts are stored through StorageAdapter
+- truth and user-facing language pass through Truth Gate
+
+A) START PHASE (SESSION + AUDIO CAPTURE)
+- Ashby policy decides whether meetings.start is allowed to ACT.
+- Ashby creates a meeting session (meeting_id + correlation_id).
+- The meetings agent requests audio capture through IO interfaces.
+  The IO layer is responsible for device/microphone specifics.
+
+Rules:
+- if microphone permission is required, the system must CLARIFY/CONFIRM explicitly
+- if capture cannot begin, the agent must return failure evidence
+- “meeting started” cannot be claimed unless capture actually started
+
+B) CAPTURE PHASE (AUDIO INGESTION)
+Audio is the primary evidence.
+
+Capture modes (representative):
+- continuous stream to a ring buffer + periodic flush to storage
+- chunked audio segments (e.g., 10–30 second windows)
+- direct file recording (single output file with checkpoints)
+
+Canonical constraints:
+- the agent must not rely on “in-memory only” audio for long sessions
+- partial persistence is required to survive crashes and power loss
+- corruption must be detectable (checksums, segment counts, or format validation)
+
+C) TRANSCRIPTION PHASE (ASR)
+Transcription may be:
+- real-time (partial results)
+- post-hoc (after stop)
+- hybrid (partial + refine)
+
+Execution modes:
+- offline-local ASR (preferred when available)
+- cloud ASR (allowed only if policy enables)
+
+Canonical constraints:
+- transcription outputs are artifacts, not beliefs
+- if the ASR backend returns partial results or low confidence,
+  that uncertainty must be preserved in the artifact metadata
+- the agent must never “smooth” missing audio into fabricated words
+
+D) DIARIZATION PHASE (OPTIONAL)
+Diarization assigns speaker segments.
+
+Diarization is often probabilistic.
+It must be treated as:
+- structured inference
+- confidence-bearing
+- non-authoritative about identity unless explicitly grounded
+
+Rules:
+- diarization confidence must be preserved
+- unknown speakers must remain unknown (do not guess identities)
+- speaker labels must be stable within the meeting artifact
+
+E) STRUCTURE PHASE (SUMMARY, DECISIONS, ACTION ITEMS)
+These outputs are useful but dangerous if treated as truth.
+
+Rules:
+- summaries are not proof; they are derived interpretations
+- “decisions” must be phrased as extracted claims from captured content
+- action items must preserve ambiguity when the source is ambiguous
+- if evidence is incomplete, outputs must reflect that (missing segment warnings)
+
+A correct meetings agent produces:
+- summary (human-readable)
+- decisions list (each tied to transcript span references)
+- action items list (assignee/owner may be unknown)
+- topics index (for retrieval)
+
+Where possible, every structured element should include:
+- time range
+- transcript span reference
+- confidence/quality indicator
+
+F) STORAGE PHASE (ARTIFACT PERSISTENCE)
+All durable outputs are stored through StorageAdapter.
+
+Canonical storage rules:
+- keys are deterministic and traceable
+- keys do not embed secrets
+- metadata includes meeting_id, scope_id, created_at, and correlation_id
+- storage results are ActionResults (ok/failed + verification posture)
+
+Representative key scheme (illustrative):
+- meetings/{scope_id}/{meeting_id}/audio
+- meetings/{scope_id}/{meeting_id}/transcript
+- meetings/{scope_id}/{meeting_id}/summary
+- meetings/{scope_id}/{meeting_id}/decisions
+- meetings/{scope_id}/{meeting_id}/action_items
+- meetings/{scope_id}/{meeting_id}/index
+
+G) RETRIEVAL PHASE (LIST, SEARCH, OPEN)
+Retrieval is the second half of the feature.
+
+A meetings agent must support:
+- listing recent meetings (scoped)
+- opening a meeting by meeting_id
+- searching across transcript/index
+- exporting artifacts safely
+
+Rules:
+- retrieval is permissioned and scope-bound
+- exports must not leak secrets or hidden URLs
+- indexing must remain removable and rebuildable (no single point of opaque dependence)
+
+──────────────────────────────────────────────────────────────────────────────
+6) HOUSESTATE VS ARTIFACTS (STRICT SEPARATION)
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState is not a transcript store.
+
+A meetings agent may interact with HouseState only for:
+- small, bounded markers that help continuity
+  (e.g., “active meeting session exists,” “last meeting_id,” “last summary delivered”)
+- user preferences (format, retention policy)
+- scoped capability posture (cloud allowed or not)
+
+Rules:
+- transcript text and audio never belong in HouseState
+- summaries do not belong in HouseState
+- decisions and action items belong as artifacts unless explicitly promoted
+- HouseState may store references (meeting_id, artifact keys), not content
+
+This separation preserves:
+- state size discipline
+- privacy discipline
+- rebuildability discipline (artifacts can be migrated independently)
+
+──────────────────────────────────────────────────────────────────────────────
+7) TRUTH GATE APPLICATION (MEETINGS DOMAIN)
+──────────────────────────────────────────────────────────────────────────────
+
+The meetings agent is subject to the same truth law as any module.
+
+However, the “truth” in meetings is primarily about:
+- whether capture occurred
+- whether transcription occurred
+- whether artifacts exist and were stored
+- whether retrieval succeeded
+
+Rules:
+- “I recorded the meeting” requires evidence that recording started and persisted
+- “I transcribed it” requires evidence that transcript artifact exists and was stored
+- “This is what everyone agreed on” is forbidden unless explicitly framed as:
+  “Based on the transcript, the meeting appears to have decided …”
+- diarization quality must be disclosed when relevant
+
+The agent’s language must never upgrade inference into certainty.
+
+──────────────────────────────────────────────────────────────────────────────
+8) PRIVACY, SECURITY, AND RETENTION (MEETINGS ARE SENSITIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+Meetings contain sensitive information by default.
+
+A meetings agent must enforce:
+- explicit permission for capture (where required by jurisdiction/policy)
+- explicit retention policy (time-limited by default)
+- explicit export boundaries (who can access)
+- secret hygiene (no credentials in artifacts, logs, or metadata)
+
+Rules:
+- logs must not include raw audio or full transcripts
+  (logs may include counts, checksums, ids, and error summaries)
+- storage must be permissioned and scope-bound
+- redaction mode (if enabled) must be explicit and auditable
+- failure artifacts must be sanitized
+
+Privacy is not “nice to have.”
+It is part of rebuild correctness.
+
+──────────────────────────────────────────────────────────────────────────────
+9) FAILURE MODES AND RECOVERY (HONESTY UNDER BREAKAGE)
+──────────────────────────────────────────────────────────────────────────────
+
+Meetings will fail in real life:
+- microphone disconnects
+- CPU overload
+- ASR backend timeout
+- storage errors
+- power loss mid-session
+
+A meetings agent must be designed for honest partial outputs.
+
+Canonical failure handling:
+- if capture started but later failed, that fact must be preserved
+- partial transcripts are valid artifacts if marked partial
+- a failed diarization step must not invalidate transcript storage
+- storage failures must be surfaced explicitly and traced by correlation_id
+- if the agent crashes, Ashby continues operating
+
+Recovery expectations:
+- sessions must be markable as failed/stopped
+- persisted audio segments should allow salvage and post-hoc transcription
+- the agent must never claim “all good” to cover an error
+
+The correct output is explicit mixed reality:
+some artifacts may exist, others may not.
+
+──────────────────────────────────────────────────────────────────────────────
+10) REMOVABILITY (THE MEETINGS AGENT IS OPTIONAL)
+──────────────────────────────────────────────────────────────────────────────
+
+The meetings agent must be removable.
+
+Rules:
+- disabling the module disables meeting intents and pipelines
+- it must not break device control or other agents
+- its artifacts remain accessible only through explicit storage access tooling
+- the engine must not assume the meetings agent exists
+
+Heavy compute belongs inside the module.
+Optional features remain optional.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+A meetings-style agent must:
+- operate as a removable module inside Ashby
+- use Ashby sessions for meeting continuity
+- use adapters and interfaces for execution and storage
+- preserve evidence as artifacts (audio, transcript, structured outputs)
+- preserve uncertainty (partial capture, low confidence diarization, incomplete transcript)
+- keep HouseState small and referential (ids/markers only)
+- apply Truth Gate rules to all user-facing statements
+- remain scope-bound, permissioned, and auditable
+
+A meetings-style agent must never:
+- bypass Ashby routing, Truth Gate, or state authority
+- store transcripts or audio inside HouseState
+- claim meeting outcomes as verified facts without evidence
+- invent missing speech to fill gaps
+- leak secrets through artifacts, logs, or exports
+- become a separate platform with its own truth/state system
+
+END OF 30.1

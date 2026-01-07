@@ -1,0 +1,237 @@
+ASHBY CODEX — 25
+Preservation Pack #7 — Logging & Observability
+
+This subsection embeds the corresponding Preservation Pack as a mechanical invariant.
+It is reproduced in full below to support rebuild, audit, and long-horizon continuity.
+Unless amended via Control Sync, the rules herein are treated as canonical.
+
+BEGIN PRESERVATION PACK #7
+
+ASHBY PRESERVATION PACK #7 — LOGGING, OBSERVABILITY & DEBUGGING
+Version: 1.0
+Date: 2025-12-22
+Goal: Define how Ashby observes itself without leaking secrets, lying about state,
+or becoming impossible to debug. This pack ensures failures are diagnosable while
+preserving Action-Gated Truth.
+
+──────────────────────────────────────────────────────────────────────────────
+1) CORE OBSERVABILITY PRINCIPLE
+──────────────────────────────────────────────────────────────────────────────
+Ashby must be observable without being noisy or unsafe.
+
+Rules:
+  - Every action is traceable
+  - No secrets ever appear in logs
+  - Logs describe facts, not guesses
+  - Debugging does not change behavior
+
+Logs exist to explain WHAT happened, WHERE, and WHY — not to narrate fiction.
+
+──────────────────────────────────────────────────────────────────────────────
+2) TRACE IDs & CORRELATION
+──────────────────────────────────────────────────────────────────────────────
+Every user interaction generates a correlation_id.
+
+Rules:
+  - correlation_id is generated at router entry
+  - propagated through:
+      Intent
+      ActionRequest
+      ActionResult
+      logs
+  - included in error logs
+
+Example:
+  correlation_id = "2025-12-22T18:31:04Z-local_terminal-00042"
+
+This allows reconstructing an entire flow from a single ID.
+
+──────────────────────────────────────────────────────────────────────────────
+3) LOG LEVELS (STRICT USAGE)
+──────────────────────────────────────────────────────────────────────────────
+DEBUG:
+  - internal flow markers
+  - enabled only during development
+  - MUST NOT include secrets or raw vendor payloads
+
+INFO:
+  - action attempts
+  - successful executions
+  - state transitions (confidence changes)
+
+WARNING:
+  - retries
+  - degraded modes
+  - LAST_KNOWN states
+  - non-fatal adapter issues
+
+ERROR:
+  - failed actions
+  - adapter failures
+  - config validation errors
+  - startup failures
+
+CRITICAL:
+  - security violations
+  - corrupted state
+  - schema incompatibility
+
+──────────────────────────────────────────────────────────────────────────────
+4) STRUCTURED LOG FORMAT
+──────────────────────────────────────────────────────────────────────────────
+Logs must be structured (JSON or key=value).
+
+Required fields:
+  - timestamp (UTC)
+  - level
+  - correlation_id
+  - component (router, module.lights, adapter.tuya, etc.)
+  - event
+  - summary
+
+Optional fields:
+  - device_key (logical only)
+  - zone_id
+  - verification
+  - retry_count
+
+Example (JSON):
+{
+  "ts": "2025-12-22T18:31:04Z",
+  "level": "INFO",
+  "correlation_id": "2025-12-22T18:31:04Z-local_terminal-00042",
+  "component": "module.lights",
+  "event": "set_brightness",
+  "device_key": "thor_bulb",
+  "value": 600,
+  "verification": "VERIFIED"
+}
+
+──────────────────────────────────────────────────────────────────────────────
+5) WHAT MUST NEVER BE LOGGED
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE BANS:
+  - secrets (keys, tokens, passwords)
+  - vendor headers
+  - OAuth payloads
+  - raw request/response bodies
+  - full exception traces if they contain sensitive data
+
+If unsure → redact.
+
+──────────────────────────────────────────────────────────────────────────────
+6) ACTION FLOW LOGGING (MINIMUM REQUIRED)
+──────────────────────────────────────────────────────────────────────────────
+For each action, logs MUST include:
+
+1) Router entry:
+   - received text
+   - correlation_id
+
+2) Intent extraction:
+   - intent.type
+   - confidence
+
+3) Resolution:
+   - resolved device_keys / zone_ids
+   - ambiguity or clarification events
+
+4) Execution:
+   - attempted devices
+   - retries
+   - success/failure
+
+5) Result:
+   - ActionResult.ok
+   - verification state
+
+6) State update:
+   - confidence transitions
+   - last_verified_ts changes
+
+This makes post-mortem debugging possible.
+
+──────────────────────────────────────────────────────────────────────────────
+7) DEBUG MODES (SAFE)
+──────────────────────────────────────────────────────────────────────────────
+Ashby may support debug toggles:
+
+- DEBUG_ROUTER_FLOW
+- DEBUG_NLU
+- DEBUG_SESSIONS
+- DEBUG_ADAPTERS
+
+Rules:
+  - Debug modes increase logging only
+  - Debug modes must NOT alter execution logic
+  - Debug modes must be runtime toggles (env flags)
+
+Never add “if debug then skip X” logic.
+
+──────────────────────────────────────────────────────────────────────────────
+8) METRICS (OPTIONAL BUT RECOMMENDED)
+──────────────────────────────────────────────────────────────────────────────
+Useful counters:
+  - actions_attempted_total
+  - actions_succeeded_total
+  - actions_failed_total
+  - retries_total
+  - clarifications_prompted_total
+  - no_ops_total
+
+Metrics must:
+  - be aggregate only
+  - contain no identifiers or secrets
+
+──────────────────────────────────────────────────────────────────────────────
+9) FAILURE TAXONOMY
+──────────────────────────────────────────────────────────────────────────────
+Standardize failure reasons:
+
+- timeout
+- unreachable
+- auth_failed
+- invalid_target
+- capability_mismatch
+- config_error
+- unknown_error
+
+Adapters must map vendor errors into this taxonomy.
+
+──────────────────────────────────────────────────────────────────────────────
+10) POST-MORTEM RECONSTRUCTION
+──────────────────────────────────────────────────────────────────────────────
+Given a correlation_id, an engineer must be able to answer:
+
+- What did the user ask?
+- What intent was inferred?
+- What devices were targeted?
+- What was attempted?
+- What succeeded?
+- What failed?
+- What state was updated?
+- What did Ashby say to the user?
+
+If logs cannot answer these → observability is insufficient.
+
+──────────────────────────────────────────────────────────────────────────────
+11) WHY THIS PACK MATTERS
+──────────────────────────────────────────────────────────────────────────────
+Without observability:
+  - bugs feel random
+  - trust erodes
+  - refactors are dangerous
+
+With observability:
+  - failures are explainable
+  - regressions are detectable
+  - Ashby becomes maintainable long-term
+
+Logs are not noise.
+They are memory you can trust.
+
+END OF PACK #7
+
+END PRESERVATION PACK #7
+
+END OF 25

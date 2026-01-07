@@ -1,0 +1,255 @@
+ASHBY CODEX — 17.3
+SENSOR-DRIVEN MODULES
+
+A sensor-driven module is a module whose primary output is evidence.
+
+It ingests observations (from sensors, telemetry, or derived signals),
+updates HouseState, and enables:
+- truthful answers about the world
+- policy decisions based on evidence
+- safe automations and triggers (when configured)
+
+Sensor-driven does not mean “automatic action.”
+It means “evidence-first.”
+
+The archetype is representative, not exhaustive.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINING TRAITS
+──────────────────────────────────────────────────────────────────────────────
+
+A module qualifies as sensor-driven when:
+
+1) OBSERVATIONS ARE PRIMARY
+The module’s main function is to ingest and interpret observations.
+
+2) FRESHNESS MATTERS
+A sensor value is meaningful only relative to its timestamp.
+Staleness handling is first-class.
+
+3) NOISY INPUTS ARE NORMAL
+Sensors produce:
+- false positives
+- dropouts
+- jitter
+- inconsistent reports
+
+The module must degrade gracefully without pretending certainty.
+
+4) STATE IS EVIDENCE-DERIVED
+HouseState updates are based on evidence, not on wishful inference.
+
+5) DERIVED SIGNALS MAY EXIST
+The module may provide derived states (e.g., “occupied”),
+but derivation must be explicit, bounded, and auditable.
+
+Sensor-driven modules are how Ashby learns without hallucinating.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL RESPONSIBILITIES
+──────────────────────────────────────────────────────────────────────────────
+
+A sensor-driven module must:
+
+- Define sensor event schemas and normalization rules (vendor-neutral)
+- Ingest observations through adapters and update HouseState lawfully
+- Attach timestamps, sources, and confidence levels to observations
+- Apply staleness/decay rules to avoid stale certainty
+- Provide safe, explicit derivations (when configured)
+- Expose observation queries that honor truth posture and freshness
+- Support trigger signals only through governed, auditable pathways
+- Never fabricate observations
+- Never treat “expected” as “observed”
+
+A sensor-driven module is an evidence pipeline, not a storyteller.
+
+──────────────────────────────────────────────────────────────────────────────
+OBSERVATION TYPES (REPRESENTATIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+Representative observation classes include:
+
+- binary states:
+  door_open, motion_detected, leak_detected
+- scalar values:
+  temperature, humidity, soil_moisture, luminance
+- categorical values:
+  mode, presence_state, occupancy_class
+
+Rules:
+- each observation carries:
+  value, units (if applicable), observed_at, source_id, confidence
+- normalization must produce canonical units
+- unknown/missing is a valid state
+
+The module must not collapse “missing data” into default values.
+
+──────────────────────────────────────────────────────────────────────────────
+EVIDENCE INGESTION (PUSH, PULL, AND HYBRID)
+──────────────────────────────────────────────────────────────────────────────
+
+Sensors may provide evidence via:
+- push events (subscriptions)
+- pull polling (periodic reads)
+- hybrid models (event + periodic refresh)
+
+Rules:
+- ingestion path is adapter responsibility
+- module responsibility is interpretation and state update
+- ingestion must be resilient to outages and duplicate events
+- duplicate events must not create repeated state transitions
+
+The module must treat ingestion as unreliable by default.
+Confidence and freshness are how this unreliability is represented.
+
+──────────────────────────────────────────────────────────────────────────────
+DERIVED SIGNALS (EXPLICIT, CONFIGURED, AUDITABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+Derived signals are allowed only when explicitly defined.
+
+Examples (representative):
+- “occupied” derived from recent motion events
+- “room_is_dark” derived from luminance threshold
+- “leak_risk” derived from humidity + leak sensor
+
+Rules:
+- derivation rules must be configuration, not model intuition
+- thresholds and windows must be explicit
+- hysteresis and debounce must be explicit to prevent oscillation
+- derived states must carry:
+  derived_from inputs, window, thresholds, computed_at, confidence
+
+Derived signals are powerful.
+They must not become a hidden second engine.
+
+──────────────────────────────────────────────────────────────────────────────
+HOUSESTATE UPDATE LAW (EVIDENCE-BOUND)
+──────────────────────────────────────────────────────────────────────────────
+
+Sensor-driven modules update HouseState.
+
+Rules:
+- updates must reference an observation event
+- each attribute stores:
+  last_observed_value, observed_at, confidence, source
+- confidence decays with time per staleness policy
+- restart must degrade certainty when continuity is uncertain
+- mixed reality is normal across sensors and must be preserved
+
+A sensor module must never:
+- set VERIFIED due to “likely”
+- assume continuity across missing data
+- infer private routines beyond the evidence
+
+HouseState is belief.
+Sensor modules provide belief inputs.
+
+──────────────────────────────────────────────────────────────────────────────
+QUERY BEHAVIOR (TRUTHFUL ANSWERING)
+──────────────────────────────────────────────────────────────────────────────
+
+Users ask questions such as:
+- “is the door open?”
+- “is it bright in here?”
+- “what’s the temperature?”
+
+Rules:
+- answers must follow Action-Gated Truth posture where applicable.
+  For pure observation queries, the same language constraints apply:
+  - VERIFIED only when evidence is fresh and authoritative
+  - LAST_KNOWN when evidence exists but may be stale
+  - UNKNOWN when evidence is missing or degraded
+- if the user asks for “right now” and data is stale:
+  prefer refresh or explicit uncertainty.
+
+The module must never present old observations as current facts.
+
+──────────────────────────────────────────────────────────────────────────────
+TRIGGERS AND AUTOMATIONS (GOVERNED OUTPUTS)
+──────────────────────────────────────────────────────────────────────────────
+
+Sensor-driven modules often feed triggers, but triggers are governed.
+
+Rules:
+- a sensor module may emit trigger candidates (events)
+- policy and automation systems decide whether actions occur
+- triggers must be scope-bound and auditable
+- triggers must respect privacy and safety boundaries
+- sensor modules must not self-authorize actions
+
+A sensor module provides evidence and events.
+It does not grant permission.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE MODES AND SAFE DEGRADATION
+──────────────────────────────────────────────────────────────────────────────
+
+Common failure modes:
+- stale readings
+- sensor offline
+- contradictory sensors
+- noisy jitter
+- missing units or malformed payloads
+
+Rules:
+- contradictions must not be “resolved” by guess; preserve uncertainty
+- noisy streams must be debounced by explicit configuration
+- offline must degrade confidence and may trigger incident posture where configured
+- errors must be logged without leaking secrets
+
+A sensor module must remain honest under degraded evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+SECURITY AND PRIVACY CONSIDERATIONS
+──────────────────────────────────────────────────────────────────────────────
+
+Many sensors are privacy-sensitive.
+
+Rules:
+- permissions and scope law apply to disclosure
+- sensitive observation streams must not be exposed across actors/scopes
+- the module must not expose raw payloads if they include sensitive data
+- derived signals must not leak sensitive inferences beyond policy
+
+Truth without privacy is not trust.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE MODULE CONTRACT (NON-BINDING SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+Representative sensor-driven module capabilities:
+
+- normalize_observation(raw_event) → canonical_observation
+- ingest(canonical_observation) → state_update
+- derive_signals(state_snapshot, policy) → derived_updates (optional)
+- query(state_snapshot, freshness_policy) → response_facts
+
+The engine remains the arbiter of policy and response language.
+The module supplies evidence interpretation.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Sensor-driven modules must:
+- treat observations as primary and time-stamped
+- normalize units deterministically
+- update HouseState only from evidence
+- degrade confidence with staleness
+- support explicit, configured derivations only
+- preserve uncertainty under contradiction and noise
+- remain scope-bound, auditable, and vendor-neutral
+
+Sensor-driven modules must never:
+- fabricate observations
+- present stale data as current
+- infer beyond configured derivation rules
+- self-authorize actions based on sensor events
+- hide contradictions by “choosing the most likely”
+- leak private data or raw sensitive payloads
+
+This archetype is the spine of “reality” inside Ashby.
+It must be conservative.
+
+END OF 17.3

@@ -1,0 +1,313 @@
+ASHBY CODEX — 36.2
+WHAT ASHBY REFUSES TO BECOME
+
+Ashby is defined as much by what it refuses as by what it promises.
+
+This subsection exists as an anti-specification:
+a list of failure destinies that appear attractive under pressure,
+and the corresponding refusal that keeps Ashby intact.
+
+Ashby may evolve.
+Ashby may expand.
+Ashby may become more capable.
+
+Ashby must not become these things.
+
+──────────────────────────────────────────────────────────────────────────────
+1) ASHBY REFUSES TO BECOME A LIAR (CONFIDENCE AS A SUBSTITUTION FOR EVIDENCE)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby refuses:
+- to claim an action occurred without execution evidence
+- to claim a state is current when it is stale
+- to claim verification when only acknowledgement exists
+- to smooth partial failure into “all good”
+- to hide uncertainty behind polished language
+
+This is the first and most important refusal.
+
+If Ashby ever becomes a system where fluency can replace evidence,
+then Ashby is gone, even if the name remains.
+
+Defenses (must exist and must remain enforced):
+- ActionResult-as-reality law
+- Truth Gate language constraints
+- forbidden phrase enforcement
+- explicit mixed reality representation (partial success, contradictions, unknowns)
+- staleness/decay discipline
+
+──────────────────────────────────────────────────────────────────────────────
+2) ASHBY REFUSES TO BECOME A “VENDOR-SHAPED ASSISTANT”
+──────────────────────────────────────────────────────────────────────────────
+
+Under speed pressure, systems often surrender their worldview to dependencies.
+
+Ashby refuses:
+- to adopt a bridge’s entity model as its domain model
+- to adopt a vendor’s naming system as its identity system
+- to treat a third-party state registry as canonical reality
+- to let protocol structures become “how the system thinks”
+
+Bridges and vendors may execute.
+They may provide evidence.
+They do not own meaning.
+
+Defenses:
+- stable platform-owned identity keys (device_key and mappings)
+- vendor-neutral capability and interface contracts
+- bridge isolation (bridges/ remain optional and replaceable)
+- normalization layers that translate vendor/protocol structures into Ashby meaning
+- routing policy that can move providers without changing module logic
+
+──────────────────────────────────────────────────────────────────────────────
+3) ASHBY REFUSES TO BECOME A MONOLITH (A GOD-SYSTEM)
+──────────────────────────────────────────────────────────────────────────────
+
+Systems fail when everything becomes “core,” and core becomes unchangeable.
+
+Ashby refuses:
+- to merge modules into the engine for convenience
+- to turn optional capabilities into permanent dependencies
+- to require one massive deployment shape to do anything useful
+- to create a platform where removal is impossible
+
+Defenses:
+- strict WHAT vs HOW separation
+- modular removability (organs can be removed without killing the body)
+- clear directory boundaries (engine/ vs modules/ vs adapters/ vs providers)
+- profile-based productization (select, do not rewrite)
+
+Ashby’s strength is that it can grow without becoming a ball of mud.
+
+──────────────────────────────────────────────────────────────────────────────
+4) ASHBY REFUSES TO BECOME A BLACK BOX
+──────────────────────────────────────────────────────────────────────────────
+
+A black box can be powerful, but it cannot be trusted.
+
+Ashby refuses:
+- to act in ways that cannot be reconstructed
+- to hide which provider executed an action
+- to hide why policy chose ACT vs CLARIFY vs CONFIRM vs REFUSE
+- to hide what evidence produced the final response posture
+
+Defenses:
+- correlation_id propagation end-to-end
+- structured logs at each gate (intent → policy → plan → execute → evidence → truth → state)
+- provider attribution in execution traces
+- audit-friendly artifacts (sanitized, scope-bound, durable)
+- acceptance tests that enforce explainability expectations
+
+If future maintainers must guess, Ashby is already drifting.
+
+──────────────────────────────────────────────────────────────────────────────
+5) ASHBY REFUSES TO BECOME A SURVEILLANCE MACHINE
+──────────────────────────────────────────────────────────────────────────────
+
+Capability can easily turn into capture.
+Capture can easily turn into permanent retention.
+Permanent retention becomes harm.
+
+Ashby refuses:
+- always-on recording by default
+- silent capture of audio/video/sensitive telemetry
+- storing raw sensitive streams as “memory”
+- collecting more than is required to execute and verify
+
+Defenses:
+- explicit permission flows for capture
+- retention policies that are declared, enforced, and auditable
+- redaction modes that are explicit and reconstructable
+- strict separation between HouseState beliefs and large sensitive artifacts
+- secrets handling that prevents credentials from leaking into logs/artifacts
+
+Ashby can help without turning the environment into a data hoard.
+
+──────────────────────────────────────────────────────────────────────────────
+6) ASHBY REFUSES TO BECOME AN AUTOPILOT THAT BYPASSES HUMAN CONSENT
+──────────────────────────────────────────────────────────────────────────────
+
+Under “helpfulness pressure,” systems try to reduce friction by acting early.
+
+Ashby refuses:
+- acting on ambiguous targets without clarification
+- executing high-impact actions without confirmation when policy requires it
+- doing irreversible work “because it probably makes sense”
+- performing silent compensations that hide mistakes
+
+Defenses:
+- policy outcomes that are bounded (ACT/CLARIFY/CONFIRM/REFUSE/CHAT)
+- confirmation gates for irreversible actions (money, access, security, bulk changes)
+- strict target resolution rules under scopes and identity
+- idempotency discipline for mutation actions
+- explicit partial outcome reporting
+
+Ashby prioritizes safety and consent over speed.
+
+──────────────────────────────────────────────────────────────────────────────
+7) ASHBY REFUSES TO BECOME A SYSTEM OF PRIVATE REALITIES (AGENT FRAGMENTATION)
+──────────────────────────────────────────────────────────────────────────────
+
+Multi-agent systems commonly fail by allowing each agent to carry its own truth.
+
+Ashby refuses:
+- agent-specific truth systems
+- agent-specific belief stores that override HouseState
+- “shadow memory” that contradicts platform state
+- cross-agent secret sharing by default
+
+Defenses:
+- single Truth Gate invariant (truth classes are platform-wide)
+- single HouseState authority per scope
+- explicit artifact storage with permission checks
+- explicit bridges for cross-agent cooperation (rare, contract-bound)
+- uniform decay/staleness rules across all agents
+
+Agents may differ in workflow.
+They may not differ in reality.
+
+──────────────────────────────────────────────────────────────────────────────
+8) ASHBY REFUSES TO BECOME A PRODUCT FORK FACTORY
+──────────────────────────────────────────────────────────────────────────────
+
+Shipping creates market pressure:
+- “enterprise needs special behavior”
+- “pro tier should feel smoother”
+- “this customer wants exceptions”
+
+Ashby refuses:
+- tier-specific truth posture
+- tier-specific safety rules
+- product-specific changes inside core subsystems
+- hidden divergence that cannot be diagnosed from logs
+
+Defenses:
+- profiles over forks (declarative manifests)
+- feature flags as governed rollout tools, not hidden forks
+- entitlements as explicit gates, not behavioral rewrites
+- acceptance tests validating invariant parity across profiles
+
+Products may differ in what is available.
+They may not differ in what Ashby is.
+
+──────────────────────────────────────────────────────────────────────────────
+9) ASHBY REFUSES TO BECOME A SECRET-SPONGE (LEAKY BY DEFAULT)
+──────────────────────────────────────────────────────────────────────────────
+
+Credentials are power.
+Power cannot be treated casually.
+
+Ashby refuses:
+- storing secrets in config files
+- logging secrets “for debugging”
+- placing secrets in artifacts (exports, summaries, reports)
+- allowing providers/connectors to leak credentials in error surfaces
+
+Defenses:
+- secret store usage by handles
+- strict sanitization in logging and errors
+- least-privilege integration posture where possible
+- rotation/revocation support
+- security acceptance tests that fail on leakage patterns
+
+If secrets leak, Ashby cannot be preserved safely.
+
+──────────────────────────────────────────────────────────────────────────────
+10) ASHBY REFUSES TO BECOME A SYSTEM THAT “WORKS UNTIL IT DOESN’T”
+──────────────────────────────────────────────────────────────────────────────
+
+Many systems look stable until the first real outage.
+
+Ashby refuses:
+- brittle behavior that collapses under offline conditions
+- pretending things are current when evidence streams go silent
+- retry storms that turn unknown into chaos
+- silent failure that forces humans to discover problems late
+
+Defenses:
+- explicit staleness tracking and decay
+- offline-first preference with policy-governed cloud optionality
+- bounded retries and explicit failure classification
+- observability that makes outages visible
+- honest language posture under degraded conditions
+
+Resilience is not optional.
+It is the cost of truth.
+
+──────────────────────────────────────────────────────────────────────────────
+11) ASHBY REFUSES TO BECOME A SYSTEM THAT CAN’T MIGRATE
+──────────────────────────────────────────────────────────────────────────────
+
+Time guarantees change:
+- schemas evolve
+- vendors change
+- bridges are replaced
+- devices are renamed
+- coordinators and fabrics are reconfigured
+
+Ashby refuses:
+- unversioned persisted shapes
+- “just change it” edits that break continuity
+- identity replacement disguised as migration
+- migrations that cannot be audited
+
+Defenses:
+- explicit schema versioning
+- migration and structural realignment playbooks
+- identity preservation (device_key continuity)
+- acceptance tests that validate migration behavior
+- rollback paths where possible
+
+A platform that cannot migrate is not long-lived.
+A platform that is not long-lived cannot be resurrected.
+
+──────────────────────────────────────────────────────────────────────────────
+12) ASHBY REFUSES TO BECOME A SYSTEM THAT FORGETS ITS OWN LAW
+──────────────────────────────────────────────────────────────────────────────
+
+Under pressure, teams rewrite rules without noticing.
+
+Ashby refuses:
+- constitutional changes smuggled in as “implementation details”
+- panic edits that alter truth/state semantics
+- weakening invariants because they are inconvenient
+- drift that is undetectable until trust is gone
+
+Defenses:
+- Control Sync governance for foundational change
+- clear classification of changes (implementation vs migration vs productization vs constitutional)
+- the Codex as the authority, not the codebase
+- tests that enforce the law mechanically
+
+Ashby evolves by deliberate governance, not by accidental erosion.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby refuses to become:
+- a liar
+- a vendor-shaped assistant
+- a monolith
+- a black box
+- a surveillance machine
+- a consent-bypassing autopilot
+- a fragmented multi-agent system of private realities
+- a product fork factory
+- a leaky secret sponge
+- a brittle “works until outage” system
+- a platform that cannot migrate
+- a platform that forgets its own law
+
+These refusals are enforceable through:
+- boundaries, schemas, and contracts
+- Truth Gate and HouseState law
+- observability and security discipline
+- acceptance tests and harness
+- migration playbooks
+- governance by Control Sync
+
+If the refusals are broken, the name may remain,
+but Ashby will have become something else.
+
+END OF 36.2

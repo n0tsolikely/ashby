@@ -1,0 +1,226 @@
+ASHBY CODEX — 14.2
+LIGHTS-STYLE SESSIONS (EXAMPLE ARCHETYPE)
+
+A lights-style session is the archetypal session pattern for short, iterative control
+of a bounded target set.
+
+It exists to support natural follow-ups such as:
+- “make it brighter”
+- “dim it a little”
+- “turn it off”
+- “same thing in the kitchen”
+- “set it to 60”
+
+without requiring the user to restate targets every turn.
+
+A lights-style session is representative, not exhaustive.
+It is a pattern for any domain where:
+- actions are quick
+- targets are stable for a short window
+- users iterate in small adjustments
+- the desired outcome is expressed incrementally
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT THIS SESSION PRESERVES
+──────────────────────────────────────────────────────────────────────────────
+
+A lights-style session may preserve only continuity that is:
+- scoped
+- bounded
+- inspectable
+- safe
+
+Typical preserved continuity includes:
+
+- ACTIVE MODULE CONTEXT
+  The domain/module currently being operated (e.g., lights).
+
+- RESOLVED TARGET SET
+  The concrete internal device_keys the user last acted upon.
+
+- LAST INTENT SHAPE (OPTIONAL)
+  The last normalized verb shape (e.g., on/off/adjust/set), used to interpret
+  “again” or “same thing” safely.
+
+- LAST PARAMETERS (OPTIONAL)
+  The last applied canonical values (e.g., brightness 600, delta +120),
+  stored as interaction continuity, not as verified truth.
+
+- CLARIFICATION STATE (OPTIONAL)
+  Whether Ashby is awaiting an answer to a target disambiguation question.
+
+A lights-style session must not preserve:
+- vendor reality
+- hidden permissions
+- global device assumptions
+- unscoped target references
+
+A session is a continuity bridge, not a control loophole.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL SESSION SHAPE (REPRESENTATIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+The shape below is representative.
+Fields may vary by module, but the semantics are stable.
+
+{
+  "session_type": "lights",
+  "scope_id": "<scope_id>",
+  "active": true,
+
+  "target_set": {
+    "devices": ["<device_key>", "..."],
+    "zone_id": "<zone_id>" | null,
+    "role": "<role>" | null
+  },
+
+  "last_intent": {
+    "type": "lights.on" | "lights.off" | "lights.adjust" | "lights.set" | null,
+    "parameters": {
+      "brightness": <int 0..1000> | null,
+      "delta": <int -1000..1000> | null
+    },
+    "correlation_id": "<correlation_id>" | null
+  },
+
+  "awaiting_clarification": false,
+  "created_at": "<ISO8601>",
+  "updated_at": "<ISO8601>",
+  "expires_at": "<ISO8601>"
+}
+
+Notes:
+- The session stores continuity facts, not world-state truth.
+- The session may reference a correlation_id for traceability only.
+- The session never stores vendor IDs, addresses, or secrets.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSION CREATION (WHEN IT STARTS)
+──────────────────────────────────────────────────────────────────────────────
+
+A lights-style session is created when Ashby has safely resolved a lights target set.
+
+Typical creation triggers:
+- after a successful lights action attempt (even if not VERIFIED)
+- after a lights intent is interpreted and targets are resolved (before execution)
+- after a clarification is answered and target resolution becomes concrete
+
+Rules:
+- sessions must never be created with ambiguous targets
+- if target resolution is ambiguous, Ashby must clarify before session creation
+- session creation must not imply that any action occurred
+
+Session creation is allowed even when state is unknown.
+Continuity is not evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+FOLLOW-UP INTERPRETATION RULES
+──────────────────────────────────────────────────────────────────────────────
+
+A lights-style session exists to interpret follow-ups safely.
+
+Rule 1 — DOMAIN STICKINESS IS BOUNDED
+If a follow-up is incomplete (“make it brighter”),
+the session may supply the missing domain and target set.
+
+Rule 2 — NO CROSS-DOMAIN LEAK
+A lights session may not cause a non-lights action to occur implicitly.
+If input implies a different domain, the engine must treat it as new intent.
+
+Rule 3 — TARGETS ARE INHERITED, NOT INVENTED
+The session may re-use the last resolved target set.
+It must not expand targets beyond that set without explicit user targeting.
+
+Rule 4 — AMBIGUITY FORCES CLARIFICATION
+If the session target set is empty, expired, or invalid,
+the system must clarify rather than guess.
+
+Rule 5 — SCOPE IS NON-NEGOTIABLE
+The session’s scope_id binds all follow-up interpretation.
+If scope changes, the session cannot be applied.
+
+Sessions reduce clarification.
+Sessions do not eliminate clarification.
+
+──────────────────────────────────────────────────────────────────────────────
+TARGET SWITCHING WITHIN A SESSION
+──────────────────────────────────────────────────────────────────────────────
+
+Users often pivot targets while continuing the same domain.
+
+Examples (representative):
+- “do the same in the kitchen”
+- “now the bedroom”
+- “the other lamp”
+
+Rules:
+- target switching is a new target resolution event
+- the session may preserve domain context but must resolve targets explicitly
+- if multiple targets match, Ashby must clarify
+- once resolved, the session’s target_set is replaced with the new set
+
+A target switch must be visible in logs and traceable.
+Silent target expansion is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+“AGAIN” AND “SAME THING” HANDLING
+──────────────────────────────────────────────────────────────────────────────
+
+A lights-style session may support bounded repetition.
+
+Rules:
+- “again” repeats the last intent shape only if:
+  - scope matches
+  - target_set matches
+  - the repeated action is safe under policy
+- repetition produces a new ActionRequest and new correlation_id
+- repetition does not imply that the previous attempt succeeded
+
+If last intent is unavailable or ambiguous:
+- Ashby must clarify what “again” refers to
+
+Repetition is allowed only as a deterministic, auditable replay,
+not as improvisation.
+
+──────────────────────────────────────────────────────────────────────────────
+EXPIRY AND SAFE FAILURE
+──────────────────────────────────────────────────────────────────────────────
+
+Lights-style sessions are short-lived.
+
+Rules:
+- sessions must expire after a policy-defined window
+- expiry must disable target inheritance
+- when expired, Ashby must clarify rather than act on stale context
+
+If a session expires mid-flow:
+- Ashby may state that context is no longer active
+- and ask for the target again
+
+Expiry exists to prevent:
+- accidental actions hours later
+- scope bleed
+- hidden automation through stale context
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+A lights-style session must:
+- remain scope-bound
+- preserve a concrete, bounded target_set
+- interpret follow-ups without inventing targets
+- force clarification when ambiguity exists
+- never upgrade truth or confidence
+
+A lights-style session must never:
+- carry vendor IDs, secrets, or protocol details
+- expand targets silently
+- persist indefinitely
+- bypass scope resolution
+- bypass policy or Truth Gate constraints
+
+This archetype exists to make continuity safe.
+
+END OF 14.2

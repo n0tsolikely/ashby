@@ -1,0 +1,305 @@
+ASHBY CODEX — 8A.8
+connectors/
+
+connectors/ are Ashby’s non-smart-home integration layer.
+
+If bridges/ and native_vendor/ are about the physical world (devices, hubs, protocols),
+connectors/ are about external information systems:
+- email
+- chat
+- docs and storage
+- commerce
+- dev tools
+- and anything else that lives “on the internet” as a service
+
+connectors/ provide:
+- authenticated access to external systems
+- read and write operations (send email, create doc, fetch messages, etc.)
+- event ingestion (webhooks/streams) where relevant
+- normalized data models and evidence results
+
+connectors/ do NOT provide:
+- planning
+- policy
+- truth posture
+- or user-facing narrative
+
+connectors/ are tools.
+Tools do not decide what to do.
+They execute what the platform decides.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF connectors/
+──────────────────────────────────────────────────────────────────────────────
+
+connectors/ exists to make external systems usable by modules without contaminating the platform.
+
+It provides:
+
+A) AUTHENTICATED ACCESS
+- OAuth flows, API keys, service accounts (where applicable)
+- token refresh and revocation
+- least privilege handling
+- safe secret storage (handles, not raw secrets)
+
+B) NORMALIZED OPERATIONS
+- list, read, create, update, delete operations (as supported)
+- stable method signatures that modules/adapters can rely on
+- consistent error classification
+
+C) NORMALIZED DATA MODELS
+- translate external objects into canonical connector models
+  (emails, messages, files, orders, tickets, etc.)
+- preserve external IDs without letting them become Ashby’s identity authority
+
+D) EVENT INGESTION (OPTIONAL)
+- webhooks, streams, polling loops
+- evidence-shaped event records with timestamps and dedupe keys
+- fed into engine/eventing pipeline under the same law as everything else
+
+E) REUSABILITY
+A connector should be usable by multiple modules.
+Example: a Gmail connector can support both “Stuart meetings” workflows and general email workflows.
+
+connectors/ is the platform’s “hands” in external systems, not its “mind.”
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL connectors/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+connectors/
+├── email/
+│   ├── gmail.py
+│   ├── outlook.py
+│   └── (placeholder)_imap.py
+│
+├── chat/
+│   ├── discord.py
+│   ├── slack.py
+│   └── (placeholder)_teams.py
+│
+├── commerce/
+│   ├── shopify.py
+│   ├── square.py
+│   └── (placeholder)_stripe.py
+│
+├── docs_storage/
+│   ├── google_drive.py
+│   ├── dropbox.py
+│   └── (placeholder)_notion.py
+│
+├── devtools/
+│   ├── github.py
+│   ├── gitlab.py
+│   └── (placeholder)_jira.py
+│
+└── (placeholder)_category_X/
+    ├── provider_a.py
+    └── provider_b.py
+
+Notes:
+- Category directories are canonical at the top level (email/chat/commerce/docs_storage/devtools).
+- Additional categories may be added as Ashby grows, but they must obey the same connector laws.
+- Connectors may have multiple provider implementations under the same category.
+
+──────────────────────────────────────────────────────────────────────────────
+3) CONNECTOR INTERNAL STRUCTURE (WHAT A CONNECTOR FILE MUST CONTAIN)
+──────────────────────────────────────────────────────────────────────────────
+
+A connector implementation typically includes:
+
+A) CLIENT / TRANSPORT WRAPPER
+- HTTP client
+- pagination handling
+- retry and rate-limit discipline (bounded, observable)
+- correlation_id propagation when supported (or explicit local trace IDs)
+
+B) AUTH SUPPORT
+- OAuth handshake helpers
+- refresh token logic
+- token validation and expiry detection
+- explicit “needs reauth” surfaces (do not pretend)
+
+C) NORMALIZATION
+- convert external objects into canonical connector models
+- preserve raw payload references where necessary (but avoid dumping raw sensitive content)
+- map external error codes into canonical failure categories
+
+D) EXECUTION METHODS
+- methods must be deterministic and schema-stable
+- mutation methods must support idempotency where possible
+  (e.g., “send email” may support client-side idempotency keys or dedupe strategies)
+
+E) EVENT INGESTION (IF APPLICABLE)
+- webhook verification
+- event parsing
+- dedupe keys
+- bounded queues/backpressure handling
+
+The connector must remain a tool surface, not a mini-agent.
+
+──────────────────────────────────────────────────────────────────────────────
+4) WHAT CONNECTORS MUST NEVER DO (FORBIDDEN CONTENT)
+──────────────────────────────────────────────────────────────────────────────
+
+connectors/ must not contain:
+
+A) DOMAIN PLANNING OR INTENT LOGIC
+No “what should we do next?”
+No “interpret user phrasing.”
+No routine design.
+That’s modules/ + engine.
+
+B) POLICY OR SAFETY DECISIONS
+No “I think this is safe.”
+No “skip confirmation.”
+No “auto-send” because “it seems fine.”
+That’s engine/cognition/policy.
+
+C) TRUTH POSTURE
+Connectors return evidence-like results.
+Truth Gate decides what can be claimed.
+
+D) HOUSESTATE AUTHORITY
+Connectors do not write beliefs.
+They may provide data that becomes evidence inputs.
+HouseState updates happen through engine/state law.
+
+E) PRODUCT FORKS
+No tier-specific behavior changes.
+No customer hacks hidden inside connectors.
+
+F) SECRET LEAKAGE
+No raw tokens in logs.
+No raw private content dumped in logs.
+No “debug prints” that become permanent.
+
+If a connector starts doing any of this, it stops being a connector and becomes a threat.
+
+──────────────────────────────────────────────────────────────────────────────
+5) IDENTITY LAW IN CONNECTORS (EXTERNAL IDS ARE NOT ASHBY IDS)
+──────────────────────────────────────────────────────────────────────────────
+
+Every external system has its own identity scheme:
+- message IDs
+- file IDs
+- order IDs
+- ticket IDs
+- user IDs
+
+These must be preserved,
+but they must not become Ashby’s canonical identity authority.
+
+Connector identity rules:
+- external IDs are stored as external references
+- stable internal identity (device_key / asset_key / artifact_key) remains platform-owned
+- mapping is explicit and auditable
+- collisions and ambiguity are surfaced, not overwritten silently
+
+Example:
+A “Drive file ID” remains a Drive file ID.
+Ashby may assign its own artifact_key and map to the external ID.
+Neither replaces the other.
+
+──────────────────────────────────────────────────────────────────────────────
+6) CONNECTORS AND MODULES (HOW THEY WORK TOGETHER)
+──────────────────────────────────────────────────────────────────────────────
+
+Correct relationship:
+- modules decide WHAT should happen (plan)
+- engine decides whether the plan is allowed (policy outcome)
+- connectors execute the requested operation as a tool
+- connectors return results as evidence-shaped outputs
+- Truth Gate constrains the response language
+- HouseState stores beliefs about outcomes where appropriate
+
+Connectors must never be called “directly by vibes.”
+They are not autonomous.
+They are invoked through the engine’s execution path.
+
+If a module wants something from a connector:
+- it plans an ActionRequest
+- the engine/tool runtime calls the connector
+- ActionResult returns
+
+This preserves a single accountable execution chain.
+
+──────────────────────────────────────────────────────────────────────────────
+7) SECURITY AND PRIVACY IN CONNECTORS
+──────────────────────────────────────────────────────────────────────────────
+
+connectors/ are where private data lives:
+- emails
+- messages
+- documents
+- receipts
+- customer info
+
+Therefore connectors must enforce:
+
+A) LEAST PRIVILEGE
+- request minimal scopes/permissions
+- avoid broad “read everything” grants where possible
+
+B) SANITIZED LOGGING
+- redact token material
+- avoid logging full message bodies
+- log metadata and references instead (ids, timestamps) unless explicitly authorized
+
+C) EXPLICIT RETENTION BOUNDARIES
+- raw sensitive payloads should be stored only when required
+- storage should be policy-governed (retention, redaction, access control)
+- connectors should prefer returning references/handles over storing full copies
+
+D) SAFE WEBHOOK HANDLING
+- verify signatures
+- reject replay attacks when possible
+- bound event processing queues
+- avoid accepting arbitrary payloads as trusted truth
+
+connectors are powerful because they touch real human data.
+Carelessness here breaks trust permanently.
+
+──────────────────────────────────────────────────────────────────────────────
+8) REQUIRED TEST SURFACES FOR connectors/
+──────────────────────────────────────────────────────────────────────────────
+
+connectors/ must be protected by tests:
+
+- auth tests (expiry/refresh/reauth states, sanitized logging)
+- schema stability tests (normalized models remain compatible)
+- error mapping tests (consistent failure categories)
+- idempotency/dedupe tests for mutation operations
+- rate limiting and retry tests (bounded, no retry storms)
+- event ingestion tests (webhook verification, dedupe, ordering)
+- privacy leakage tests (no sensitive dumps in logs/artifacts)
+
+A connector without tests will eventually leak or drift.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+connectors/ must:
+- provide external system access as tools (execution surfaces)
+- keep WHAT/HOW separation intact (no planning, no policy)
+- normalize data and operations into schema-stable contracts
+- return evidence-shaped results (ActionResults or equivalent)
+- preserve external IDs as external references (not canonical identity)
+- sanitize secrets and sensitive content in logs and artifacts
+- support events/webhooks safely when applicable
+- remain reusable across modules without coupling
+
+connectors/ must never:
+- become mini-agents with autonomous intent
+- bypass policy or confirmation requirements
+- decide truth posture or claim verification without evidence
+- write HouseState beliefs directly
+- embed product forks or hidden customer hacks
+- leak secrets or private payloads via logging
+
+connectors/ are Ashby’s hands in external systems.
+Hands do not decide.
+Hands execute under law.
+
+END OF 8A.8

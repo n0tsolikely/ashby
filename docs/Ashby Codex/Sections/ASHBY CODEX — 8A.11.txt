@@ -1,0 +1,286 @@
+ASHBY CODEX — 8A.11
+io/
+
+io/ is the interface layer.
+
+It is where Ashby receives input from humans (and sometimes systems)
+and returns responses.
+
+io/ must never contain business logic.
+
+If io/ starts “helping” by deciding what the user meant,
+it will bypass the engine’s conservatism.
+If io/ starts executing actions directly,
+it will bypass policy and evidence capture.
+If io/ starts storing state as truth,
+it will bypass HouseState and Truth Gate.
+
+io/ is a set of ports.
+The engine is the brain.
+Modules are organs.
+Adapters move the world.
+
+Ports must remain dumb and safe.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF io/
+──────────────────────────────────────────────────────────────────────────────
+
+io/ exists to provide:
+
+A) INPUT INGESTION
+- capture user text/voice commands from specific interfaces (Telegram, web, voice, CLI)
+- associate them with:
+  - user identity (who)
+  - scope hints (where)
+  - interface metadata (how)
+- forward them into engine/ as raw input + metadata
+
+B) OUTPUT DELIVERY
+- deliver responses from engine/ back to the interface
+- handle formatting constraints specific to the channel
+- preserve correlation_id for debugging
+
+C) SESSION AND DEVICE CONTEXT SOURCES (AS HINTS ONLY)
+io/ may provide:
+- device location hints
+- channel-specific thread IDs
+- voice device IDs
+These are hints.
+The engine must still validate scope and authority.
+
+io/ is the transport layer for conversations, not the decision layer.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL io/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+io/
+├── telegram/
+│   ├── bot.py
+│   └── handlers/
+│
+├── voice/
+│   ├── listener.py                         # capture audio → transcription
+│   └── tts.py                              # text → speech output
+│
+└── web/
+    └── app.py                              # local web UI / dashboard / control
+
+Optional extensions (common in real deployments) may include:
+- cli/
+- discord/
+- sms/
+- email_ingest/
+But the canonical principle remains: one folder per interface.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE IO CONTRACT (WHAT IO IS ALLOWED TO DO)
+──────────────────────────────────────────────────────────────────────────────
+
+io/ is allowed to:
+
+A) AUTHENTICATE / IDENTIFY USERS (CHANNEL-LEVEL)
+- map Telegram user IDs to Ashby user identities
+- map web sessions to user identities
+- map local voice devices to “who is speaking” policy (if configured)
+
+B) CAPTURE INPUT AND METADATA
+- raw text
+- raw audio (voice listener)
+- channel metadata:
+  - chat_id/thread_id
+  - timestamps
+  - message IDs
+  - origin device
+  - optional location/scope hints
+
+C) SANITIZE AND NORMALIZE TRANSPORT-FORMAT (NOT MEANING)
+- strip markup
+- normalize encodings
+- enforce input size limits
+- reject obviously malformed payloads
+This is transport normalization, not intent interpretation.
+
+D) ENFORCE BASIC RATE LIMITS AND SPAM FILTERS
+- to protect the platform from abuse and overload
+But not to change meaning.
+
+E) RELAY OUTPUT
+- deliver engine outputs
+- handle formatting limitations
+- handle attachments as instructed by engine (images/audio), using storage/ references
+
+io/ is a pipe with a safety filter.
+Not a planner.
+
+──────────────────────────────────────────────────────────────────────────────
+4) WHAT io/ MUST NEVER DO (FORBIDDEN)
+──────────────────────────────────────────────────────────────────────────────
+
+io/ must never:
+
+- decide intents (“I think they meant…”)
+- resolve ambiguous targets (“probably kitchen”)
+- bypass policy outcomes (ACT/CLARIFY/CONFIRM/REFUSE/CHAT)
+- execute actions directly (no calling adapters/ or vendors)
+- claim verification (“done”) without engine evidence
+- write HouseState beliefs
+- store secrets in plaintext or log sensitive payloads
+
+io/ must not become a mini-assistant.
+That would fracture the platform and destroy auditability.
+
+All meaning must pass through the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+5) IDENTITY AND AUTHORITY BINDING (THE SAFE PATTERN)
+──────────────────────────────────────────────────────────────────────────────
+
+io/ participates in identity only at the edge:
+
+A) CHANNEL IDENTITY ≠ PLATFORM IDENTITY
+- Telegram user_id is not a role
+- web cookie is not authority
+- voice device presence is not permission
+
+io/ maps channel identities into platform identities through identity/ services.
+The engine enforces scope-bound permissions.
+
+B) MULTI-USER SAFETY
+If identity is ambiguous (e.g., shared voice device):
+- io/ may label input as “unknown speaker”
+- engine must choose conservative policy outcomes (CLARIFY/CONFIRM)
+- high-impact actions must require explicit confirmation
+
+C) AUDIT TRAIL
+io/ must attach:
+- user identity mapping references
+- interface origin metadata
+so that later audits can answer:
+“who asked for this and from where?”
+
+io/ helps the platform attribute input.
+It does not grant authority.
+
+──────────────────────────────────────────────────────────────────────────────
+6) SCOPE HINTS (IO MAY SUGGEST, ENGINE MUST DECIDE)
+──────────────────────────────────────────────────────────────────────────────
+
+io/ can provide scope hints because interfaces often have locality:
+- a wall tablet belongs to a room
+- a voice mic belongs to a room
+- a web UI might be tied to a device with known scope
+
+But:
+- io/ must treat these as hints
+- engine/scopes must validate them
+- if hints conflict with permissions or ambiguity, engine must CLARIFY
+
+No interface is allowed to silently define “in here” as a target.
+That would be the fastest way to unsafe execution.
+
+──────────────────────────────────────────────────────────────────────────────
+7) VOICE IO (SPECIAL RULES)
+──────────────────────────────────────────────────────────────────────────────
+
+Voice is high-risk because:
+- transcription can be wrong
+- speaker identity can be unclear
+- ambient sound can trigger false positives
+
+Voice IO must:
+- provide the raw transcript plus confidence metadata (as metadata only)
+- provide wake-word / activation metadata if applicable
+- enforce safe defaults:
+  - if transcript confidence is low → engine should CLARIFY
+  - if speaker is unknown → engine should CONFIRM for high-impact actions
+- never “auto-fix” a transcript into an intent
+
+Voice IO must not claim:
+“you said X” as certainty if the transcript is uncertain.
+
+The system must preserve uncertainty honestly.
+
+──────────────────────────────────────────────────────────────────────────────
+8) OUTPUT DELIVERY (CHANNEL-SPECIFIC FORMATTING WITHOUT MEANING CHANGES)
+──────────────────────────────────────────────────────────────────────────────
+
+Different channels have different capabilities:
+- Telegram supports markdown, buttons
+- web supports rich UI
+- voice supports speech
+
+io/ may adapt formatting, but must not:
+- change the truth posture
+- remove uncertainty qualifiers
+- imply verification that the engine did not claim
+
+Examples:
+If engine says: “UNKNOWN whether the door is locked,”
+io must not rephrase to: “It’s locked.”
+
+Formatting is not meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+9) OBSERVABILITY AND ERROR HANDLING
+──────────────────────────────────────────────────────────────────────────────
+
+io/ is the first place errors appear to users.
+
+Rules:
+- propagate correlation_id end-to-end
+- log transport failures with sanitization
+- do not leak secrets in error messages
+- do not invent causes
+
+If Telegram API fails, io can say:
+“I couldn’t reach Telegram right now.”
+It must not say:
+“I turned on the lights” (no relation).
+
+Errors must remain honest and attributable.
+
+──────────────────────────────────────────────────────────────────────────────
+10) REQUIRED TEST SURFACES FOR io/
+──────────────────────────────────────────────────────────────────────────────
+
+io/ must be protected by tests to prevent “edge logic creep.”
+
+Minimum test categories:
+
+- channel auth mapping tests (identity mapping correctness)
+- input size/rate limit tests
+- sanitization tests (no secrets in logs)
+- correlation_id propagation tests
+- “no execution” tests (io cannot call adapters/vendors)
+- “no intent reasoning” tests (io does not interpret meaning)
+- formatting invariance tests (truth posture preserved across channels)
+- voice confidence handling tests (low confidence → clarify)
+- error honesty tests (no unrelated claims)
+
+If io/ is not test-protected, it will become a second brain by accident.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+io/ must:
+- ingest input and attach identity + metadata
+- forward meaning decisions to engine/
+- preserve scope hints as hints (engine validates)
+- deliver outputs without changing truth posture
+- keep auditability (correlation_id, origin metadata)
+- sanitize logs and avoid secrets leakage
+
+io/ must never:
+- interpret intent or resolve ambiguity
+- execute actions or bypass policy
+- claim verification or certainty without evidence
+- write HouseState beliefs
+- become a hidden fork of the assistant
+
+io/ is the port.
+The engine is the law.
+
+END OF 8A.11

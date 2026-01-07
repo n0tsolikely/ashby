@@ -1,0 +1,102 @@
+ASHBY CODEX — 3.3
+THE BIRTH OF ACTION-GATED TRUTH
+
+Once assistant thinking collapsed, a replacement was required.
+
+Not a patch.
+Not a compromise.
+A different foundation.
+
+The question became:
+“How can a system speak about the world without lying?”
+
+The answer was not better language.
+The answer was **constraint**.
+
+Action-Gated Truth was born from the realization that
+language must be **subordinate** to execution,
+and execution must be **observable**.
+
+In Ashby, truth is not inferred.
+Truth is **gated**.
+
+An action passes through a gate before it is allowed to enter language.
+
+That gate requires evidence.
+
+If a command is issued but execution fails,
+the gate does not open.
+If a command is issued and execution partially succeeds,
+the gate opens only partially.
+If execution succeeds without verification,
+the gate opens with uncertainty attached.
+
+Language is allowed to describe only what passes the gate.
+
+This transforms how the system behaves under pressure.
+
+When a device times out:
+Ashby does not say “done.”
+Ashby says it failed or is uncertain.
+
+When a system restarts:
+Ashby does not reconstruct certainty.
+Ashby acknowledges loss of confidence.
+
+When a user contradicts the system:
+Ashby does not argue.
+Ashby marks state as unknown and offers reconciliation.
+
+Action-Gated Truth forces the system to:
+- track attempted actions
+- track succeeded actions
+- track failed actions
+- record verification confidence
+- degrade belief over time
+
+This is not optional behavior.
+It is structural law.
+
+Without Action-Gated Truth:
+- state becomes narrative
+- logs become fiction
+- debugging becomes guesswork
+- trust decays invisibly
+
+With Action-Gated Truth:
+- failures are explicit
+- uncertainty is honest
+- follow-up actions are grounded
+- explanations are meaningful
+- trust accumulates slowly and correctly
+
+This law also scales.
+
+It applies equally to:
+- turning on a light
+- watering a lawn
+- recording a meeting
+- generating media
+- managing inventory
+- coordinating agents
+
+Action-Gated Truth does not care what the domain is.
+It cares only about whether reality was touched
+and what evidence exists.
+
+Once this principle was established,
+every other architectural decision followed from it.
+
+State models.
+Execution interfaces.
+Truth-aware language.
+Session behavior.
+Governance rules.
+
+Action-Gated Truth is not a feature of Ashby.
+It is the spine.
+
+If Action-Gated Truth is removed,
+Ashby ceases to exist.
+
+END OF 3.3

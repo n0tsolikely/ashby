@@ -1,0 +1,291 @@
+ASHBY CODEX — 31.1
+Bridge-First Strategy
+
+Bridges exist to ship.
+
+Native ownership exists to endure.
+
+Bridge-first strategy is the disciplined path that allows Ashby to:
+- deliver capability quickly
+- remain modular and truth-bound
+- avoid permanent dependency on third-party integration engines
+- migrate toward native vendor integrations over time without collapse
+
+Bridge-first is not a shortcut.
+It is a deliberately temporary posture with a defined exit.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITIONS (BRIDGE, NATIVE, ADAPTER)
+──────────────────────────────────────────────────────────────────────────────
+
+BRIDGE
+A temporary integration engine that already supports many vendors or protocols,
+used as an early capability source.
+
+Examples are illustrative:
+- Home Assistant
+- protocol aggregators
+- ecosystem hubs
+- intermediary cloud platforms
+
+Bridges live in bridges/.
+They are explicitly expected to shrink over time.
+
+NATIVE VENDOR INTEGRATION
+An Ashby-owned implementation of a vendor/provider interface, stored in native_vendor/.
+Native ownership is the long-term path.
+
+ADAPTER
+A capability-layer executor selected by the router.
+Adapters do not define reality or reason.
+They translate ActionRequests into execution attempts and return ActionResults.
+
+Canonical relationship:
+- modules define WHAT
+- adapters execute HOW
+- bridges and native_vendor are HOW sources behind providers
+- the engine remains vendor-agnostic and bridge-agnostic
+
+A bridge must never become “part of the engine.”
+A native integration must never force vendor logic into the module.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHY BRIDGE-FIRST IS REQUIRED (EARLY REALITY)
+──────────────────────────────────────────────────────────────────────────────
+
+Early-stage systems fail when they attempt native ownership too soon.
+
+Reasons:
+- vendor ecosystems are large and inconsistent
+- protocol details are sharp and time-consuming
+- hardware diversity creates endless edge cases
+- shipping requires breadth before depth
+
+Bridge-first allows:
+- broad device coverage quickly
+- rapid iteration on domain modeling and policy
+- early field learning without locking architecture into vendor assumptions
+
+However, bridge-first is safe only under strict constraints.
+Without those constraints, the bridge becomes the platform.
+
+Ashby must never become a front-end to a bridge.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE BRIDGE-FIRST INVARIANTS (NON-NEGOTIABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+A) OPTIONALITY
+A bridge must be optional.
+Disabling the bridge must not break:
+- the engine
+- the Truth Gate
+- HouseState
+- unrelated modules
+
+It may reduce available capabilities.
+It must not collapse the platform.
+
+B) ISOLATION
+Bridge code must remain isolated in bridges/.
+No engine code may import bridge internals.
+No module code may import bridge internals.
+
+If a module references a bridge, architecture has failed.
+
+C) VENDOR-AGNOSTIC SURFACES
+The presence of a bridge must not leak vendor identity into:
+- engine policy logic
+- module meaning logic
+- canonical Intent shapes
+- capability labels
+
+Vendors are replaceable.
+Capabilities are stable.
+
+D) EVIDENCE, NOT TRUTH
+Bridge outputs are evidence only.
+They must be converted into platform truth by Truth Gate.
+
+A bridge is not allowed to define:
+- what exists
+- what happened
+- what is verified
+
+E) STABLE DEVICE IDENTITY
+Ashby must own device identity (device_keys) independent of bridge entity ids.
+
+When the bridge changes, Ashby’s identity must remain stable.
+
+F) EXIT PATH IS REQUIRED
+Every bridge integration must have:
+- a defined native replacement path
+- a migration plan for identities and state
+- a “strangler” strategy (replace piece by piece)
+
+Bridge-first without an exit is permanent delegation.
+Ashby refuses permanent delegation.
+
+──────────────────────────────────────────────────────────────────────────────
+4) THE ROLE OF BRIDGES IN THE ARCHITECTURE SHAPE
+──────────────────────────────────────────────────────────────────────────────
+
+Bridges sit below the domain model, below the engine, and below modules.
+
+They are execution sources behind provider interfaces.
+
+Canonical layering:
+- domain/ defines what exists (entities, capabilities, scopes)
+- engine/ interprets intent and plans actions
+- modules/ implement domain features (WHAT)
+- interfaces/ define capability contracts
+- adapters/ implement those contracts
+- bridges/ may act as one provider behind adapters
+- native_vendor/ may act as another provider behind adapters
+
+The key point:
+modules call interfaces, not bridges.
+adapters call providers, not modules.
+
+Bridge presence should be invisible to module logic.
+
+──────────────────────────────────────────────────────────────────────────────
+5) STRANGLER THINKING (HOW BRIDGES ARE REPLACED SAFELY)
+──────────────────────────────────────────────────────────────────────────────
+
+Bridge-first is implemented as a strangler strategy.
+
+Meaning:
+- the bridge is used initially as the broad integration surface
+- over time, native_vendor implementations replace the bridge per capability or vendor
+- the bridge footprint shrinks until it can be removed
+
+Replacement occurs along stable seams.
+
+Stable seams include:
+- provider interfaces
+- capability-based adapter routing
+- stable device_keys
+- scope-bound registry ownership
+- standardized ActionResult evidence
+
+A) REPLACEABILITY REQUIREMENT
+For any capability, the router must be able to select:
+- a bridge-backed adapter
+OR
+- a native-backed adapter
+without changing module code.
+
+B) INCREMENTAL MIGRATION
+Migration must occur incrementally:
+- choose one vendor or capability
+- implement native provider
+- route a small set of targets to native
+- verify parity via acceptance tests and field observation
+- expand coverage
+
+C) IDENTITY CONTINUITY
+During migration:
+- device_keys remain stable
+- the mapping from device_key → provider identity changes
+- HouseState beliefs remain attached to device_keys
+- Truth Gate semantics remain unchanged
+
+The bridge may change.
+Ashby identity must not.
+
+──────────────────────────────────────────────────────────────────────────────
+6) THE MOST COMMON FAILURE: “BRIDGE DEFINES REALITY”
+──────────────────────────────────────────────────────────────────────────────
+
+The bridge-defines-reality failure mode is structural.
+
+It occurs when:
+- the bridge’s entity model becomes Ashby’s domain model
+- the bridge’s room/group naming becomes Ashby’s scope model
+- the bridge’s last-known state is treated as verified truth
+- module logic starts keying off bridge-specific fields
+
+Consequences:
+- replacing the bridge becomes impossible
+- truth semantics degrade (“the bridge said it’s on”)
+- state becomes non-portable
+- the platform becomes a disguised integration wrapper
+
+Canonical prevention:
+- domain model remains bridge-agnostic
+- scopes remain Ashby-owned
+- bridge readbacks are evidence with verification posture
+- module logic remains capability- and scope-based
+
+Bridges accelerate execution.
+They do not own meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+7) OPERATIONAL RULES (WHAT MUST BE OBSERVABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+Bridge-first requires observability.
+
+Every bridge-backed execution must:
+- carry correlation_id
+- log bridge invocation boundaries
+- preserve sanitized vendor errors as evidence, not as truth
+- expose health signals for routing preference (when multiple providers exist)
+
+When a bridge becomes unreliable:
+- routing may prefer native providers where available
+- but this must be auditable and policy-governed
+- fallback must preserve truth posture (no false “done”)
+
+The platform must be able to answer:
+- “Which provider executed this?”
+- “What evidence did we receive?”
+- “Was it verified or last-known?”
+- “What failed and where?”
+
+Without that, migration is guesswork.
+
+──────────────────────────────────────────────────────────────────────────────
+8) SECURITY POSTURE (BRIDGES ARE POWERFUL)
+──────────────────────────────────────────────────────────────────────────────
+
+Bridges often centralize credentials and device authority.
+This makes them dangerous if treated casually.
+
+Rules:
+- bridge credentials are secrets handled by platform secret law
+- bridge logs must never leak credentials or raw payloads
+- bridge access must be least-privilege where possible
+- bridge API access must be scoped and auditable
+
+Bridge-first never permits “just connect everything and hope.”
+
+Security is part of correctness.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Bridge-first strategy must:
+- treat bridges as optional, replaceable, isolated integration engines
+- keep bridges out of engine and module dependencies
+- preserve vendor-neutral capabilities and interfaces
+- treat bridge outputs as evidence, never as truth
+- maintain stable device_keys independent of bridge ids
+- include a defined exit path toward native_vendor ownership
+- support incremental strangler migration with acceptance-test parity
+- remain auditable and secure
+
+Bridge-first strategy must never:
+- allow the bridge to become the platform
+- allow module logic to depend on bridge internals
+- allow scope/domain identity to be defined by bridge naming
+- treat bridge readbacks as verified truth by default
+- erase migration feasibility through hidden coupling
+
+Bridges exist to ship.
+Native ownership exists to endure.
+Ashby exists to outlast both.
+
+END OF 31.1

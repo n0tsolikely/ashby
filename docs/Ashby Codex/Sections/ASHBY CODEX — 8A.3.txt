@@ -1,0 +1,294 @@
+ASHBY CODEX — 8A.3
+domain/
+
+domain/ is the contract of reality.
+
+It defines what exists in Ashby’s world in a form that is:
+- stable across time
+- stable across integrations
+- stable across products
+- portable across deployments
+- legible to builders who have never seen the codebase
+
+If engine/ is the body, domain/ is the skeleton.
+
+This directory is not where “features” live.
+This directory is where Ashby’s vocabulary lives.
+
+If the vocabulary drifts, everything drifts.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF domain/
+──────────────────────────────────────────────────────────────────────────────
+
+domain/ exists to answer one question:
+
+“What are the things Ashby can talk about and act upon?”
+
+It is the place where Ashby defines:
+- what an Entity is (internal identity + metadata)
+- what a Device is (physical or logical host of entities)
+- what a Capability is (what can be done)
+- what a State is (observable condition or output)
+- what a Job is (background/async work, durable or scheduled)
+
+domain/ is required so that:
+- modules can reason without depending on vendor shapes
+- adapters can execute without inventing internal meaning
+- scopes can organize reality without inventing object definitions
+- Truth Gate enforcement has unambiguous types to verify against
+
+domain/ makes Ashby rebuildable because it is the minimal “ontology” a rebuild requires.
+
+──────────────────────────────────────────────────────────────────────────────
+2) ABSOLUTE BOUNDARY LAW
+──────────────────────────────────────────────────────────────────────────────
+
+domain/ is the “Abstract Reality” layer.
+
+It describes what exists without caring how it is controlled.
+
+That means:
+
+domain/ may describe:
+- the existence of a light entity
+- the notion of brightness state
+- the idea that a capability called “lights” exists
+- the mapping from a vendor entity id to an internal id (as data)
+
+domain/ must never describe:
+- how to call a vendor API
+- how to authenticate
+- how to speak HTTP
+- how to use an SDK
+- how to perform an action
+
+domain/ is not allowed to do IO.
+
+If a file in domain/ performs network calls, reads secrets, or “reaches out” to the world,
+the architecture is violated.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHAT BELONGS IN domain/
+──────────────────────────────────────────────────────────────────────────────
+
+domain/ contains three kinds of objects:
+
+A) Models
+The canonical datatypes the rest of Ashby shares.
+
+B) Registries
+The authoritative mapping layer between:
+- internal identity
+- external identity
+- metadata needed for resolution and verification
+
+C) Resolution
+Deterministic resolution algorithms that convert ambiguous references into canonical targets.
+
+Resolution is allowed here only if it remains:
+- deterministic
+- vendor-agnostic
+- IO-free
+- truth-neutral (it proposes candidates; it does not “declare reality”)
+
+If resolution needs policy, it returns options.
+It does not enforce policy.
+
+──────────────────────────────────────────────────────────────────────────────
+4) WHAT IS FORBIDDEN IN domain/
+──────────────────────────────────────────────────────────────────────────────
+
+Forbidden in domain/ includes (non-exhaustive):
+- HTTP clients
+- OAuth clients
+- SDK imports for vendors
+- any “bridge” or “native vendor” code
+- secrets handling
+- filesystem persistence as the source of truth
+- user-facing language construction
+- any attempt to “interpret intent”
+- any attempt to “plan execution”
+
+domain/ is allowed to be strict.
+domain/ is not allowed to be clever.
+
+──────────────────────────────────────────────────────────────────────────────
+5) CANONICAL SUBTREE (MINIMUM EXPECTED SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+The canonical minimum layout for domain/ is:
+
+domain/
+├── models/
+│   ├── scope.py
+│   ├── entity.py
+│   ├── device.py
+│   ├── capability.py
+│   ├── state.py
+│   └── job.py
+│
+├── registry/
+│   ├── entity_registry.py
+│   ├── external_id_map.py
+│   └── asset_registry.py
+│
+└── resolution/
+    ├── target_resolver.py
+    ├── adapter_resolver.py
+    └── capability_matcher.py
+
+This subtree is not “everything domain will ever contain.”
+It is the minimum skeleton that prevents drift.
+
+──────────────────────────────────────────────────────────────────────────────
+6) SUBFOLDER LAW
+──────────────────────────────────────────────────────────────────────────────
+
+6.1 models/
+
+models/ defines the canonical types.
+
+Rules:
+- types must be serializable
+- fields must be explicit (no hidden magic)
+- default values must be safe
+- validation must exist where ambiguity would corrupt truth enforcement
+
+models/ must be stable.
+Changing a model is a platform event.
+
+If a model field changes, every downstream layer changes:
+- HouseState persistence
+- adapter verification output
+- module planning assumptions
+- migrations
+
+Model changes are Control Sync territory.
+
+6.2 registry/
+
+registry/ is where Ashby remembers what reality contains.
+
+It is the authoritative mapping for:
+- internal IDs (“Ashby IDs”)
+- external IDs (HA entity_id, vendor ids, connector ids)
+- metadata needed for safe resolution and safe execution
+
+registry/ is allowed to store identifiers and metadata.
+registry/ is not allowed to store credentials.
+registry/ is not allowed to store secrets.
+
+The external id map is allowed to mention external systems by name as data,
+but it must not import their code.
+
+Example of allowed registry truth:
+- internal_entity_id: “entity_83…”
+- external_system: “home_assistant”
+- external_id: “light.kitchen_counter”
+
+Example of forbidden registry behavior:
+- making an API call to fetch current state
+- deciding that an external state is “true”
+- deciding that an action succeeded
+
+6.3 resolution/
+
+resolution/ exists because humans speak in ambiguity.
+
+“Upstairs lights” is not an ID.
+“Kitchen” is not an entity.
+“Turn it down” is not a target.
+
+Resolution converts:
+- vague references
+- scope-relative references
+- grouped references
+into canonical internal targets and candidate capability pathways.
+
+Rules:
+- resolution must be deterministic for the same inputs
+- resolution must attribute uncertainty (multiple candidates allowed)
+- resolution must never fabricate entities
+- resolution must never claim that a target exists without registry evidence
+- resolution must never call adapters or vendors
+
+resolution is allowed to output:
+- a list of candidate targets (internal IDs)
+- an ambiguity object describing what is missing
+- a suggested adapter pathway (bridge vs native) as a recommendation, not an action
+
+resolution is not allowed to output:
+- a completed ActionResult
+- a VERIFIED claim
+- a response sentence
+
+──────────────────────────────────────────────────────────────────────────────
+7) DEPENDENCY DIRECTION (THE SAFE GRAPH)
+──────────────────────────────────────────────────────────────────────────────
+
+domain/ should be near the bottom of the dependency graph.
+
+Preferred direction:
+- engine/ depends on domain/
+- scopes/ depends on domain/
+- modules/ depend on domain/
+- adapters/ depend on domain/
+
+Forbidden direction:
+- domain/ depends on modules/
+- domain/ depends on adapters/
+- domain/ depends on bridges/ or native_vendor/
+- domain/ depends on connectors/
+- domain/ depends on packaging/
+
+If a dependency cycle forms around domain/,
+the platform becomes untestable and unrebuildable.
+
+──────────────────────────────────────────────────────────────────────────────
+8) FAILURE MODES (WHAT RUINS domain/)
+──────────────────────────────────────────────────────────────────────────────
+
+A) Vendor leakage
+When domain models start matching a vendor’s shape instead of Ashby’s reality.
+
+Symptom:
+- a model field exists “because Home Assistant uses it”
+- a field name matches vendor naming instead of internal semantics
+
+B) IO creep
+When domain code performs network calls “just for convenience.”
+
+This destroys determinism and destroys testability.
+
+C) Truth inflation
+When domain starts “declaring reality” instead of describing what is known.
+
+Truth belongs to:
+- ActionResult verification
+- HouseState confidence and decay
+- Truth Gate enforcement
+
+D) Model churn
+When core types change weekly.
+
+If types churn, rebuilding Ashby becomes archaeology.
+
+──────────────────────────────────────────────────────────────────────────────
+9) MINIMUM ACCEPTANCE CHECKLIST
+──────────────────────────────────────────────────────────────────────────────
+
+A builder should be able to validate domain/ with these checks:
+
+- No network imports in domain/
+- No secrets imports in domain/
+- Deterministic resolution tests (same input → same output)
+- Registry contains only identifiers + metadata (no credentials)
+- Models are explicit, serializable, and validated
+- No references to specific adapters or vendor implementations (only abstract names/data)
+- No user-facing language construction
+
+If these pass, domain/ is doing its job:
+it defines reality without executing it.
+
+END OF 8A.3

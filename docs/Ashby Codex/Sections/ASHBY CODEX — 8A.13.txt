@@ -1,0 +1,259 @@
+ASHBY CODEX — 8A.13
+packaging/
+
+packaging/ is how Ashby becomes a deliverable platform.
+
+A system that only exists as “source code in a repo” is not resurrectable by strangers.
+A platform must be packageable, installable, updatable, and verifiable.
+
+packaging/ defines:
+- build shapes
+- distribution artifacts
+- environment separation (dev/staging/prod)
+- versioning discipline
+- dependencies pinning
+- reproducibility guarantees
+
+If packaging is sloppy:
+- environments drift
+- upgrades break silently
+- security posture decays
+- and resurrection becomes impossible because nobody can recreate the same system.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF packaging/
+──────────────────────────────────────────────────────────────────────────────
+
+packaging/ exists to guarantee:
+
+A) REPRODUCIBLE BUILDS
+The same inputs produce the same outputs.
+
+B) CONSISTENT RUNTIME SHAPES
+Ashby can run as:
+- local daemon
+- appliance image
+- container
+- hybrid (local core + optional cloud services)
+
+C) VERSIONED DELIVERY
+Every build has:
+- version
+- commit hash
+- dependency manifest
+- migration compatibility metadata
+
+D) SAFE UPDATES
+Updates can be rolled out, rolled back, and audited.
+
+packaging/ is the bridge between the platform and reality.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL packaging/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+packaging/
+├── build.py                                 # build orchestration
+├── versioning.py                            # version rules
+├── environments/                            # dev/stage/prod manifests
+│   ├── dev.env
+│   ├── stage.env
+│   └── prod.env
+│
+├── dependencies/
+│   ├── requirements.lock                    # pinned dependencies
+│   ├── hashes.txt                           # integrity (optional)
+│   └── licenses/                            # compliance
+│
+├── images/                                  # deployable artifacts
+│   ├── docker/
+│   │   ├── Dockerfile
+│   │   └── compose.yml
+│   └── appliance/
+│       ├── image_builder.py
+│       └── filesystem_layout.json
+│
+└── release/
+    ├── manifest.json                        # release metadata (version, migrations, notes)
+    ├── sign.py                              # artifact signing (optional but preferred)
+    └── publish.py                           # release publishing (local or remote)
+
+This is the canonical template.
+Specific tooling can vary, but these responsibilities must exist.
+
+──────────────────────────────────────────────────────────────────────────────
+3) VERSIONING LAW (WHAT A VERSION MEANS)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby must use meaningful versioning.
+
+At minimum:
+
+- PATCH: bug fixes, no schema/semantic changes
+- MINOR: new capability surfaces, backward compatible
+- MAJOR: breaking changes requiring migrations or behavioral changes
+
+But beyond semantic versioning, Ashby must record:
+
+A) PLATFORM VERSION (CORE LAW VERSION)
+This corresponds to:
+- engine truth semantics
+- HouseState semantics
+- policy outcome rules
+- interface contracts baseline
+
+B) MODULE SET VERSION
+Modules may be added/removed independently.
+The build must record which module set is included/enabled.
+
+C) MIGRATION COMPATIBILITY
+A release must declare:
+- which persisted schema versions it can read
+- which migrations it can perform
+- whether rollback is safe and under what conditions
+
+“Version” is not a number.
+It is a compatibility contract.
+
+──────────────────────────────────────────────────────────────────────────────
+4) REPRODUCIBLE BUILDS (THE NON-NEGOTIABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+Reproducibility requires:
+
+- pinned dependencies (lock files)
+- pinned toolchains (compiler/interpreter versions)
+- deterministic build steps
+- artifact hashing
+
+A build should produce a manifest that includes:
+- build timestamp
+- git commit hash
+- dependency lock hash
+- artifact digests
+- platform version info
+- included module list
+- enabled profiles list (optional)
+- migration requirements
+
+If a build cannot be reproduced, it cannot be audited and it cannot be resurrected.
+
+──────────────────────────────────────────────────────────────────────────────
+5) ENVIRONMENT SEPARATION (DEV/STAGE/PROD)
+──────────────────────────────────────────────────────────────────────────────
+
+Environments are not “folders.”
+
+They are safety boundaries.
+
+Rules:
+
+A) CONFIG SEPARATION
+- dev configuration must never silently leak into prod
+- prod secrets must never exist in dev configs
+
+B) FEATURE FLAGS AND EXPERIMENTS
+Flags may exist, but:
+- must be explicit
+- must be observable
+- must not create hidden forks
+
+C) LOGGING DIFFERENCES
+Dev may log more.
+Prod must sanitize and respect privacy.
+But truth posture and law must be identical.
+
+D) DATA AND STATE BOUNDARIES
+Prod HouseState and artifacts must not be used casually in dev.
+
+Environment separation is how Ashby stays safe under iteration.
+
+──────────────────────────────────────────────────────────────────────────────
+6) SIGNING AND INTEGRITY (OPTIONAL BUT RECOMMENDED)
+──────────────────────────────────────────────────────────────────────────────
+
+Packaging should support signing:
+- release artifacts can be signed
+- updates can verify signatures
+
+This matters because:
+- a resurrected system might be built by someone who needs provenance
+- a compromised build chain must be detectable
+
+If signing is not used, hashing must still exist to detect corruption.
+
+──────────────────────────────────────────────────────────────────────────────
+7) UPDATES AND ROLLBACK (LINK TO engine/updates/)
+──────────────────────────────────────────────────────────────────────────────
+
+packaging/ must coordinate with engine/updates/ so that:
+
+- release manifests declare migrations
+- update clients know whether rollback is safe
+- schema changes are explicit
+- identity continuity is preserved
+
+Rules:
+- never ship a release that changes persisted shapes without declaring it
+- never ship a release that requires a migration without a migration plan
+- never ship a release that cannot be rolled back without stating it plainly
+
+An update system without packaging discipline is a corruption engine.
+
+──────────────────────────────────────────────────────────────────────────────
+8) DEPENDENCY LAW
+──────────────────────────────────────────────────────────────────────────────
+
+packaging/ is infrastructure.
+It should depend on:
+- build tools
+- manifests
+- lock files
+- signing libs
+
+It must not depend on:
+- modules/
+- connectors/
+- specific vendors
+
+Packaging must not require the platform to be “running” to build.
+That is circular and fragile.
+
+──────────────────────────────────────────────────────────────────────────────
+9) REQUIRED TEST SURFACES FOR packaging/
+──────────────────────────────────────────────────────────────────────────────
+
+Minimum test categories:
+
+- build reproducibility tests (same input → same artifact hash)
+- dependency lock tests (no unpinned deps)
+- environment separation tests (no secret leakage)
+- release manifest validation tests
+- update/rollback simulation tests (dry-run migrations)
+- container/appliance boot tests
+- provenance tests (sign/verify if enabled)
+
+If packaging is not test-protected, it will rot quietly.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+packaging/ must:
+- produce reproducible builds with pinned dependencies
+- generate release manifests that declare compatibility and migrations
+- support environment separation (dev/stage/prod)
+- support update and rollback discipline
+- preserve auditability (hashes, provenance, included modules)
+- avoid coupling to optional capability components
+
+packaging/ must never:
+- allow environment drift to become normal
+- ship untracked dependency changes
+- hide migrations
+- embed secrets in build artifacts
+- make resurrection depend on “the original build machine”
+
+packaging/ is how Ashby becomes a real, repeatable platform.
+
+END OF 8A.13

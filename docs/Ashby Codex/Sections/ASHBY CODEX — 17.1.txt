@@ -1,0 +1,316 @@
+ASHBY CODEX — 17.1
+SIMPLE REACTIVE MODULES (LIGHTS-LIKE)
+
+A simple reactive module is the archetype of “instant control”:
+a user issues a command, the module produces an ActionRequest,
+the adapter attempts execution immediately, and Ashby reports the outcome
+under Action-Gated Truth posture.
+
+“Lights-like” is representative, not exclusive.
+This archetype covers any domain where:
+- actions are quick
+- actions are stateless in the sense of “start → end” (no long-running lifecycle)
+- the primary control surface is a small set of discrete attributes
+  (on/off, level, color, mode, etc.)
+- users iterate through short follow-ups (“a little brighter”, “turn it off”)
+
+Simple reactive modules exist to make Ashby feel immediate without becoming reckless.
+
+──────────────────────────────────────────────────────────────────────────────
+CORE CHARACTERISTICS (DEFINING TRAITS)
+──────────────────────────────────────────────────────────────────────────────
+
+A module qualifies as simple reactive when:
+
+1) SINGLE-SHOT EXECUTION
+The module’s primary actions complete as one execution attempt.
+There is no ongoing “running” state owned by the module.
+
+2) DISCRETE, LOW-ENTROPY STATE SHAPE
+The domain state is described by a small attribute set, such as:
+- power: on/off
+- level: 0..N (brightness, volume, etc.)
+- mode: one of a small set
+
+3) FOLLOW-UP HEAVY INTERACTION
+Users often issue follow-ups that are incomplete without continuity:
+- “brighter”
+- “again”
+- “turn it off”
+This requires session support, but sessions do not change law.
+
+4) HIGH MULTI-TARGET FREQUENCY
+Users commonly target groups:
+- “bedroom lights”
+- “all lights”
+This requires per-target reporting and blast radius safety.
+
+5) EVIDENCE IS OFTEN LIMITED
+Readback may be unavailable or delayed.
+Truth posture must remain honest even when verification is imperfect.
+
+A simple reactive module is judged by behavior and contracts, not by vendor.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL RESPONSIBILITIES OF A SIMPLE REACTIVE MODULE
+──────────────────────────────────────────────────────────────────────────────
+
+A simple reactive module must:
+
+- Declare supported intent types and action types (vendor-neutral)
+- Normalize domain parameters into canonical internal units
+- Validate requests against domain constraints and policy inputs
+- Produce ActionRequests with explicit targets and parameters
+- Interpret ActionResults into truthful outcomes (VERIFIED / LAST_KNOWN / FAILED / UNKNOWN)
+- Provide session semantics appropriate for iterative follow-ups (14.x law applies)
+- Never execute vendor calls directly
+- Never claim truth outside Truth Gate
+
+A simple reactive module does not own governance.
+It participates in governance.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE INTENTS AND ACTIONS (LIGHTS-LIKE)
+──────────────────────────────────────────────────────────────────────────────
+
+These are representative examples; they do not define a required inventory.
+
+Common intent shapes:
+- power.on / power.off
+- level.set(value)
+- level.adjust(delta)
+- color.set(hue/sat/ct) (optional)
+- scene.activate(name) (optional, if declared)
+
+Common action types:
+- lights.turn_on
+- lights.turn_off
+- lights.set_level
+- lights.adjust_level
+
+Rules:
+- intent shapes must be stable labels (tests depend on them)
+- action types must be stable labels (adapters depend on them)
+- action types must carry canonical parameters, not raw text
+
+“Adjust” must not be treated as “set” unless explicitly converted by policy.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL PARAMETER NORMALIZATION
+──────────────────────────────────────────────────────────────────────────────
+
+Simple reactive modules must normalize user language into canonical units.
+
+Representative normalization patterns:
+
+A) LEVEL SCALE
+If the platform uses a canonical scale (e.g., 0..1000):
+- convert percentages, “half,” “max,” and other phrases into that scale
+- clamp or gate extreme values using policy
+
+B) DELTA STEPS
+Relative phrases (“a little brighter”) must map to policy-defined step sizes.
+They must not map to invented deltas.
+
+C) CAPABILITY-AWARE NORMALIZATION (VENDOR-NEUTRAL)
+Normalization may consult internal capability flags (not vendor metadata) such as:
+- supports_level
+- supports_color
+- supports_temperature
+If a capability is unsupported:
+- the module must refuse or degrade safely (e.g., offer on/off only)
+- the module must not pretend to set an unsupported attribute
+
+Normalization is about meaning, not about hardware.
+
+──────────────────────────────────────────────────────────────────────────────
+TARGETING AND GROUPS (SCOPE-BOUND)
+──────────────────────────────────────────────────────────────────────────────
+
+Simple reactive modules often act on multiple targets.
+
+Rules:
+- targets must be resolved inside a scope
+- target resolution must obey the priority order (15.x law)
+- groups (“bedroom lights”, “all lights”) must be declared or resolvable safely
+- per-target execution and reporting are mandatory
+
+A single user command may result in:
+- one ActionRequest with multiple targets, or
+- multiple ActionRequests if policy requires separation
+
+However:
+- splitting must not be silent
+- splitting must not change meaning
+- the user must not be misled into thinking one thing happened when another did
+
+If max_targets is exceeded:
+- the correct output is CONFIRM or CLARIFY, not partial execution.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSIONS FOR SIMPLE REACTIVE MODULES
+──────────────────────────────────────────────────────────────────────────────
+
+Simple reactive modules are session-heavy.
+
+A lights-like session exists to anchor follow-ups:
+- “it”
+- “again”
+- “brighter”
+- “the other one”
+
+Rules:
+- sessions are scope-bound and expirable (14.6)
+- sessions do not upgrade truth (14.1)
+- expired sessions cannot anchor pronouns (15.1)
+- sessions must not expand target sets
+
+A simple reactive module may define:
+- session_type = “lights”
+- stored target_set
+- last_intent shape (bounded)
+- last requested parameters (interaction continuity only)
+
+If no lawful anchor exists, the module must CLARIFY.
+“Helpful guessing” is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+HOUSESTATE INTERACTION (BELIEF, NOT ASSUMPTION)
+──────────────────────────────────────────────────────────────────────────────
+
+Simple reactive modules often update a small set of state attributes.
+
+Representative attributes:
+- power: on/off
+- level: integer scale
+- color: optional
+
+Rules:
+- HouseState updates must be evidence-bound
+- successful command issuance does not automatically mean VERIFIED
+- LAST_KNOWN may be used only when justified by the Truth Gate
+- failures and uncertain delivery must degrade confidence appropriately
+- NO-OP must not upgrade belief
+
+If readback exists:
+- use it to verify
+If readback does not exist:
+- prefer LAST_KNOWN posture with explicit uncertainty
+- degrade to UNKNOWN as freshness decays
+
+State integrity is how simple modules remain honest over time.
+
+──────────────────────────────────────────────────────────────────────────────
+VERIFICATION REALITY (COMMON LIMITATION)
+──────────────────────────────────────────────────────────────────────────────
+
+In many lights-like domains, verification may be:
+- immediate (device reports state)
+- delayed (eventually consistent)
+- unavailable (write-only)
+
+A simple reactive module must never:
+- present write-only outcomes as VERIFIED
+- use “done” language under LAST_KNOWN or UNKNOWN
+- collapse mixed truth into one narrative
+
+Per-target truth posture is required.
+
+The module’s job is to preserve honesty under imperfect evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE MODES AND SAFE REPORTING
+──────────────────────────────────────────────────────────────────────────────
+
+Common failure classes in simple reactive domains include:
+- timeout/unreachable
+- auth_failed (integration needs re-auth)
+- capability_mismatch (unsupported attribute)
+- invalid_target (stale registry)
+- partial success across targets
+
+Rules:
+- failures must be reported explicitly (13.4)
+- unknown delivery must not be spoken as certain state
+- partial successes must be reported per-target
+- provide safe next steps when possible:
+  retry, refresh, narrow targets, re-auth path
+
+A simple reactive module must never smooth failure into success.
+
+──────────────────────────────────────────────────────────────────────────────
+SAFETY AND CONSENT (BLAST RADIUS)
+──────────────────────────────────────────────────────────────────────────────
+
+Lights-like actions seem harmless until they are broad.
+
+Turning off “all lights” can be disruptive or unsafe in some contexts.
+
+Rules:
+- blast radius policy applies to simple reactive modules
+- confirmation gates apply when configured thresholds are exceeded
+- defaults must not broaden actions invisibly
+- “all” must be declared or confirmed, not inferred
+
+Simple reactive does not mean “low risk.”
+It means “short-lived.”
+
+──────────────────────────────────────────────────────────────────────────────
+IDEMPOTENCY AND DUPLICATE HANDLING (REACTION STORMS)
+──────────────────────────────────────────────────────────────────────────────
+
+Reactive domains are prone to duplicate submissions.
+
+Rules:
+- idempotency must exist at the platform layer
+- duplicate suppression must not claim repeated execution
+- deliberate retries are allowed when asked
+- duplicate handling must remain auditable
+
+A reactive module must remain safe under retries and resubmits.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE MODULE CONTRACT (NON-BINDING SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+This is representative, not prescriptive.
+
+A lights-like module typically exposes:
+
+- can_handle(intent) → bool
+- normalize(intent) → normalized_intent
+- plan(normalized_intent, scope, policy, sessions, state) → plan_outcome
+  where plan_outcome is:
+  - ACT with ActionRequest(s), or
+  - CLARIFY with a pending gate, or
+  - CONFIRM with a pending gate, or
+  - REFUSE with reason label
+
+The engine remains the arbiter of policy outcomes.
+The module provides domain understanding.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Simple reactive modules must:
+- remain vendor-neutral and removable
+- normalize parameters deterministically
+- produce explicit targets and parameters in ActionRequests
+- support safe follow-ups via sessions without guessing
+- preserve Action-Gated Truth per target
+- respect blast radius, confirmation, and clarification law
+- remain auditable
+
+Simple reactive modules must never:
+- execute vendor actions directly
+- treat write-only outcomes as VERIFIED
+- upgrade truth due to fluency or convenience
+- expand targets through contextual language
+- smooth partial failure into blanket success
+- bypass policy, scope, session expiry, or Truth Gate constraints
+
+This archetype is the baseline.
+If Ashby cannot do this safely, Ashby cannot scale.
+
+END OF 17.1

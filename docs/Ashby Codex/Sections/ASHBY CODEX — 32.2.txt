@@ -1,0 +1,265 @@
+ASHBY CODEX — 32.2
+Feature Flags
+
+Feature flags are a shipping tool.
+They are not an architecture.
+
+They exist to:
+- stage capability gradually
+- run controlled rollouts
+- perform safe experiments
+- enable emergency shutdown of unstable features
+
+Feature flags must never become a second policy system.
+They must never become a secret fork mechanism.
+
+This subsection defines how flags are used without compromising Ashby’s invariants.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITIONS
+──────────────────────────────────────────────────────────────────────────────
+
+FEATURE FLAG
+A runtime-controlled toggle that enables or disables a behavior or surface area
+without requiring a full release cycle.
+
+Flags are evaluated at runtime and are observable.
+
+KILL SWITCH
+A high-priority flag whose purpose is to disable a risky pathway immediately.
+Kill switches are safety tools.
+
+EXPERIMENT FLAG
+A flag used to compare behaviors between cohorts, with strict logging.
+Experiments must not alter truth law.
+They may alter UI, workflow ordering, or non-critical defaults.
+
+PROFILE DEFAULT
+A profile may define the default value of flags.
+Flags may override defaults at runtime under strict audit.
+
+ENTITLEMENT GATE
+A licensing/entitlement check that decides whether a feature is allowed at all.
+Flags may control rollout within an entitled population.
+Flags must not bypass entitlements.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHY FLAGS ARE DANGEROUS (THE FAILURE MODE)
+──────────────────────────────────────────────────────────────────────────────
+
+Flags become dangerous when:
+- they hide behavior changes
+- they create untracked divergence
+- they are scattered across core logic
+- they alter data schemas without migration
+- they modify truth posture or safety posture silently
+
+A “flagged platform” that cannot be reconstructed from logs
+is indistinguishable from a forked platform.
+
+Flags must be governed.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHAT FLAGS MAY CONTROL (SAFE SURFACES)
+──────────────────────────────────────────────────────────────────────────────
+
+Flags may control:
+
+A) UI AND SURFACE EXPOSURE
+- enable/disable a new screen
+- enable/disable a new intent alias
+- show/hide a product surface
+
+B) WORKFLOW ORDERING (NON-TRUTH-ALTERING)
+- which adapter is preferred when multiple are equivalent
+- which summary format is default (without claiming different truth)
+- which onboarding flow is used
+
+C) ROLLOUT OF NEW MODULES OR CONNECTORS
+- enabling a new module for a subset of users/scopes
+- enabling a new connector integration progressively
+
+D) PERFORMANCE BEHAVIORS (SAFE)
+- caching strategies that do not change correctness
+- logging verbosity (increase only; never reduce critical audit fields)
+
+E) EMERGENCY DISABLEMENT
+- disable cloud fallback globally if a provider becomes unsafe
+- disable a specific adapter/provider if it misbehaves
+- disable a problematic connector action while preserving read-only capability
+
+Flags are allowed to change “what path is used,” not “what truth is.”
+
+──────────────────────────────────────────────────────────────────────────────
+4) WHAT FLAGS MUST NEVER CONTROL (FORBIDDEN USES)
+──────────────────────────────────────────────────────────────────────────────
+
+Flags must never change:
+
+A) TRUTH LAW
+- they must not allow the system to claim VERIFIED without evidence
+- they must not relax forbidden phrases
+- they must not change truth classes or language constraints
+
+B) HOUSESTATE SEMANTICS
+- they must not change belief schemas in-place without migration
+- they must not change staleness/decay rules
+- they must not change mixed reality behavior
+
+C) SAFETY POLICY CATEGORIES
+- flags must not invent new policy outcomes
+- flags must not bypass confirmation requirements for high-risk actions
+- flags must not suppress clarifications when ambiguity exists
+
+D) SECURITY AND SECRETS HANDLING
+- flags must not enable “debug logging” that leaks secrets
+- flags must not relax sanitization
+- flags must not open privileged pathways
+
+E) DATA SHAPE WITHOUT MIGRATION
+- flags must not create dual schema realities unless explicitly designed
+- if a flag changes persisted data shape, migration discipline is required
+
+If a flag does any of the above, it is not a flag.
+It is a fork disguised as a toggle.
+
+──────────────────────────────────────────────────────────────────────────────
+5) FLAG GOVERNANCE (A FLAG IS A CONTRACT)
+──────────────────────────────────────────────────────────────────────────────
+
+Each flag must have:
+
+- name (stable)
+- owner (accountable)
+- purpose (why it exists)
+- scope of evaluation (global / per user / per scope / per device / per module)
+- default value (usually defined by profile)
+- expiration policy (when it should be removed or locked on/off)
+- logging requirements (how it is recorded)
+- safety classification:
+  - experiment
+  - rollout
+  - kill switch
+
+Flags without ownership and expiration become permanent debt.
+Permanent flag debt is drift.
+
+──────────────────────────────────────────────────────────────────────────────
+6) EVALUATION MODEL (WHERE FLAGS ARE READ)
+──────────────────────────────────────────────────────────────────────────────
+
+Flags must be evaluated centrally.
+
+Rules:
+- core decisions should not rely on scattered checks
+- feature evaluation should occur in well-defined gate points
+
+Canonical gate points include:
+- surface exposure (UI/router pre-validation)
+- module availability gate
+- connector availability gate
+- provider routing preference gate
+- kill-switch override gate (highest priority)
+
+Avoid:
+- flags sprinkled throughout engine logic
+- flags that change control pipeline steps without explicit documentation
+
+The platform must remain comprehensible.
+
+──────────────────────────────────────────────────────────────────────────────
+7) SCOPING AND COHORTS (HOW FLAGS APPLY)
+──────────────────────────────────────────────────────────────────────────────
+
+Flags may apply to:
+
+- GLOBAL: affects all instances
+- USER: affects a single user identity
+- SCOPE: affects an Ashby scope (home, business location, org)
+- DEVICE: affects a specific device_key
+- MODULE: affects a module_key
+- COHORT: affects a defined group for experiment/rollout
+
+Rules:
+- scoping must be explicit and logged
+- precedence order must be stable and documented
+  (e.g., kill-switch overrides all; then global; then profile default; then scope; etc.)
+- cohort membership must be deterministically computed or explicitly assigned
+- cohort algorithms must be stable (no random drift)
+
+Flags are not “magic.”
+They are deliberate control surfaces.
+
+──────────────────────────────────────────────────────────────────────────────
+8) OBSERVABILITY (FLAGS MUST BE RECONSTRUCTABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+For every correlation_id, logs must be able to show:
+- which flags were evaluated
+- what values were used
+- what scope/user/device context applied
+- whether a kill switch altered routing or execution
+
+Logs must not expose:
+- secret flag payloads (flags should not contain secrets)
+- raw entitlement tokens
+- vendor credentials
+
+If a behavior changed due to a flag but is not visible in logs,
+the platform becomes un-debuggable and unrebuildable.
+
+──────────────────────────────────────────────────────────────────────────────
+9) FLAGS VS PROFILES VS ENTITLEMENTS (THE HIERARCHY)
+──────────────────────────────────────────────────────────────────────────────
+
+Correct hierarchy:
+
+- ENTITLEMENTS decide: “is this allowed at all?”
+- PROFILES decide: “is this part of the product?”
+- FLAGS decide: “is this rolled out or staged right now?”
+
+Flags do not override entitlements.
+Flags do not redefine profiles.
+Profiles may set defaults for flags.
+
+This hierarchy preserves product truth.
+
+──────────────────────────────────────────────────────────────────────────────
+10) RETIREMENT AND CLEANUP (FLAGS MUST NOT LIVE FOREVER)
+──────────────────────────────────────────────────────────────────────────────
+
+Every flag should be temporary.
+
+End states:
+- remove the flag once behavior is stable and canonical
+- or lock the flag permanently on/off via profile and delete the runtime control
+
+Rules:
+- abandoned flags must be cleaned up
+- dead code paths must be removed
+- experiments must conclude
+
+A platform littered with flags is not understandable.
+Understandability is a requirement.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Feature flags must:
+- be governed, owned, and auditable
+- be evaluated at defined gate points
+- support rollout, experiments, and kill switches safely
+- be reconstructable from logs per correlation_id
+- respect the hierarchy: entitlements → profiles → flags
+
+Feature flags must never:
+- alter Truth Gate semantics, HouseState law, or safety categories
+- bypass confirmation/clarification requirements
+- relax secrets handling or sanitization
+- alter persisted schemas without migration discipline
+- become a hidden fork mechanism
+
+Flags ship safely only when they remain tools, not architecture.
+
+END OF 32.2

@@ -1,0 +1,257 @@
+ASHBY CODEX — 17.4
+HEAVY COMPUTE MODULES (MEETINGS-LIKE)
+
+A heavy compute module is a module whose primary work is computation-heavy,
+latency-tolerant, and often multi-step.
+
+“Meetings-like” is representative, not exhaustive.
+This archetype covers domains such as:
+- transcription and summarization
+- semantic indexing and retrieval
+- large document transforms
+- long-form planning artifacts
+- batch analysis of user-provided data
+
+Heavy compute modules differ from reactive modules because they may require:
+- job orchestration
+- progress reporting
+- storage of intermediate artifacts
+- asynchronous completion
+
+Heavy compute modules exist to extend Ashby beyond “instant control”
+without breaking truth, privacy, or governance.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINING TRAITS
+──────────────────────────────────────────────────────────────────────────────
+
+A module qualifies as heavy compute when:
+
+1) WORK IS MULTI-STEP
+The output is produced by a pipeline, not a single request.
+
+2) LATENCY IS NON-TRIVIAL
+Completion may take seconds to minutes (or longer).
+
+3) OUTPUT IS AN ARTIFACT
+The result is usually a persisted object:
+- transcript
+- summary
+- extracted tasks
+- index
+- report
+
+4) COMPUTE MAY BE OFFLINE OR CLOUD-ASSISTED
+The module may have multiple execution backends, but must obey platform law:
+offline-first where required; cloud allowed only when permitted.
+
+5) PRIVACY IS HIGH
+Inputs are often personal and sensitive.
+Disclosure and storage must be governed.
+
+Heavy compute modules are where “agentic” behavior is most tempting.
+Governance must remain tighter, not looser.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL RESPONSIBILITIES
+──────────────────────────────────────────────────────────────────────────────
+
+A heavy compute module must:
+
+- Define stable job types and artifact types (vendor-neutral)
+- Normalize requests into a canonical job specification
+- Validate permissions and scope before accepting work
+- Request compute through platform execution systems (not ad-hoc threads)
+- Persist artifacts through platform storage (not local caches as authority)
+- Provide truthful job status and completion semantics
+- Provide deterministic retrieval of produced artifacts
+- Log enough to reconstruct what happened without leaking secrets
+- Respect secrets and privacy constraints in all outputs
+
+A heavy compute module produces artifacts.
+It does not fabricate “completed work” narratives.
+
+──────────────────────────────────────────────────────────────────────────────
+JOBS, ARTIFACTS, AND TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Heavy compute modules must represent work as jobs.
+
+Canonical job states (representative):
+- queued
+- running
+- completed
+- failed
+- cancelled
+
+Rules:
+- “completed” means the pipeline finished and the artifact was persisted.
+- it does not mean the artifact is correct, only that it exists.
+- “failed” means no valid artifact may be claimed as authoritative.
+- partial artifacts must be labeled as partial.
+
+Truth posture:
+- the module must not claim to have produced an artifact unless it exists.
+- the module must not claim to have processed data it did not process.
+
+Job state is platform reality for compute pipelines.
+
+──────────────────────────────────────────────────────────────────────────────
+PROGRESS AND USER EXPERIENCE (WITHOUT LYING)
+──────────────────────────────────────────────────────────────────────────────
+
+Heavy compute modules may provide progress updates,
+but progress must be honest.
+
+Rules:
+- progress may be coarse (“working”, “almost done”) only if it reflects real stage
+- do not present estimated completion times as promises
+- if the system is uncertain, report uncertainty
+
+A module must never use progress language to mask failure.
+
+If a user requests status:
+- report the current job state
+- offer the next safe action (wait, retry, cancel, view artifact)
+
+──────────────────────────────────────────────────────────────────────────────
+STORAGE AND RETRIEVAL (CANONICAL ARTIFACT OWNERSHIP)
+──────────────────────────────────────────────────────────────────────────────
+
+Artifacts must be stored in platform-controlled storage.
+
+Rules:
+- artifacts are scope-bound
+- artifacts are permission-bound
+- artifact identifiers must be stable and auditable
+- the module must not leak private artifact locations or access tokens
+- retrieval must be deterministic and idempotent
+
+A heavy compute module must never:
+- “remember” artifacts only in ephemeral memory
+- expose raw internal URLs that embed secrets
+- cross scope boundaries for convenience
+
+Artifacts are part of the world model.
+
+──────────────────────────────────────────────────────────────────────────────
+INPUT HANDLING (PRIVACY-FIRST)
+──────────────────────────────────────────────────────────────────────────────
+
+Inputs may include:
+- audio
+- transcripts
+- documents
+- private notes
+- calendar-like metadata
+
+Rules:
+- inputs must be authorized for the active actor and scope
+- sensitive inputs must not be echoed back verbatim by default
+- summarization must preserve privacy, not leak it
+- the module must not infer personal routines beyond the content provided
+
+Heavy compute modules must treat privacy as a primary constraint,
+not as a post-processing step.
+
+──────────────────────────────────────────────────────────────────────────────
+BACKENDS AND OFFLINE/CLOUD POSTURE (VENDOR-NEUTRAL)
+──────────────────────────────────────────────────────────────────────────────
+
+Heavy compute may be executed using:
+- local compute
+- cloud compute
+- hybrid strategies
+
+Rules:
+- backend selection must be policy-driven and explicit
+- cloud use must be disclosed when relevant
+- failures must not silently fall back to cloud if policy forbids it
+- the module must not tie artifact formats to a vendor
+
+The platform chooses backends.
+The module chooses semantics.
+
+──────────────────────────────────────────────────────────────────────────────
+IDEMPOTENCY AND DUPLICATES (JOB SAFETY)
+──────────────────────────────────────────────────────────────────────────────
+
+Users and clients may repeat requests.
+
+Rules:
+- a duplicate job request should return the existing job/artifact when appropriate
+- duplicates must not create repeated charges or repeated work silently
+- deliberate “run again” must create a new job id with explicit user intent
+
+Idempotency keys must include:
+- scope_id
+- input artifact id(s) or content hash (privacy-safe)
+- job_type
+- parameters
+- window
+
+Heavy compute is expensive.
+Duplicate prevention is required.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE MODES AND SAFE HANDLING
+──────────────────────────────────────────────────────────────────────────────
+
+Common failures:
+- compute backend unavailable
+- permission denied
+- corrupted input
+- timeout
+- partial output
+
+Rules:
+- failure must be explicit and logged
+- partial outputs must be labeled as partial
+- retries must be policy-controlled
+- do not claim “the summary is ready” if it is not persisted
+
+Heavy compute failures are normal.
+Lying about them is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE MODULE CONTRACT (NON-BINDING SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+Representative heavy compute module capabilities:
+
+- normalize_job_request(intent) → job_spec
+- submit(job_spec, scope, policy) → job_id
+- status(job_id) → job_state
+- result(job_id) → artifact_reference (if completed)
+- cancel(job_id) → cancellation_outcome
+
+The engine remains responsible for:
+- policy, scope, and permissions
+- response language constraints
+- audit logging requirements
+
+The module supplies domain structure for compute work.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Heavy compute modules must:
+- represent work as governed jobs and persisted artifacts
+- remain vendor-neutral and removable
+- respect scope, permissions, privacy, and secrets constraints
+- provide truthful job states and artifact existence claims
+- enforce idempotency and avoid silent duplicate work
+- remain auditable
+
+Heavy compute modules must never:
+- fabricate completion
+- imply artifacts exist when they do not
+- leak private content or secret-bearing links
+- bypass policy to use cloud compute silently
+- turn “progress updates” into invented certainty
+- become a second engine that self-authorizes action
+
+This archetype extends Ashby into cognition without surrendering governance.
+
+END OF 17.4

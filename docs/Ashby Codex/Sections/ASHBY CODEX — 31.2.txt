@@ -1,0 +1,450 @@
+ASHBY CODEX — 31.2
+Home Assistant as Strangler Layer
+
+Home Assistant (HA) is treated as a bridge.
+
+It is not a platform Ashby depends on.
+It is a temporary integration engine used to accelerate capability while Ashby’s
+native ownership expands.
+
+Ashby’s meaning, truth, state, and authority remain Ashby-owned.
+HA is an execution substrate and evidence source.
+
+This subsection defines how HA is used without allowing HA to become “the system.”
+
+──────────────────────────────────────────────────────────────────────────────
+1) WHAT “HOME ASSISTANT AS STRANGLER” MEANS
+──────────────────────────────────────────────────────────────────────────────
+
+A strangler layer is a temporary wrapper used to ship breadth early while building
+native systems behind stable seams.
+
+In Ashby terms:
+
+- Ashby owns:
+  - the domain model (devices, capabilities, scopes)
+  - the engine and router
+  - the Truth Gate and HouseState
+  - policy outcomes (Act vs Clarify vs Confirm vs Refuse)
+  - device identity and scope ownership
+
+- Home Assistant provides:
+  - broad vendor coverage via its integrations
+  - a uniform service-call interface for execution
+  - a state readback surface (entity states/attributes)
+  - event streams (state_changed, etc.)
+  - discovery and registry information (entity registry)
+
+Strangler means:
+- HA is used now because it is fast.
+- HA is replaced later because Ashby must own its long-term fate.
+- Replacement happens incrementally, capability-by-capability or vendor-by-vendor,
+  without changing module logic.
+
+──────────────────────────────────────────────────────────────────────────────
+2) NON-NEGOTIABLE INVARIANTS (HA MUST NOT DEFINE ASHBY)
+──────────────────────────────────────────────────────────────────────────────
+
+A) HA IS OPTIONAL
+Ashby must boot, route, and enforce truth with HA absent.
+
+B) HA IS ISOLATED
+No engine/ code imports HA.
+No module/ code imports HA.
+
+Only provider implementations in execution layers may depend on HA.
+
+C) HA DOES NOT DEFINE REALITY
+HA outputs are evidence, never truth.
+Truth is assigned by Ashby’s Truth Gate based on evidence and verification posture.
+
+D) HA DOES NOT DEFINE SCOPES
+HA “areas,” “rooms,” “groups,” or “labels” are hints at best.
+Ashby scopes are authoritative.
+
+E) HA DOES NOT OWN IDENTITY
+HA entity_id is never the canonical identity.
+Ashby device_keys remain stable independent of HA.
+
+F) HA DOES NOT OWN POLICY
+Whether an action requires confirmation, clarification, or refusal is not HA’s choice.
+It is Ashby’s.
+
+These invariants prevent the bridge from becoming the platform.
+
+──────────────────────────────────────────────────────────────────────────────
+3) LAYERING AND DEPENDENCY DIRECTION
+──────────────────────────────────────────────────────────────────────────────
+
+Canonical layering for HA integration:
+
+- domain/ defines:
+  - Device
+  - Capability
+  - Scope
+  - Registry identity rules
+  - External ID mapping structures (bridge ids → Ashby ids)
+
+- modules/ define WHAT:
+  - “turn on the kitchen lights”
+  - “set living room temperature to 72”
+  - “arm security mode”
+  Modules do not know about HA.
+
+- interfaces/ define HOW contracts:
+  - set_state, set_level, set_temperature, etc.
+  Interface contracts remain stable even when providers change.
+
+- adapters/ execute via providers:
+  - choose an IntegrationProvider based on routing policy
+  - perform execution attempts
+  - return ActionResult evidence
+
+- bridges/home_assistant/ provides one IntegrationProvider:
+  - discovery / sync
+  - service-call execution
+  - state readback
+  - event subscription
+
+This arrangement ensures that replacing HA requires changing providers/adapters,
+not changing module meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+4) DEVICE IDENTITY: STABLE KEYS OVER BRIDGE IDS
+──────────────────────────────────────────────────────────────────────────────
+
+HA exposes multiple identity surfaces:
+- entity_id (human-readable, mutable)
+- unique_id (stable when present)
+- device_id (registry device)
+- integration domain and platform metadata
+- hardware identifiers (sometimes available)
+
+Ashby must own stable identity.
+
+Canonical identity rule:
+- Ashby creates and stores a device_key for every device it recognizes.
+- External identifiers are stored as mappings under that device_key.
+
+Recommended mapping strategy:
+
+A) PRIMARY MAPPING (PREFERRED)
+If HA provides a stable unique_id and/or registry device_id:
+- store that as the primary external id
+- treat entity_id as a mutable alias
+
+B) SECONDARY MAPPING (COMPATIBILITY)
+If stable unique identifiers are missing:
+- store entity_id but mark it as “weak identity”
+- increase the likelihood that the system will require re-resolution after rename
+- prefer manual user confirmation during migrations
+
+C) DEVICE VS ENTITY SPLIT
+A single physical device may expose multiple entities:
+- light + sensor + switch + diagnostics
+
+Ashby must model:
+- one device_key for the physical unit
+- one or more entity_keys (or capability instances) attached to that device_key
+
+The stable unit is the device_key.
+Entities are attachable surfaces.
+
+──────────────────────────────────────────────────────────────────────────────
+5) ENTITY SYNC (DISCOVERY WITHOUT SCOPE TAKEOVER)
+──────────────────────────────────────────────────────────────────────────────
+
+HA entity sync is the process of importing HA’s entity registry into Ashby’s registry
+without importing HA’s worldview.
+
+Canonical goals of sync:
+- discover what controllable targets exist
+- map them to Ashby devices and capabilities
+- record external ids for execution
+- record lightweight metadata for user-facing resolution
+
+Canonical non-goals of sync:
+- adopting HA areas as Ashby scopes automatically
+- adopting HA group logic as Ashby group law
+- treating HA states as verified truth by default
+
+Practical sync behavior:
+
+A) SCAN
+- fetch registry/device list
+- fetch entity list
+- fetch capability-relevant attributes
+
+B) NORMALIZE
+- determine capability type for each entity
+  (light, switch, thermostat, sensor, lock, camera, etc.)
+- record supported features as capability metadata
+  (brightness, color_temp, hvac_modes, etc.)
+
+C) REGISTER
+- create/maintain device_key records in Ashby
+- create/maintain external_id mappings:
+  device_key ↔ (ha_device_id, ha_unique_id, ha_entity_id set)
+
+D) SCOPE HINTING (NON-AUTHORITATIVE)
+- record HA area name as a hint field
+- require explicit user confirmation before binding to an Ashby scope
+- if no confirmation exists, keep the device unscoped or in a default scope,
+  depending on platform policy
+
+E) CHANGE TRACKING
+- entity rename, removal, or migration is recorded as a registry change event
+- registry changes must be auditable and reversible
+
+This keeps discovery useful while preventing HA worldview takeover.
+
+──────────────────────────────────────────────────────────────────────────────
+6) EXECUTION THROUGH HA (SERVICE CALLS AS “HOW”)
+──────────────────────────────────────────────────────────────────────────────
+
+Execution via HA occurs through adapters calling the HA provider.
+
+Canonical execution pathway:
+
+1) module produces an ActionRequest (WHAT)
+2) router selects an adapter by capability
+3) adapter selects a provider (HA, native_vendor, etc.)
+4) provider attempts execution:
+   - HA service call
+   - optional readback
+   - return ActionResult evidence
+5) Truth Gate assigns truth class and language constraints
+6) HouseState is updated only through Truth Gate-approved evidence
+
+Execution constraints:
+
+A) HA SERVICE CALLS ARE NOT PROOF
+A service call returning success/ack is not the same as the device being in the desired state.
+
+B) VERIFICATION IS AN ASHBY DECISION
+Verification semantics are governed by Ashby’s Truth Gate and adapter rules.
+The provider supplies evidence: ack, readback state, and timing.
+
+C) READBACK IS PREFERRED
+When possible:
+- call the service
+- then read back the entity state
+- compare to desired
+- report VERIFIED only when readback matches under allowed tolerance
+
+D) TOLERANCE MUST BE EXPLICIT
+Some capabilities are continuous (temperature, dimmer levels).
+Verification must define:
+- acceptable tolerance
+- time window for stabilization
+- what constitutes a mismatch
+
+E) HA DELAYS MUST BE HANDLED
+HA event/state propagation may be delayed.
+Adapters should:
+- wait for state change event up to a bounded window
+- fall back to explicit state fetch
+- report failure honestly when readback cannot be obtained
+
+These rules prevent “HA said okay” from becoming a lie.
+
+──────────────────────────────────────────────────────────────────────────────
+7) STATE INPUTS FROM HA (EVIDENCE PIPELINE)
+──────────────────────────────────────────────────────────────────────────────
+
+HA provides two primary state input forms:
+- polling (fetch state snapshot)
+- event stream (state_changed events)
+
+Ashby treats HA state as evidence with staleness.
+
+Canonical pipeline:
+
+A) EVENT SUBSCRIPTION (PREFERRED)
+- subscribe to HA events
+- for each event:
+  - attach correlation_id if known (when event is causally linked to an action)
+  - update HouseState beliefs with appropriate confidence
+  - record timestamp and source ("home_assistant")
+
+B) POLLING (FALLBACK AND BASELINE)
+- periodic snapshot fetch to detect missed events
+- used to repair drift after reconnects
+
+C) STALENESS
+If HA stops delivering events (disconnect, crash, network outage):
+- beliefs sourced from HA decay
+- previously verified beliefs can become LAST_KNOWN
+- eventually become UNKNOWN if decay continues
+
+This ensures Ashby does not “keep speaking as if reality is current”
+when the bridge has gone silent.
+
+──────────────────────────────────────────────────────────────────────────────
+8) HA AREAS/ROOMS VS ASHBY SCOPES (HINTS, NOT OWNERSHIP)
+──────────────────────────────────────────────────────────────────────────────
+
+HA has its own organizational model:
+- areas
+- labels
+- device registry groups
+- dashboards
+
+Ashby uses scopes as the world model.
+
+Rule:
+- HA organization data may be ingested as hints only.
+- Scope binding is an Ashby action governed by user confirmation and policy.
+
+Practical scope binding approach:
+
+- When a device is discovered with an HA area:
+  - record ha_area_name as a hint
+  - ask the user to confirm scope placement if ambiguous
+  - allow bulk mapping only through explicit onboarding flows
+
+- If the user later changes HA area labels:
+  - do not automatically move Ashby scope bindings
+  - treat the new label as a hint update
+  - require confirmation for any authoritative change
+
+This preserves Ashby’s world model independence.
+
+──────────────────────────────────────────────────────────────────────────────
+9) ROUTING POLICY: HA VS NATIVE PROVIDERS
+──────────────────────────────────────────────────────────────────────────────
+
+Bridge-first means HA may be the default provider early.
+Native Vendor Expansion means HA stops being the default over time.
+
+Provider selection is routing policy, not module logic.
+
+Canonical provider selection criteria include:
+
+- reliability (measured by success rates and latency)
+- verification strength (readback fidelity)
+- offline capability (local vs cloud dependencies)
+- feature completeness (capability coverage)
+- security posture (credential scope, failure isolation)
+- maintenance burden (bridge fragility vs native stability)
+
+Allowed routing behaviors:
+
+A) PREFER NATIVE WHEN AVAILABLE
+If a native provider exists for the capability and target:
+- route to native by default
+- fall back to HA only if policy permits and the failure mode is safe
+
+B) PREFER HA FOR COVERAGE
+For unsupported vendors/capabilities:
+- route to HA
+
+C) DUAL-PATH SAFETY (OPTIONAL)
+For critical actions, the adapter may:
+- execute through one provider
+- verify through a second evidence source when possible
+This must remain bounded and policy-governed.
+
+Routing must always be observable:
+- which provider was chosen
+- why it was chosen
+- what evidence was produced
+
+──────────────────────────────────────────────────────────────────────────────
+10) MIGRATION MECHANICS (HA AS STRANGLER TARGET)
+──────────────────────────────────────────────────────────────────────────────
+
+Strangler migration is incremental.
+
+Canonical migration mechanics:
+
+A) STABLE IDENTITY FIRST
+Before switching providers:
+- ensure device_key is stable
+- ensure external id mappings exist for both:
+  - HA identifiers
+  - native vendor identifiers
+- ensure HouseState beliefs are attached to device_key, not HA entity_id
+
+B) PARITY THROUGH ACCEPTANCE TESTS
+Migration must preserve behavior.
+Compare:
+- execution success/failure
+- latency
+- verification class (VERIFIED vs LAST_KNOWN)
+- error surfaces
+- state updates
+
+C) GRADUAL ROUTE SHIFT
+- begin with a subset of devices or scopes
+- observe
+- expand
+- keep rollback available
+
+D) HA SHRINKS OVER TIME
+As native provider coverage grows:
+- fewer actions route through HA
+- HA becomes a fallback or legacy bridge
+- eventually HA can be removed or restricted
+
+The bridge is a means to ship, not a permanent dependency.
+
+──────────────────────────────────────────────────────────────────────────────
+11) FAILURE MODES (WHAT GOES WRONG WITH HA)
+──────────────────────────────────────────────────────────────────────────────
+
+Common failure modes:
+
+- HA unavailable (host down, restart, network outage)
+- stale states (events missed, delayed updates)
+- entity renames (identity drift)
+- inconsistent integration behavior (vendor quirk via HA)
+- service call accepted but device never changes
+- HA reports optimistic states while devices are offline
+
+Canonical Ashby response requirements:
+
+- do not claim success without evidence
+- surface partial outcomes explicitly
+- degrade truth posture under staleness
+- require clarification when identity drift occurs
+- log provider failures with correlation_id and sanitized error fields
+- preserve removability (Ashby remains coherent without HA)
+
+──────────────────────────────────────────────────────────────────────────────
+12) SECURITY AND SECRETS (HA TOKENS ARE POWERFUL)
+──────────────────────────────────────────────────────────────────────────────
+
+HA credentials grant wide authority.
+They must be treated as secrets.
+
+Rules:
+- HA tokens live only in secrets handling subsystems
+- tokens are never logged
+- tokens are never stored in artifacts
+- scopes/permissions are least-privilege when possible
+- revocation and rotation must be supported
+
+Bridge integration is not an excuse for relaxed security.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Home Assistant as a strangler layer must:
+- be optional, isolated, replaceable, and auditable
+- feed Ashby through provider interfaces only
+- provide evidence, not truth
+- preserve stable Ashby device identity independent of HA ids
+- treat HA organization data as hints, not scope authority
+- support verification readback and honest failure semantics
+- enable incremental migration toward native_vendor implementations
+
+Home Assistant as a strangler layer must never:
+- be imported by engine/ or modules/
+- define scope boundaries or canonical identity
+- be treated as verified truth by default
+- silently mask staleness, failures, or partial execution
+- become the platform behind Ashby
+
+END OF 31.2

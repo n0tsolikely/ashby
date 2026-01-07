@@ -1,0 +1,133 @@
+ASHBY CODEX — 7.1
+WHAT A SCOPE IS
+
+A scope is the fundamental unit of reality in Ashby.
+
+It is not a label.
+It is not a convenience abstraction.
+It is not a user-facing grouping.
+
+A scope is a formally bounded context that defines
+what exists, what may be acted upon, and what authority applies.
+
+If something does not exist inside a scope,
+it does not exist to Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+THE PURPOSE OF SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby operates in environments where:
+- multiple domains coexist
+- authority is not uniform
+- state changes over time
+- actions have consequences
+
+Without scopes, these environments collapse into ambiguity.
+
+Scopes exist to make boundaries explicit.
+
+They define:
+- the limits of action
+- the ownership of state
+- the validity of memory
+- the reach of automation
+- the context of reasoning
+
+A scope answers the question:
+“Where is this action allowed to occur?”
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPES AS BOUNDARIES OF AUTHORITY
+──────────────────────────────────────────────────────────────────────────────
+
+Every scope establishes authority.
+
+Authority determines:
+- what Ashby may control
+- what Ashby may observe
+- what Ashby may remember
+- what Ashby may automate
+
+Authority is never assumed.
+Authority is never inferred.
+Authority is always scoped.
+
+An action that is valid in one scope
+may be invalid or forbidden in another.
+
+This prevents:
+- accidental overreach
+- unsafe automation
+- cross-domain contamination
+- silent expansion of control
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPES AND EXISTENCE
+──────────────────────────────────────────────────────────────────────────────
+
+Scopes define existence.
+
+Devices, entities, state, and history
+exist only within scopes.
+
+There is no global device.
+There is no global state.
+There is no global memory.
+
+Global assumptions are forbidden.
+
+If Ashby cannot determine the scope,
+it must not act.
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPES AND REASONING
+──────────────────────────────────────────────────────────────────────────────
+
+All reasoning in Ashby is scoped.
+
+Intent is resolved within a scope.
+Policy is evaluated within a scope.
+Execution targets are selected within a scope.
+State is updated within a scope.
+
+This ensures that reasoning remains contextual,
+bounded,
+and explainable.
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPES AND SAFETY
+──────────────────────────────────────────────────────────────────────────────
+
+Scopes are a safety mechanism.
+
+Automation without scope
+is automation without restraint.
+
+Scopes allow Ashby to:
+- limit blast radius
+- apply conservative defaults
+- require confirmation where needed
+- restrict automation to safe contexts
+
+If scope cannot be resolved confidently,
+Ashby must pause or ask for clarification.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+No action may occur outside a scope.
+No state may exist outside a scope.
+No memory may be recalled outside a scope.
+
+Any design that introduces
+unscoped action, state, or memory
+violates Ashby’s world model.
+
+Scopes are not optional.
+
+They are the foundation upon which
+all reasoning, action, and truth are built.
+
+END OF 7.1

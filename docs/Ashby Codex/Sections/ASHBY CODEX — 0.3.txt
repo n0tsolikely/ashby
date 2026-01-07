@@ -1,0 +1,75 @@
+ASHBY CODEX — 0.3
+HOW TO USE THIS CODEX TO REBUILD ASHBY
+
+This Codex is designed to be sufficient on its own.
+
+If every source file, repository, configuration, and chat log were lost,
+and only this Codex remained, Ashby must still be reconstructable.
+
+This is not documentation that assumes prior knowledge.
+This is not a supplement to code.
+This is the source of truth.
+
+To rebuild Ashby correctly, this Codex must be used in order.
+
+Do NOT skip sections.
+Do NOT jump ahead based on familiarity.
+Do NOT assume “this part probably isn’t relevant.”
+
+Ashby fails when builders assume they already understand it.
+
+The correct way to use this Codex is as follows:
+
+1) READ THE FRONT MATTER COMPLETELY  
+   The Manifesto, Identity, and Story sections exist to shape judgment.
+   If you do not understand why Ashby exists, you will misuse it.
+
+2) INTERNALIZE THE CONSTITUTIONAL LAW  
+   The Platform Principles and World Model are not optional guidelines.
+   They are constraints that define what Ashby is allowed to become.
+
+3) STUDY THE ARCHITECTURE TREE AS A MAP  
+   The Architecture Tree is not an example layout.
+   It is a zoning diagram.
+   Files and logic must live where they belong, not where convenient.
+
+4) FOLLOW THE CORE OPERATING LAW EXACTLY  
+   The pipeline, state model, truth gate, and session behavior
+   define Ashby’s behavior under real-world pressure.
+
+5) IMPLEMENT MECHANICAL INVARIANTS VERBATIM  
+   Preservation Packs are not suggestions.
+   If any Preservation Pack is violated, Ashby is no longer Ashby.
+
+6) USE EXAMPLES AS PATTERNS, NOT INVENTORY  
+   Modules, agents, adapters, vendors, and integrations listed in this Codex
+   are representative examples.
+   They demonstrate shape, not completeness.
+
+   Adding new modules does NOT require modifying this Codex
+   unless core law or engine behavior changes.
+
+7) CHANGE CORE LAW ONLY VIA CONTROL SYNC  
+   If reality forces a change to:
+   - engine responsibilities
+   - truth semantics
+   - state authority
+   - scope model
+   - WHAT vs HOW separation
+
+   Then a Control Sync is required, and this Codex must be revised explicitly.
+
+This Codex is intentionally verbose.
+It favors clarity over brevity.
+It favors redundancy over ambiguity.
+
+When in doubt:
+- trust the Codex
+- not convenience
+- not intuition
+- not speed
+
+Ashby’s strength comes from discipline applied early,
+so that freedom exists later.
+
+END OF 0.3

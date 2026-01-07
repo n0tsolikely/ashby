@@ -1,0 +1,211 @@
+ASHBY CODEX — 14.6
+SESSION EXPIRY AND SAFETY
+
+Sessions exist to reduce friction.
+Sessions also create risk.
+
+The risk is not that sessions exist.
+The risk is that sessions persist after their meaning is gone.
+
+Session expiry is the platform’s mechanism for preventing:
+- stale context acting as authority
+- accidental actions triggered by short follow-ups
+- scope bleed across time
+- hidden “sticky” targeting
+
+Expiry is not UX decoration.
+Expiry is safety law.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSION EXPIRY IS MANDATORY
+──────────────────────────────────────────────────────────────────────────────
+
+Every session type must have an expiry deadline.
+
+Rules:
+- sessions are time-bound by default
+- sessions must include expires_at
+- expired sessions must be treated as inactive and unusable for inheritance
+- expiry must be enforced mechanically, not “best effort”
+
+A system that “forgets to expire” becomes unsafe.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY SESSIONS EXPIRE
+──────────────────────────────────────────────────────────────────────────────
+
+A session’s meaning depends on assumptions that decay quickly:
+
+- the user is still referring to the same targets
+- the user’s intent is still active
+- the scope context has not changed
+- the world has not been changed by other means
+- the risk posture has not shifted
+
+As time passes, these assumptions become less reliable.
+
+Expiry is the platform’s admission:
+“Continuity is no longer safe to reuse.”
+
+──────────────────────────────────────────────────────────────────────────────
+DEFAULT EXPIRY POSTURE (CONSERVATIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+Expiry windows are policy decisions, not fixed constants.
+
+However, the default posture must be conservative:
+- if unsure, expire sooner
+- if an action is safety-sensitive, expire sooner
+- if a session enables implicit target inheritance, expire sooner
+
+Different session types may require different windows:
+- lights-style sessions: short-lived
+- comfort sessions: short-lived unless actively iterating
+- pending clarification sessions: very short-lived
+- time-bound sessions: tracked as lifecycle objects but still must expire after completion
+
+The exact durations are configuration.
+The requirement for expiry is invariant.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT EXPIRY MEANS (OPERATIONALLY)
+──────────────────────────────────────────────────────────────────────────────
+
+When a session expires:
+
+1) TARGET INHERITANCE IS DISABLED
+The system must not reuse session target_set to interpret follow-ups.
+
+2) CONTEXTUAL VERB INHERITANCE IS DISABLED
+Words like “more,” “again,” “stop,” “same thing” lose their anchor.
+
+3) PENDING INTENTS ARE INVALIDATED
+If a pending clarification was active, it must not be resumed automatically.
+
+4) SAFETY DOES NOT RELAX
+Expiry does not permit guessing.
+Expiry increases the need for clarification.
+
+Expiry converts short replies into ambiguous inputs.
+
+──────────────────────────────────────────────────────────────────────────────
+USER-VISIBLE BEHAVIOR UNDER EXPIRY
+──────────────────────────────────────────────────────────────────────────────
+
+When the user speaks under an expired session context, Ashby must:
+
+- state that the session context is no longer active (in plain language)
+- ask the minimal clarifying question to re-anchor targets or intent
+- avoid blaming the user for the expiry
+
+The system must not pretend it still has context.
+
+Examples (representative only):
+- “That context expired. Which light do you mean?”
+- “I don’t have an active session for that anymore. Which room?”
+
+Language must remain within Action-Gated Truth.
+Expiry is about continuity, not evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+NO SILENT REUSE (HARD RULE)
+──────────────────────────────────────────────────────────────────────────────
+
+If a session is expired, it must not be reused.
+
+This includes:
+- silent reuse of old targets
+- silent reuse of old deltas
+- silent reuse of old “last intent”
+- silent mapping of “it” to old targets
+
+Silent reuse is one of the fastest ways Ashby becomes unsafe.
+
+If a system chooses to guess after expiry, it is no longer Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+INVALIDATION TRIGGERS (BEYOND TIME)
+──────────────────────────────────────────────────────────────────────────────
+
+Sessions may become unsafe before expires_at.
+
+The platform must support invalidation triggers such as:
+
+- SCOPE CHANGE
+If scope_id changes, the session is invalid immediately.
+
+- RESTART
+Restart must mark transient sessions inactive.
+No session may survive restart as active by assumption.
+
+- CONTRADICTION / STATE INTEGRITY EVENTS
+If the session relies on state that is contradicted or degraded to UNKNOWN,
+the session may remain as continuity, but must not imply certainty.
+Some session types may be invalidated entirely by policy.
+
+- EXECUTION FAILURE PATTERNS
+Repeated failures (timeouts/unreachable) may invalidate a session to avoid
+repeating unsafe assumptions.
+
+- EXPLICIT CANCEL
+User cancellation immediately closes relevant sessions.
+
+Time is not the only source of staleness.
+
+──────────────────────────────────────────────────────────────────────────────
+MULTIPLE SESSIONS AND SELECTION SAFETY
+──────────────────────────────────────────────────────────────────────────────
+
+The platform may support multiple session types simultaneously.
+
+This is safe only if selection rules are deterministic.
+
+Rules:
+- session selection must be scoped (scope_id first)
+- only active, unexpired sessions are eligible
+- if multiple eligible sessions match a short follow-up, ambiguity exists and
+  the system must clarify rather than choose arbitrarily
+
+Session selection must never be “whatever was last in memory.”
+It must be auditable.
+
+If ambiguity exists at the session layer, clarification is required.
+
+──────────────────────────────────────────────────────────────────────────────
+LOGGING AND AUDITABILITY
+──────────────────────────────────────────────────────────────────────────────
+
+Expiry and invalidation must be observable.
+
+Rules:
+- session creation, updates, and closures must be logged with correlation identifiers
+- expiry events must be logged
+- invalidation reasons must be recorded (time expiry, restart, scope change, cancel)
+
+This is required for debugging and for proving safety.
+
+A system that expires silently cannot be trusted.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Session expiry and safety must:
+- enforce expires_at mechanically
+- disable inheritance after expiry
+- prevent silent reuse
+- invalidate on restart and scope change
+- force clarification under ambiguity
+- remain auditable
+
+Session expiry and safety must never:
+- allow expired sessions to drive execution
+- treat expiry as permission to guess
+- hide expiry behind fluent responses
+- keep “sticky targets” alive beyond safety boundaries
+- permit arbitrary selection when multiple sessions are eligible
+
+Sessions exist to reduce friction.
+Expiry exists to preserve trust.
+
+END OF 14.6

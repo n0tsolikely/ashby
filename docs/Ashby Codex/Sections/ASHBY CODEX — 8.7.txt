@@ -1,0 +1,157 @@
+ASHBY CODEX — 8.7
+ADAPTERS, BRIDGES, NATIVE VENDORS (HOW)
+
+Execution in Ashby is expressed through HOW layers.
+
+These layers exist to touch the external world
+without contaminating the engine,
+truth semantics,
+or scope law.
+
+Adapters, bridges, and native vendors
+are distinct execution roles,
+not interchangeable concepts.
+
+──────────────────────────────────────────────────────────────────────────────
+THE ROLE OF HOW LAYERS
+──────────────────────────────────────────────────────────────────────────────
+
+HOW layers are responsible for:
+- translating ActionRequests into external actions
+- interacting with protocols and APIs
+- handling retries, timeouts, and transport failures
+- returning observable evidence
+
+HOW layers never:
+- reason about intent
+- define policy
+- assign confidence
+- update state
+- decide language
+
+They execute.
+They report.
+They stop.
+
+──────────────────────────────────────────────────────────────────────────────
+ADAPTERS
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters are the primary execution interface.
+
+An adapter:
+- accepts an ActionRequest
+- executes against a specific capability
+- returns an ActionResult
+- exposes uncertainty explicitly
+
+Adapters are:
+- replaceable
+- testable
+- scope-aware
+- vendor-specific
+
+Adapters never:
+- define truth
+- collapse outcomes
+- upgrade confidence
+- speak to users
+
+If an adapter must explain itself,
+the architecture has failed.
+
+──────────────────────────────────────────────────────────────────────────────
+BRIDGES
+──────────────────────────────────────────────────────────────────────────────
+
+Bridges connect Ashby to external systems
+that Ashby does not control.
+
+Bridges exist to:
+- enable incremental migration
+- integrate legacy platforms
+- reduce adoption friction
+
+Bridges are always:
+- optional
+- removable
+- temporary
+
+A bridge must never:
+- define behavior
+- define state
+- become required for operation
+
+If a bridge becomes permanent,
+native ownership must be evaluated.
+
+──────────────────────────────────────────────────────────────────────────────
+NATIVE VENDORS
+──────────────────────────────────────────────────────────────────────────────
+
+Native vendor integrations represent
+direct ownership of execution paths.
+
+Native ownership is chosen when:
+- verification requires deeper access
+- vendors abstract away failure
+- offline guarantees are required
+- long-term stability demands control
+
+Native integrations:
+- still live outside the engine
+- still obey WHAT vs HOW separation
+- still return ActionResults
+- never define truth
+
+Native does not mean privileged.
+
+──────────────────────────────────────────────────────────────────────────────
+SEPARATION AND DEPENDENCY
+──────────────────────────────────────────────────────────────────────────────
+
+Dependency direction is strict.
+
+- Engine → abstract contracts
+- Modules → capability declarations
+- HOW layers → execution only
+
+The engine must never import HOW layers.
+HOW layers may depend on engine contracts.
+
+This preserves replaceability.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE AND EVIDENCE
+──────────────────────────────────────────────────────────────────────────────
+
+All HOW layers must report:
+- explicit success
+- partial success
+- explicit failure
+- uncertainty
+
+Silence is forbidden.
+
+Evidence must be raw.
+Interpretation belongs to the engine.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+No HOW layer may:
+- bypass the Action Gate
+- write to state
+- upgrade confidence
+- infer intent
+- decide user-facing language
+
+HOW touches reality.
+The engine defines meaning.
+
+This boundary is what allows Ashby
+to scale execution
+without fragmenting truth.
+
+END OF 8.7

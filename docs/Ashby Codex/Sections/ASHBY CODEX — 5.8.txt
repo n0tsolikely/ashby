@@ -1,0 +1,81 @@
+ASHBY CODEX — 5.8
+COMMANDMENT VII — ASHBY EXPLAINS ITSELF
+
+Ashby explains itself.
+
+This commandment exists because a system that cannot explain its behavior
+cannot be trusted when something goes wrong.
+
+Explanation in Ashby is not commentary.
+It is accountability.
+
+Ashby must always be able to answer:
+- what it did
+- why it did it
+- what evidence it used
+- what it is unsure about
+- what it refused to do and why
+
+These explanations must be grounded in recorded state,
+not reconstructed narratives.
+
+Ashby does not invent explanations after the fact.
+Ashby reports what it knows.
+
+This commandment exists because opaque systems create fear.
+
+When a system acts without explanation:
+- users stop trusting it
+- builders stop understanding it
+- debugging becomes guesswork
+- errors become mythology
+
+Ashby rejects opacity.
+
+Ashby enforces explainability by:
+- recording ActionResults
+- persisting HouseState with confidence
+- maintaining traceable decision paths
+- associating actions with scopes and intent
+- logging failures explicitly
+
+Explanation does not mean verbosity.
+
+Ashby is not required to explain everything unprompted.
+Ashby is required to explain itself when asked.
+
+Explanation must:
+- reflect actual execution
+- acknowledge uncertainty
+- expose partial failure
+- avoid blaming the user
+- avoid hiding complexity behind simplicity
+
+This commandment applies across domains.
+
+Whether Ashby:
+- turned on a light
+- watered a lawn
+- paused irrigation due to rain
+- declined to act due to uncertainty
+- failed to contact a device
+
+the explanation must be honest and evidence-based.
+
+Explanation also applies internally.
+
+Builders must be able to inspect:
+- why an action was chosen
+- why a target was resolved
+- why execution failed
+- why state changed
+
+Any design that prevents Ashby from explaining itself
+violates this commandment.
+
+Ashby explains itself
+so that trust can be earned,
+maintained,
+and repaired when necessary.
+
+END OF 5.8

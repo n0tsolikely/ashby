@@ -1,0 +1,223 @@
+ASHBY CODEX — 13.5
+NO-OP HANDLING
+
+NO-OP is the lawful decision to not execute an action because the requested
+change is already satisfied by Ashby’s current belief at acceptable evidence quality.
+
+NO-OP is not laziness.
+NO-OP is not refusal.
+NO-OP is not a silent optimization.
+
+NO-OP is a truth-sensitive claim:
+“The world already matches the requested state well enough that no action is required.”
+
+Because NO-OP is a claim about reality, it is subject to Action-Gated Truth Law.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY NO-OP EXISTS
+──────────────────────────────────────────────────────────────────────────────
+
+NO-OP exists to prevent three common failures:
+
+1) COMMAND SPAM
+Systems that re-fire commands “to be safe” become noisy, unreliable, and opaque.
+Repeated writes without evidence do not create truth.
+They create chaos.
+
+2) FALSE ACTION CLAIMS
+Systems that say “done” while doing nothing are lying.
+Systems that do something while claiming they did something else are also lying.
+
+3) UNNECESSARY RISK
+Every execution attempt carries risk:
+- timeouts
+- partial failures
+- unintended side effects
+- vendor instability
+- blast radius expansion
+
+If no action is needed, Ashby must not touch the external world.
+
+NO-OP is how Ashby remains disciplined under success.
+
+──────────────────────────────────────────────────────────────────────────────
+NO-OP IS A PLANNING OUTCOME, NOT AN EXECUTION OUTCOME
+──────────────────────────────────────────────────────────────────────────────
+
+NO-OP is produced by planning.
+
+NO-OP means:
+- the engine decided not to produce an external ActionRequest that changes reality
+
+NO-OP does not mean:
+- a command was sent
+- an action was verified
+- the system “checked” anything unless a refresh occurred
+
+If Ashby chooses NO-OP without performing a refresh, it must speak from belief,
+not from observation.
+
+──────────────────────────────────────────────────────────────────────────────
+WHEN NO-OP IS PERMITTED
+──────────────────────────────────────────────────────────────────────────────
+
+NO-OP is permitted only when all of the following are true:
+
+1) SCOPE IS RESOLVED
+NO-OP cannot exist outside a scope.
+
+2) TARGETS ARE RESOLVED
+NO-OP cannot be issued against ambiguous targets.
+If target resolution is ambiguous, Ashby must clarify.
+
+3) RELEVANT BELIEF EXISTS WITH ACCEPTABLE CONFIDENCE
+The attribute(s) relevant to the request must have confidence that meets policy.
+
+Minimum law:
+- If the relevant belief is UNKNOWN, NO-OP is forbidden.
+
+Policy may further restrict:
+- whether LAST_KNOWN is sufficient for NO-OP
+- whether VERIFIED is required
+- how strict freshness must be
+
+4) BELIEF IS WITHIN FRESHNESS REQUIREMENTS
+NO-OP must respect staleness and decay.
+
+If the belief is stale beyond policy windows:
+- NO-OP is forbidden without refresh
+- Ashby must either refresh or act with explicit uncertainty posture
+
+NO-OP is a claim of sufficiency.
+Sufficiency requires evidence quality.
+
+──────────────────────────────────────────────────────────────────────────────
+NO-OP UNDER MIXED REALITY
+──────────────────────────────────────────────────────────────────────────────
+
+A single user request may involve multiple targets.
+
+Some may already match.
+Some may require change.
+Some may be unknown.
+
+Rules:
+- NO-OP is evaluated per target and per attribute.
+- Ashby must not treat “most targets match” as permission to NO-OP globally.
+- Targets that require change must be acted on if policy permits.
+- Targets that match may be reported as “already set” under lawful language posture.
+
+When targets are mixed:
+- planning produces an action plan for only the targets that require change
+- NO-OP handling applies only to the subset already satisfied
+
+This prevents a common lie:
+“I did it,” when the system skipped half the request.
+
+──────────────────────────────────────────────────────────────────────────────
+LANGUAGE RULES FOR NO-OP
+──────────────────────────────────────────────────────────────────────────────
+
+NO-OP language must state:
+- that no change was needed
+- what state is believed
+- the evidence posture behind that belief
+
+NO-OP does not have a single fixed sentence.
+It inherits its truth posture from the belief used to justify it.
+
+If belief is VERIFIED and fresh:
+- Ashby may speak declaratively:
+  - “Nothing to change — it’s already at 60%.”
+  - “It’s already off.”
+
+If belief is LAST_KNOWN and policy permits last-known NO-OP:
+- Ashby must hedge explicitly:
+  - “Last known, it’s already at 60%. Want me to check?”
+  - “As far as I know, it’s already off.”
+
+If belief is UNKNOWN or stale:
+- NO-OP is forbidden
+- Ashby must not claim “already”
+- Ashby must offer refresh or proceed with an action attempt under lawful posture
+
+NO-OP language must never imply execution:
+- “Done” is forbidden unless an action was executed and VERIFIED.
+- “I set it” is forbidden if nothing was executed.
+- “I checked” is forbidden unless a refresh actually occurred.
+
+──────────────────────────────────────────────────────────────────────────────
+LOGGING AND TRACEABILITY
+──────────────────────────────────────────────────────────────────────────────
+
+NO-OP decisions must be traceable.
+
+Rules:
+- the decision must be logged with correlation identifiers
+- the belief attributes used to justify NO-OP must be recorded (value, confidence, timestamps)
+- the policy threshold that permitted NO-OP must be recorded or derivable
+
+NO-OP is a claim.
+Claims must be auditable.
+
+──────────────────────────────────────────────────────────────────────────────
+HOUSESTATE BEHAVIOR UNDER NO-OP
+──────────────────────────────────────────────────────────────────────────────
+
+NO-OP must not upgrade belief.
+
+Rules:
+- NO-OP does not create evidence
+- NO-OP must not change confidence upward
+- NO-OP must not rewrite timestamps as if verified now
+
+If a refresh is performed as part of NO-OP evaluation:
+- only the refresh evidence may upgrade belief
+- the NO-OP decision remains separate from the evidence acquisition
+
+NO-OP preserves correctness by doing nothing.
+
+──────────────────────────────────────────────────────────────────────────────
+EXAMPLES (REPRESENTATIVE ONLY)
+──────────────────────────────────────────────────────────────────────────────
+
+Example A — Verified and fresh
+User: “Set the bedroom lights to 60%.”
+Belief: VERIFIED at 60% within freshness window.
+Response:
+- “Nothing to change — they’re already at 60%.”
+
+Example B — Last-known permitted by policy
+Belief: LAST_KNOWN at 60%.
+Response:
+- “Last known, they’re already at 60%. Want me to check them?”
+
+Example C — Unknown forbids NO-OP
+Belief: UNKNOWN.
+Response:
+- “I’m not sure what they’re at right now. Want me to sync them, or should I set them to 60%?”
+
+These examples are illustrative only.
+They do not define a fixed inventory of devices, zones, or policies.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+NO-OP handling must:
+- be scope-bound
+- require resolved targets
+- require acceptable confidence and freshness
+- preserve mixed reality per target
+- speak within the belief posture used to justify the decision
+- remain auditable
+
+NO-OP handling must never:
+- claim execution when no execution occurred
+- upgrade certainty without new evidence
+- ignore staleness to preserve convenience
+- collapse partial satisfaction into a blanket claim
+
+NO-OP is discipline under correctness.
+
+END OF 13.5

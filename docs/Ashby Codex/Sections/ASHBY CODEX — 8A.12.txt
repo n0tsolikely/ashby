@@ -1,0 +1,326 @@
+ASHBY CODEX — 8A.12
+storage/
+
+storage/ is where Ashby keeps artifacts and persisted material that is not HouseState.
+
+This folder exists because Ashby must separate:
+
+- MEMORY (HouseState): scoped beliefs + preferences + staleness/decay
+from
+- ARTIFACTS (storage/): durable objects and records produced or consumed by actions
+
+If storage/ is treated as memory, Ashby becomes a hoarder and a surveillance box.
+If HouseState is treated as storage, Ashby becomes slow, bloated, and confused.
+If storage/ is vendor-shaped, Ashby cannot be migrated or resurrected.
+
+storage/ is the durable backbone that keeps Ashby rebuildable.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF storage/
+──────────────────────────────────────────────────────────────────────────────
+
+storage/ exists to guarantee:
+
+A) DURABLE ARTIFACT RETENTION (UNDER POLICY)
+- logs, reports, exports, diagnostics bundles
+- images, audio, documents (when generated or requested)
+- execution evidence bundles (sanitized, where appropriate)
+- plugin artifacts and connector caches (bounded)
+
+B) VENDOR-NEUTRAL LONGEVITY
+Artifacts must remain interpretable even if:
+- a vendor is removed
+- a bridge is replaced
+- a module is uninstalled
+- the codebase is rewritten
+
+C) PRIVACY AND RETENTION CONTROL
+Artifacts may contain sensitive material.
+Storage must obey:
+- retention rules
+- redaction rules
+- export rules
+
+D) REFERENCES OVER COPIES
+Other subsystems should reference artifacts by IDs/handles,
+not embed blobs into HouseState or logs.
+
+storage/ is how Ashby stays:
+- fast
+- honest
+- migratable
+- and safe to archive.
+
+──────────────────────────────────────────────────────────────────────────────
+2) THE CORE SEPARATION: HOUSESTATE VS STORAGE
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState stores:
+- beliefs (“the living room lights are ON”)
+- uncertainty (“LAST_KNOWN at 9:02pm”)
+- preferences (explicit, scoped)
+- identity mappings (by platform keys)
+
+HouseState must not store:
+- large blobs
+- transcripts as raw streams
+- images/audio/video
+- long logs
+- arbitrary attachments
+
+storage/ stores:
+- artifacts, blobs, reports, evidence bundles
+- large content that should not be “belief memory”
+
+storage/ must not pretend artifacts are truth.
+Artifacts are evidence inputs.
+Truth is classified by Truth Gate.
+
+This separation is not optional.
+It is the only way to keep Ashby sane at scale.
+
+──────────────────────────────────────────────────────────────────────────────
+3) CANONICAL storage/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+storage/
+├── blobs/                                   # large binary objects
+│   ├── images/
+│   ├── audio/
+│   ├── video/                               # optional, if used
+│   └── documents/
+│
+├── artifacts/                               # structured artifacts produced by subsystems
+│   ├── action_results/                      # execution evidence bundles (sanitized)
+│   ├── reports/                             # generated summaries, exports
+│   ├── diagnostics/                         # support bundles
+│   ├── sessions/                            # saved session artifacts (clarify/confirm)
+│   └── plugins/                             # plugin-owned artifacts (bounded, namespaced)
+│
+├── indexes/                                 # retrieval and lookup helpers (not truth)
+│   ├── artifact_index.json
+│   └── (optional)_search_index/
+│
+├── retention/                               # retention and redaction policies
+│   ├── policy.json
+│   ├── redaction_rules.json
+│   └── purge_jobs.py
+│
+└── exports/                                 # explicit export staging (user-requested)
+    ├── bundles/
+    └── manifests/
+
+The layout is a template.
+Specific additions are allowed, but the separation must remain.
+
+──────────────────────────────────────────────────────────────────────────────
+4) ARTIFACT IDENTITIES (HANDLE LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+Artifacts must be referenced by stable handles.
+
+Requirements:
+
+A) ARTIFACT_ID
+Every stored object must have an artifact_id (or blob_id) that is:
+- unique
+- stable
+- addressable
+- usable as a reference from logs and HouseState without embedding content
+
+B) METADATA MANIFEST
+Every artifact must have a manifest that includes:
+- artifact_id
+- type (image, transcript, report, action_result_bundle, etc.)
+- created_at
+- created_by (system component attribution)
+- scope_id (when applicable)
+- correlation_id (link to the execution chain)
+- sensitivity class (public/internal/private)
+- retention policy class (which purge rules apply)
+- content hash/digest (tamper detection where appropriate)
+
+C) CONTENT ADDRESSABILITY (OPTIONAL BUT PREFERRED)
+For important artifacts:
+- store content hashes so integrity can be verified
+- allow deduplication without losing provenance
+
+D) NO “HIDDEN BLOBS”
+If something exists, it must be discoverable through manifests and indexes.
+Undocumented blobs are resurrection poison.
+
+Artifacts must be findable and explainable.
+
+──────────────────────────────────────────────────────────────────────────────
+5) STORAGE BACKENDS (LOCAL-FIRST WITH OPTIONAL REMOTE)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby is designed to be local-first.
+
+Therefore storage/ must support:
+
+A) LOCAL STORAGE AS THE PRIMARY BACKBONE
+- local filesystem or embedded DB-backed blob store
+- durable across restarts
+- safe under offline operation
+
+B) OPTIONAL REMOTE BACKUPS / SYNC (POLICY-GOVERNED)
+Remote storage (cloud) may exist for:
+- backups
+- multi-instance sync
+- offsite preservation
+
+But it must be:
+- explicitly enabled
+- permissioned
+- encrypted
+- auditable
+- optional
+
+A platform that requires cloud storage to function is hostage-able.
+
+──────────────────────────────────────────────────────────────────────────────
+6) RETENTION AND REDACTION (SECURITY AND PRIVACY)
+──────────────────────────────────────────────────────────────────────────────
+
+storage/ must implement retention rules as law, not as “best effort.”
+
+Requirements:
+
+A) RETENTION POLICY
+- explicit durations by artifact type and sensitivity
+- explicit “never retain” rules for forbidden content classes
+- explicit legal/operational retention exceptions (if any)
+
+B) REDACTION RULES
+- remove secrets, tokens, PII where required
+- allow partial redaction while preserving auditability
+- record what was redacted (without leaking the original)
+
+C) PURGE JOBS
+- deterministic purge schedules
+- auditable purge events
+- safe deletes (and safe handling of referenced artifacts)
+
+D) EXPORT SAFETY
+Exports must:
+- never include secrets
+- include only permitted scopes and users
+- include manifests so the export is interpretable later
+
+If retention is undefined, storage becomes a liability.
+If redaction is sloppy, storage becomes a leak.
+
+──────────────────────────────────────────────────────────────────────────────
+7) ACTIONRESULT STORAGE (EVIDENCE BUNDLES)
+──────────────────────────────────────────────────────────────────────────────
+
+ActionResults are the most important artifacts because they are evidence.
+
+storage/ must support a durable way to store ActionResult bundles that include:
+- the ActionRequest (WHAT) reference
+- provider/adapter attribution (HOW)
+- timestamps
+- raw provider response references (sanitized)
+- verification readback results (if any)
+- error classifications (if failures)
+- correlation_id
+- scope_id
+- any captured “device observed state” snapshots used for Truth Gate evaluation
+
+Rules:
+- evidence bundles must remain readable even if the module is removed
+- evidence bundles must not contain secrets
+- evidence bundles must be addressable by artifact_id so truth/state can cite them
+
+If evidence cannot be recovered, truth becomes impossible to audit.
+
+──────────────────────────────────────────────────────────────────────────────
+8) INDEXES AND SEARCH (HELPERS, NOT TRUTH)
+──────────────────────────────────────────────────────────────────────────────
+
+Indexes are allowed to speed retrieval:
+- file indexes
+- metadata search indexes
+- vector indexes (optional)
+
+But indexes must be treated as:
+- caches
+- helpers
+- non-authoritative
+
+The authoritative source is:
+- the artifact itself + manifest
+not the index.
+
+Indexes must be rebuildable from storage content.
+If an index is required to interpret artifacts, resurrection is broken.
+
+──────────────────────────────────────────────────────────────────────────────
+9) DEPENDENCY LAW
+──────────────────────────────────────────────────────────────────────────────
+
+storage/ must be generic infrastructure.
+
+It may depend on:
+- common schemas
+- encryption libraries
+- filesystem/db primitives
+- sanitization utilities
+
+It must not depend on:
+- modules/
+- connectors/
+- adapters/
+- bridges/
+- vendor SDKs
+
+Those components may use storage/.
+storage/ must not need them.
+
+This preserves removability and prevents circular dependencies.
+
+──────────────────────────────────────────────────────────────────────────────
+10) REQUIRED TEST SURFACES FOR storage/
+──────────────────────────────────────────────────────────────────────────────
+
+storage/ must be protected by tests because it protects resurrection.
+
+Minimum test categories:
+
+- artifact manifest integrity tests (required fields)
+- reference durability tests (HouseState references remain valid)
+- retention policy tests (purges happen correctly)
+- redaction tests (no secrets in artifacts/logs/exports)
+- export tests (manifests included; scope/user limits respected)
+- ActionResult bundle tests (evidence completeness and readability)
+- offline survivability tests (local-first works without cloud)
+- migration tests (storage layout changes are migratable)
+
+If storage is not test-protected, it will become a junk pile.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+storage/ must:
+- store artifacts and blobs separately from HouseState beliefs
+- use stable artifact IDs and manifests for interpretability
+- remain local-first with optional policy-governed remote backup
+- enforce retention and redaction as law
+- store ActionResult evidence bundles durably and safely
+- keep indexes rebuildable and non-authoritative
+- remain independent infrastructure (no module/vendor dependencies)
+- support exports that preserve meaning without leaking secrets
+
+storage/ must never:
+- become HouseState (no belief truth stored as blobs)
+- become a surveillance hoard by default
+- leak secrets or PII through artifacts or exports
+- require cloud to function
+- hide blobs without manifests
+- tie artifact readability to the presence of any specific module
+
+storage/ is where Ashby keeps its history without losing its mind.
+
+END OF 8A.12

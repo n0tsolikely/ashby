@@ -1,0 +1,271 @@
+ASHBY CODEX — 32.1
+Profiles vs Forks
+
+Ashby is a platform.
+
+Productization must not fracture the platform.
+The platform survives shipping only if shipping is constrained by law.
+
+This subsection defines the difference between:
+- profiles (allowed)
+- forks (forbidden)
+
+A profile is how Ashby becomes many products without becoming many Ashbys.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITIONS
+──────────────────────────────────────────────────────────────────────────────
+
+PROFILE
+A profile is a declarative packaging and configuration layer that selects:
+- which modules are enabled
+- which adapters/providers are available
+- which policies and defaults apply
+- which UI surfaces are exposed
+- which entitlements are required
+
+A profile changes what is offered.
+It must not change what Ashby is.
+
+FORK
+A fork is a divergence of source, semantics, or invariants such that:
+- two builds of “Ashby” no longer behave as one platform
+- they can no longer share the same Codex law and still be correct
+
+Forks do not begin as “big rewrites.”
+Forks usually begin as “just one special case” inside core.
+
+Forks are how platforms die.
+
+PRODUCT
+A product is a bundle: profile + distribution + entitlement rules + user-facing packaging.
+Products are built from profiles.
+Products are not allowed to rewrite the platform.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHY PROFILES EXIST (THE REAL PROBLEM)
+──────────────────────────────────────────────────────────────────────────────
+
+Shipping creates pressure:
+- different users want different experiences
+- different markets demand different integrations
+- different security postures exist (offline-only vs cloud-allowed)
+- different hardware environments exist (single home vs multi-site)
+- different budgets exist (free vs paid)
+
+If each shipping surface becomes a separate codebase, the platform fractures.
+Fracture produces:
+- inconsistent truth posture
+- inconsistent safety policy
+- inconsistent state semantics
+- irreconcilable migrations
+- incomplete rebuildability
+
+Profiles exist to absorb shipping pressure without altering platform law.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE CANONICAL PROFILE MODEL (WHAT A PROFILE MAY CONTROL)
+──────────────────────────────────────────────────────────────────────────────
+
+A profile may control:
+
+A) MODULE SET
+- which modules exist as selectable capability surfaces
+- whether certain domain modules are enabled by default
+- whether some modules are completely absent (removable modules remain removable)
+
+B) CONNECTOR AVAILABILITY
+- which connectors can be configured (inventory connectors, storage connectors, etc.)
+- whether connectors are enabled per scope
+
+C) EXECUTION PROVIDER PREFERENCES
+- default routing preferences (prefer native vs prefer bridge)
+- whether cloud fallback is allowed or forbidden (policy-controlled)
+- default verification strategy per capability (within Truth Gate law)
+
+D) POLICY DEFAULTS
+- default confirmation thresholds
+- default safety posture for risky actions
+- default session expiry windows
+- default retention and redaction posture for sensitive artifacts
+- default failure handling posture (e.g., refuse vs clarify in certain cases)
+
+E) UI / SURFACE AREAS
+- which intents are exposed through which UI surfaces
+- which dashboards exist
+- what labels and wording are used
+
+F) ENTITLEMENT REQUIREMENTS
+- what requires licensing/entitlements vs what is free
+
+These are legitimate productization levers.
+They do not change the engine, truth, state, or invariants.
+
+──────────────────────────────────────────────────────────────────────────────
+4) WHAT A PROFILE MUST NEVER CONTROL (THE FORK BOUNDARY)
+──────────────────────────────────────────────────────────────────────────────
+
+A profile must never change:
+
+A) TRUTH CLASSES AND LANGUAGE LAW
+- VERIFIED/LAST_KNOWN/UNKNOWN/FAILED semantics
+- forbidden phrases
+- “ActionResult as Reality”
+- how evidence becomes truth
+
+B) HOUSESTATE SEMANTICS
+- belief confidence behavior
+- staleness and decay law
+- mixed reality preservation
+- restart and persistence posture
+
+C) WHAT vs HOW SEPARATION
+- modules remain meaning (WHAT)
+- adapters remain execution (HOW)
+- no vendor logic leaks into meaning due to profile
+
+D) ENGINE POLICY CATEGORIES
+The platform must still produce coherent outcomes:
+- ACT / CLARIFY / CONFIRM / REFUSE / CHAT
+Profiles may adjust thresholds and defaults.
+Profiles must not invent new policy classes or undermine safety logic.
+
+E) SECURITY AND SECRETS LAW
+Profiles may limit which integrations are possible.
+Profiles must not relax secret handling or logging hygiene.
+
+If a profile changes any of the above, it is no longer a profile.
+It is a fork.
+
+──────────────────────────────────────────────────────────────────────────────
+5) PROFILE AS A DECLARATIVE MANIFEST (NOT “IF STATEMENTS”)
+──────────────────────────────────────────────────────────────────────────────
+
+Profiles must be declarative.
+
+A profile is defined as a manifest that can be inspected, diffed, and audited.
+The manifest is configuration, not code.
+
+The platform must avoid:
+- scattering “if profile == …” conditions throughout engine/
+- encoding product differences as hidden special cases
+- embedding product assumptions in modules
+
+Instead:
+- profiles declare which modules/adapters/providers are enabled
+- profiles declare policy defaults and constraints
+- profiles declare available surface areas
+
+Code paths remain stable.
+Behavior changes by selection and configuration at the edges.
+
+This preserves rebuildability and reduces accidental drift.
+
+──────────────────────────────────────────────────────────────────────────────
+6) PROFILE INHERITANCE (HOW MANY PRODUCTS STAY ONE PLATFORM)
+──────────────────────────────────────────────────────────────────────────────
+
+Profiles should be composable and inheritable.
+
+A recommended structure:
+
+- base_profile
+  - the minimal lawful Ashby platform
+  - contains core invariants and required components
+
+- derived profiles
+  - “home”
+  - “pro”
+  - “business”
+  - “offline_only”
+  - etc.
+
+Derived profiles may add or remove modules and set defaults.
+Derived profiles must not override platform invariants.
+
+Inheritance prevents duplication.
+Duplication is where drift hides.
+
+──────────────────────────────────────────────────────────────────────────────
+7) PROFILE COMPATIBILITY AND MIGRATION
+──────────────────────────────────────────────────────────────────────────────
+
+Profiles evolve.
+Shipping requires versioning.
+
+Rules:
+- a profile has a version
+- a profile change that alters data shape requires a migration (pack #5 law)
+- a profile change that alters invariants requires Control Sync (not a normal release)
+
+Important distinction:
+- changing what is enabled is not the same as changing what exists.
+
+Example:
+- removing a module from a profile does not erase artifacts it previously created
+- disabling a connector does not delete its stored records
+- profiles must define how dormant artifacts are handled (accessible vs archived)
+
+A correct platform can:
+- change profiles
+- migrate safely
+- preserve identity and history
+without rewriting core meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+8) SUPPORT AND OBSERVABILITY REQUIREMENT
+──────────────────────────────────────────────────────────────────────────────
+
+Profiles must be observable.
+
+Given a correlation_id, the platform must be able to answer:
+- which profile was active
+- which flags and entitlements were in effect
+- which modules/adapters were enabled
+- why an action was allowed or refused
+
+If productization cannot be reconstructed from logs, the system becomes un-debuggable.
+Undebuggable systems are not rebuildable.
+
+──────────────────────────────────────────────────────────────────────────────
+9) THE CORE FAILURE MODE: “PRODUCTIZATION INSIDE CORE”
+──────────────────────────────────────────────────────────────────────────────
+
+Forks begin when product decisions leak into core systems:
+
+Examples of forbidden drift:
+- engine/ contains “if business_profile then …”
+- Truth Gate behaves differently under different products
+- HouseState changes schema based on product
+- adapters alter evidence posture based on product convenience
+- modules assume the presence of a specific bridge/vendor
+
+These changes create incompatible Ashbys.
+
+The platform must resist the temptation to encode product identity in core logic.
+
+Profiles belong at the packaging boundary.
+The platform remains singular.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Profiles must:
+- be declarative manifests, not scattered special cases
+- control what is enabled, exposed, and defaulted
+- remain auditable and reconstructable
+- remain compatible with migrations and acceptance tests
+- preserve a single Ashby platform law across all products
+
+Profiles must never:
+- alter Truth Gate semantics, language law, or HouseState law
+- alter WHAT vs HOW separation
+- weaken security, secrets, or logging invariants
+- introduce product-specific behavior inside core subsystems
+- create divergent “Ashby variants” that cannot share the same Codex
+
+Profiles are how Ashby ships.
+Forks are how Ashby dies.
+
+END OF 32.1

@@ -1,0 +1,75 @@
+ASHBY CODEX — 0.2
+WHO THIS CODEX IS FOR
+
+This Codex is written for builders, not users.
+
+It is for the person who will sit down in front of a machine and ask:
+“What is Ashby really supposed to be?”
+“Where does this belong?”
+“What happens if I change this?”
+“Am I about to break something that matters?”
+
+This Codex assumes the reader is:
+- technically competent
+- capable of reading architecture
+- capable of implementing systems
+- willing to respect constraints
+- willing to stop and think before coding
+
+It is not written for:
+- end users
+- marketing teams
+- sales decks
+- feature checklists
+- quick-start tutorials
+
+Those are downstream artifacts.
+
+This Codex exists upstream, at the point where decisions are made that cannot
+be easily undone later.
+
+It is for:
+- the original creator, returning tired, months later
+- a future collaborator who did not live through the design
+- an engineer inheriting the system after context is lost
+- an AI or automated system tasked with reconstructing Ashby from text alone
+
+If you are reading this because you want to “add a feature quickly,”
+this document will slow you down on purpose.
+
+If you are reading this because you want to understand Ashby deeply,
+this document will save you years.
+
+This Codex is intentionally explicit.
+It repeats important ideas.
+It states things that may feel obvious.
+
+That is not redundancy.
+That is protection against assumption.
+
+Ashby is a system where small assumptions cause large failures.
+Therefore, assumptions are written down and treated as law.
+
+This Codex is also written for the future.
+
+The reader may not know:
+- which modules exist today
+- which vendors are popular
+- which protocols dominate
+- which agents have been built
+- which products ship
+
+That is expected.
+
+The reader must be able to:
+- understand the shape of Ashby
+- understand where new things go
+- understand what must never change
+- understand what may evolve freely
+
+If the reader follows this Codex precisely,
+they will not recreate “something like Ashby.”
+
+They will recreate Ashby.
+
+END OF 0.2

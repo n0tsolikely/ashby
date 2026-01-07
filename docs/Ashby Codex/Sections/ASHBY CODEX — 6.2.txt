@@ -1,0 +1,319 @@
+ASHBY CODEX — 6.2
+THE SACRED ENGINE
+
+The engine/ is sacred because it is the only place where Ashby is forced to be Ashby.
+
+If the engine is polluted, every layer above it becomes untrustworthy, because every layer above it
+inherits its posture: how it decides, how it speaks, how it treats evidence, and how it gates action.
+
+Sacred does not mean “never touched.”
+Sacred means “never treated casually.”
+Sacred means “kept minimal, protected, and constitutionally governed.”
+
+This section defines what the engine is, what it owns, what it must never contain, and how it stays small
+while Ashby grows.
+
+──────────────────────────────────────────────────────────────────────────────
+THE ENGINE IS THE BRAIN, NOT THE BODY
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby is not a single program.
+Ashby is a platform body plus removable organs.
+
+- The body is the permanent substrate (law, policy, truth posture, state authority, routing discipline).
+- The organs are the removable capabilities (modules, agents, integrations, products).
+
+The engine/ is the brain of the body.
+
+The engine:
+- reasons about intent
+- chooses policy outcomes
+- plans WHAT to do
+- routes HOW to do it through execution seams
+- enforces truth posture and language constraints
+- orchestrates updates to state authority
+
+The engine never:
+- talks to vendors
+- knows brands
+- executes hardware logic
+- contains optional features
+
+If something can be disabled, removed, or swapped, it does not belong in the engine.
+
+That rule is not preference.
+It is structural survival.
+
+──────────────────────────────────────────────────────────────────────────────
+1) THE ENGINE’S OWNERSHIP (WHAT THE ENGINE IS ALLOWED TO OWN)
+──────────────────────────────────────────────────────────────────────────────
+
+The engine owns platform invariants and their enforcement.
+
+1.1 Policy ownership
+The engine owns the bounded policy outcomes:
+- ACT
+- CLARIFY
+- CONFIRM
+- REFUSE
+- CHAT
+
+Modules may recommend.
+Adapters may report.
+But only the engine decides the policy outcome.
+
+This prevents “capability pressure” from bypassing safety.
+It prevents vendors from shaping decision-making.
+It keeps Ashby singular.
+
+1.2 Planning ownership
+The engine owns the planning boundary:
+- planning produces ActionRequests
+- ActionRequests describe WHAT should be attempted
+- planning never embeds vendor details
+
+Modules help produce meaning.
+But planning remains engine-governed so that meaning stays lawful and execution stays swappable.
+
+1.3 Truth posture ownership
+The engine owns Truth Gate enforcement:
+- ActionResult is treated as evidence
+- evidence strength is classified
+- language posture is constrained by classification
+- forbidden phrases are prevented
+- mixed reality is allowed to be stated honestly
+
+This is not “a feature.”
+It is the difference between a system that is helpful and a system that lies.
+
+1.4 State authority ownership (orchestration, not hoarding)
+The engine owns the orchestration of state authority:
+- it reads HouseState for context
+- it writes updates to HouseState only through the lawful pipeline
+- it never creates shadow truth stores
+
+Important distinction:
+- HouseState is the canonical belief store.
+- The engine is the process that updates the belief store under law.
+
+The engine may hold ephemeral runtime context (sessions, correlation state),
+but it must not become a competing memory system.
+
+1.5 Routing ownership (tool discipline)
+The engine owns the routing discipline:
+- it selects which adapter/provider is used
+- it records which path executed
+- it enforces that providers remain swappable
+- it ensures that execution pathways cannot upgrade truth posture
+
+Routing is HOW selection.
+Routing is not meaning.
+
+1.6 Auditability ownership
+The engine owns correlation and reconstruction:
+- correlation_id must exist and propagate
+- decisions must be loggable
+- the system must be able to explain why it did what it did
+
+The engine is where “explainability” becomes mandatory infrastructure, not optional ergonomics.
+
+──────────────────────────────────────────────────────────────────────────────
+2) THE ENGINE’S PROHIBITIONS (WHAT MUST NEVER ENTER THE ENGINE)
+──────────────────────────────────────────────────────────────────────────────
+
+The engine must remain vendor-blind and feature-minimal.
+
+The following are forbidden inside engine/:
+
+2.1 Vendor and brand knowledge
+- no vendor-specific models
+- no protocol-specific assumptions (Zigbee/Matter/etc.)
+- no bridge entity model assumptions
+- no “if brand == …” logic
+
+The engine cannot be allowed to “know reality through a dependency.”
+Reality must enter through evidence objects under Truth Gate.
+
+2.2 Execution logic
+- no direct API calls to devices
+- no direct protocol commands
+- no hardware retries and transport logic
+- no bridge-specific execution shaping
+
+Execution belongs in adapters/, bridges/, native_vendor/, connectors/.
+Execution is replaceable; therefore it is not sacred.
+
+2.3 Optional features
+Anything that can reasonably be:
+- toggled off
+- removed
+- swapped
+- tier-gated
+is not allowed in engine/.
+
+Examples of “optional” that must never creep into the engine:
+- product surfaces
+- licensing logic
+- feature flags as scattered conditionals
+- vendor inventory ingestion
+- specific domain modules (lights, irrigation, etc.)
+
+The engine is not where new capabilities live.
+New capabilities live as removable organs.
+
+2.4 UI behavior and presentation decisions
+The engine may produce structured responses and posture.
+It must not contain:
+- UI rendering logic
+- product copy
+- per-surface behavior tweaks
+
+Surface differences live outside the engine via profiles and routing layers.
+
+2.5 Secret storage or credential embedding
+The engine must not:
+- store secrets
+- embed credentials
+- log sensitive values
+- create “debug paths” that bypass sanitization
+
+Secrets belong to secret systems.
+The engine references them by handle at the boundary and only where required.
+
+2.6 “Just for now” shortcuts
+Most sacred violations start as:
+- “temporary”
+- “quick fix”
+- “we’ll refactor later”
+
+The engine is where those shortcuts are forbidden.
+If the shortcut is needed, it belongs outside the engine and behind a seam.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHY THE ENGINE MUST STAY SMALL (RESURRECTION AND REWRITEABILITY)
+──────────────────────────────────────────────────────────────────────────────
+
+A sacred core must be rewriteable.
+
+If the engine becomes huge:
+- it becomes impossible to audit
+- it becomes impossible to re-implement independently
+- it becomes impossible to guarantee invariants are still enforced
+
+Ashby’s entire resurrection premise requires:
+- the engine’s responsibilities are narrow
+- the engine’s semantics are explicit
+- the engine can be rebuilt from the Codex without tribal knowledge
+
+Therefore:
+- most growth must occur outside engine/
+- the engine must be “stable by refusal,” not “stable by accumulation”
+
+The engine stays small by saying “no” relentlessly.
+
+──────────────────────────────────────────────────────────────────────────────
+4) THE ENGINE AS THE ENFORCER OF SEAMS
+──────────────────────────────────────────────────────────────────────────────
+
+The engine is the place where boundaries are enforced, not merely described.
+
+4.1 WHAT vs HOW boundary
+The engine enforces that:
+- meaning decisions live in modules/
+- execution lives in adapters/providers
+- execution cannot leak reasoning upward
+- reasoning cannot leak execution details downward
+
+4.2 Truth boundary
+The engine enforces that:
+- evidence is required for claims
+- uncertainty stays visible
+- state staleness is not hidden
+- partial outcomes are reported honestly
+
+4.3 Authority boundary
+The engine enforces that:
+- scope authority is checked before action
+- policy gates exist before execution
+- high-risk work requires confirmation when required
+
+The engine is where “helpfulness pressure” is resisted structurally.
+
+──────────────────────────────────────────────────────────────────────────────
+5) THE ENGINE’S REQUIRED INTERFACES (HOW IT TOUCHES THE REST OF ASHBY)
+──────────────────────────────────────────────────────────────────────────────
+
+The engine touches the rest of the platform only through contracts.
+
+Minimum contract surfaces:
+
+5.1 Input contract
+- receives raw user input and transport metadata
+- normalizes into Intent objects
+
+5.2 Policy contract
+- consumes Intent + context
+- produces bounded policy outcomes and required next steps
+
+5.3 Planning contract
+- produces ActionRequests that are:
+  - vendor-neutral
+  - scope-bound
+  - safety-aware
+
+5.4 Execution contract
+- invokes adapters/providers with ActionRequests
+- receives ActionResults as evidence
+
+5.5 Truth/State contract
+- Truth Gate classifies evidence
+- HouseState is updated through explicit rules
+- response is constructed with correct language posture
+
+If the engine begins to “reach around” these contracts, the design is breaking.
+
+──────────────────────────────────────────────────────────────────────────────
+6) THE ENGINE CHANGE RULE (WHEN SACRED CHANGES ARE ALLOWED)
+──────────────────────────────────────────────────────────────────────────────
+
+Because the engine owns invariants, engine changes are high-risk by default.
+
+Engine changes are allowed only if they preserve:
+- truth posture integrity
+- state authority integrity
+- WHAT/HOW separation
+- scope and identity law
+- auditability and explainability
+
+If an engine change alters any foundational semantics, it is constitutional
+and requires governance (Control Sync doctrine).
+
+The correct bias is:
+- keep the engine stable
+- evolve the platform through seams
+- invoke governance only when truly required
+
+Sacred means “changes deliberately,” not “changes constantly.”
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+The engine must:
+- reason, plan, and route under platform law
+- enforce policy outcomes and safety gates
+- enforce Truth Gate language posture
+- orchestrate HouseState updates without becoming its own memory
+- remain vendor-blind and brand-agnostic
+- remain small, rewriteable, and auditable
+
+The engine must never:
+- contain vendor knowledge or execution logic
+- contain optional features, products, or UI behavior
+- bypass seams or embed “just for now” shortcuts
+- weaken secrets handling or sanitization
+- allow evidence-free certainty
+
+If Ashby must survive time, the engine must remain sacred.
+
+END OF 6.2

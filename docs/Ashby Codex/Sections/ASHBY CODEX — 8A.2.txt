@@ -1,0 +1,269 @@
+ASHBY CODEX — 8A.2
+scopes/
+
+scopes/ is the universal zone system of Ashby.
+
+Scopes are not “labels.”
+Scopes are not “tags.”
+Scopes are not “folders.”
+
+Scopes are the primary mechanism by which Ashby:
+- binds meaning to place / context
+- binds authority to boundary
+- binds state to a coherent world model
+- resolves contextual phrases safely (“in here,” “upstairs,” “the office”)
+
+If scopes/ is sloppy, Ashby becomes:
+- guessy under natural language
+- unsafe under ambiguity
+- and fragmented under multi-environment growth
+
+scopes/ must be Ashby-owned and vendor-neutral.
+No vendor is allowed to define Ashby’s scope reality.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF scopes/
+──────────────────────────────────────────────────────────────────────────────
+
+scopes/ exists to provide:
+
+A) CONTEXT ANCHORING
+When the user says:
+- “in here”
+- “this room”
+- “upstairs”
+- “the warehouse”
+Ashby must resolve those phrases into a scope anchor using explicit rules.
+
+B) AUTHORITY BOUNDARIES
+Scopes are where permissions live.
+A user may have authority in one scope and not another.
+
+C) STATE PARTITIONING
+HouseState beliefs must be scoped.
+A belief without a scope is a leak across realities.
+
+D) CAPABILITY MAPS
+What Ashby can do is scope-dependent.
+A scope defines which modules/capabilities are enabled.
+
+Scopes turn “natural language” into “bounded execution.”
+That is why they are core.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT MUST LIVE IN scopes/ (OWNED RESPONSIBILITIES)
+──────────────────────────────────────────────────────────────────────────────
+
+scopes/ owns:
+
+A) SCOPE GRAPH (THE WORLD SHAPE)
+- parent/child relationships
+- containment rules
+- identity of each scope (scope_id / scope_key)
+- invariants that prevent cycles and contradictions
+
+B) ALIAS AND NAME RESOLUTION
+- stable naming
+- alias mapping (“living room” vs “lounge”)
+- user-specific aliases (optional)
+- normalization rules (case, punctuation, common synonyms)
+
+C) ACTIVE CONTEXT RESOLUTION
+- rules for “current scope”
+- rules for “most recent relevant scope”
+- session-tethered context (time-bounded)
+- safe fallback rules (CLARIFY if ambiguous)
+
+D) CAPABILITY MAP (SCOPE → ENABLED SURFACES)
+- which modules/capabilities are enabled in which scope
+- how profiles and entitlements apply to scopes
+- explicit prohibition of “implicit enablement”
+
+E) SCOPE-BOUND IDENTITY BINDING (INTERFACE, NOT CANONICAL IDENTITY)
+Scopes may maintain mappings like:
+- which entities belong to which scope
+- what “the kitchen light” means inside a scope
+But canonical identity remains platform-owned (device_key), not vendor-owned.
+
+scopes/ is the layer that makes “place” computable without guessing.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHAT MUST NEVER LIVE IN scopes/ (FORBIDDEN CONTENT)
+──────────────────────────────────────────────────────────────────────────────
+
+scopes/ must not contain:
+
+A) VENDOR ENTITY MODELS AS AUTHORITY
+Vendor entity objects may be referenced as evidence inputs,
+but they must not become the scope graph.
+
+B) DEVICE STATE AS TRUTH
+Scopes are not a state cache.
+HouseState stores beliefs; providers store their own raw states; scopes binds context.
+Do not mix these roles.
+
+C) SECRETS OR CREDENTIALS
+Scopes do not own credentials.
+A scope may reference a connector handle, but not store secrets.
+
+D) PRODUCT FORK LOGIC
+Scopes define capabilities, not behavior rewrites.
+If scope changes meaning of truth/safety rules, that is a violation.
+
+E) “MAGIC” HEURISTICS WITHOUT TESTS
+If scope resolution depends on vibes or hidden heuristics,
+it must be made explicit and tested, or it is not allowed.
+
+scopes/ is foundational.
+It must be conservative.
+
+──────────────────────────────────────────────────────────────────────────────
+4) CANONICAL ARTIFACTS INSIDE scopes/
+──────────────────────────────────────────────────────────────────────────────
+
+The canonical internal artifacts include (representative):
+
+A) scope_graph.py (or equivalent)
+- scope definition objects
+- parent/child relationships
+- validation (no cycles)
+- serialization/deserialization
+- migration hooks for graph changes
+
+B) alias_resolver.py (or equivalent)
+- alias tables
+- normalization rules
+- conflict handling (“two scopes share alias” → ambiguity set)
+
+C) capability_map.py (or equivalent)
+- map of enabled capability surfaces per scope
+- integration with profiles/entitlements
+- explicit “disabled” state
+
+These files are examples.
+The responsibilities are law.
+
+──────────────────────────────────────────────────────────────────────────────
+5) HOW SCOPES INTERACT WITH THE REST OF ASHBY
+──────────────────────────────────────────────────────────────────────────────
+
+A) WITH HOUSESTATE
+Every belief must be scoped.
+HouseState must not “float.”
+Scopes provide the partition key and containment semantics.
+
+B) WITH MODULES
+Modules ask questions like:
+- “which room?”
+- “do you mean the one in here?”
+Scopes provide:
+- active scope anchors
+- ambiguity sets when aliases collide
+- capability availability context
+
+Modules must not invent scope resolution.
+They must request it.
+
+C) WITH POLICY
+Policy decisions depend on scope because:
+- risk differs by environment
+- permissions differ
+- capability availability differs
+
+D) WITH TARGET RESOLUTION
+Target resolution uses scopes to narrow search spaces.
+If scope cannot narrow to a unique target, Ashby must CLARIFY.
+
+E) WITH PROFILES AND PRODUCTIZATION
+Profiles may enable different module sets.
+Scopes apply those sets in a bounded way.
+Profiles do not change scope law.
+
+scopes/ is a core dependency for safe natural language action.
+
+──────────────────────────────────────────────────────────────────────────────
+6) CONTEXTUAL PHRASES AND SCOPES (LINK TO 15.2)
+──────────────────────────────────────────────────────────────────────────────
+
+Contextual phrases (“in here,” “this room,” “upstairs”) are only safe when:
+
+- there is an active scope anchor, AND
+- the anchor is within a valid session window, AND
+- the phrase resolves to a unique scope or yields an explicit ambiguity set.
+
+If any condition fails:
+- Ashby must ask a clarifying question
+- Ashby must not guess
+
+This is why scopes/ must provide:
+- explicit context anchoring rules
+- explicit expiry behavior
+- explicit ambiguity exposure (not hidden tie-breaks)
+
+The system must prefer “ask” over “assume.”
+
+──────────────────────────────────────────────────────────────────────────────
+7) SCOPE CHANGES (RENAME, MOVE, MERGE, SPLIT) ARE MIGRATIONS
+──────────────────────────────────────────────────────────────────────────────
+
+Scopes will change over time:
+- rooms are renamed
+- businesses restructure
+- warehouses split
+- environments are cloned
+
+These changes affect:
+- identity mapping
+- capability maps
+- HouseState partitioning
+- historical interpretability
+
+Therefore scope-graph edits must be treated as migrations.
+
+Rules:
+- scope_id (or scope_key) must remain stable unless the scope is truly replaced
+- renames must preserve identity continuity
+- merges/splits must be explicit, auditable operations
+- structural realignment playbooks apply when scope changes would re-partition state
+
+Scopes are not “just strings.”
+They are the backbone of meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+8) REQUIRED TEST SURFACES FOR scopes/
+──────────────────────────────────────────────────────────────────────────────
+
+Scopes must be protected by tests that enforce conservatism:
+
+- graph validity tests (no cycles, no orphan contradictions)
+- alias collision tests (ambiguity surfaced, not hidden)
+- context phrase resolution tests (15.2 compliance)
+- session expiry behavior tests (no stale “in here” anchors)
+- capability map gating tests (disabled means unroutable)
+- permission boundary tests (scope authority enforced)
+
+If scope resolution is not test-protected, drift is guaranteed.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+scopes/ must:
+- be Ashby-owned, vendor-neutral
+- provide explicit scope graph, alias resolution, and capability mapping
+- enable safe contextual phrase grounding without guessing
+- enforce authority boundaries by scope
+- enable HouseState partitioning and interpretability
+- surface ambiguity sets rather than hiding tie-breaks
+- treat scope-graph changes as migrations
+
+scopes/ must never:
+- let vendor models become the scope truth
+- become a device state cache or truth source
+- store secrets or credentials
+- encode product forks
+- rely on untested “magic” heuristics for resolution
+
+scopes/ is how Ashby turns language into safe reality control.
+
+END OF 8A.2

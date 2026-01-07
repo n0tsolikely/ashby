@@ -1,0 +1,289 @@
+ASHBY CODEX — 15.2
+CONTEXTUAL PHRASES
+
+Natural language is not just nouns and verbs.
+A large portion of real commands are built from contextual fragments:
+
+- “in here”
+- “that one”
+- “the same as before”
+- “do it again”
+- “turn it down”
+- “make it warmer”
+- “the other one”
+- “the one we talked about”
+- “just like last time”
+
+These phrases are not “fluff.”
+They are control instructions whose meaning depends on an anchor.
+
+Ashby is allowed to resolve contextual phrases only when the anchor is explicit enough
+to be safe and reconstructable.
+
+Otherwise Ashby must CLARIFY.
+
+Context resolution is where assistants start guessing.
+Ashby must not guess.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITION: WHAT A CONTEXTUAL PHRASE IS
+──────────────────────────────────────────────────────────────────────────────
+
+A contextual phrase is any expression whose referent cannot be determined
+from the sentence alone and therefore requires a context anchor.
+
+Types of contextual phrases include:
+
+1.1 Deictic / pronoun references
+- it / that / those / this / the other one
+
+1.2 Spatial references
+- here / in here / this room / in this area / downstairs / outside
+
+1.3 Temporal references
+- now / later / after that / again / as before
+
+1.4 Comparative references
+- brighter / dimmer / louder / quieter / warmer / cooler
+
+1.5 Continuation references
+- also / too / and the rest / same for the others
+
+These phrases are valid inputs.
+They are not errors.
+But they demand lawful resolution.
+
+──────────────────────────────────────────────────────────────────────────────
+2) THE CONTEXT ANCHOR STACK (WHERE CONTEXT IS ALLOWED TO COME FROM)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby must resolve contextual phrases only from the context anchor stack.
+
+The anchor stack is ordered by authority and safety:
+
+A) Pending Clarification Session Anchor (highest)
+If Ashby asked a question, and the user replies, the reply is interpreted
+in relation to that active clarification transaction.
+
+This is the safest anchor because it is explicit and recent.
+
+B) Active Session Anchor (execution session)
+If a lawful execution session exists (lights-style, time-bound, etc.),
+context can be resolved against that session’s scope and last confirmed targets,
+within that session’s expiry.
+
+C) Explicitly Confirmed Target Anchor (conversation-local)
+If, in the current conversation window, the user explicitly selected or confirmed
+a target or group, that selection can be used as an anchor for pronouns like “it/that.”
+
+D) Explicit Scope Anchor (UI / surface-provided)
+If the surface provides a scope view (e.g., the user is operating inside a known room scope),
+phrases like “in here” may map to that scope.
+
+E) Evidence-Based Location Anchor (rare, and decay-bound)
+If Ashby has evidence of a user location (presence sensor, device proximity, explicit “I’m in the kitchen”),
+and that evidence is fresh, “here” may map to that location scope.
+
+This anchor must be staleness-bound and treated as a belief, not a certainty.
+
+F) Default Assumptions (forbidden)
+Ashby must not resolve contextual phrases by defaulting to:
+- “the most common device”
+- “the last device we touched weeks ago”
+- “the biggest room”
+- “the primary scope”
+- “whatever seems likely”
+
+If resolution depends on a default assumption, Ashby must CLARIFY.
+
+──────────────────────────────────────────────────────────────────────────────
+3) RESOLUTION RULE: CONTEXT MUST BE BOTH UNIQUE AND JUSTIFIED
+──────────────────────────────────────────────────────────────────────────────
+
+A contextual phrase may be resolved only if both are true:
+
+3.1 Uniqueness
+The anchor produces exactly one interpretation (or a single clearly bounded set)
+that is stable enough to act on.
+
+If the anchor produces multiple plausible targets, it is ambiguous.
+
+3.2 Justification
+Ashby must be able to explain, internally and in logs, why that interpretation was chosen:
+- which anchor was used
+- what evidence or session fields supported it
+- why alternatives were rejected (if relevant)
+
+If Ashby cannot justify the resolution, it must not perform it.
+
+Context resolution without justification is guessing.
+
+──────────────────────────────────────────────────────────────────────────────
+4) “IN HERE” (SPATIAL CONTEXT) — THE MOST COMMON FAILURE MODE
+──────────────────────────────────────────────────────────────────────────────
+
+“In here” is only resolvable if “here” is defined.
+
+Allowed meanings for “here”:
+
+4.1 UI scope view
+If the user is operating inside a known scope (e.g., room dashboard),
+“in here” resolves to that scope.
+
+4.2 Active session scope
+If a session is active and already established a scope,
+“in here” resolves to the session’s scope.
+
+4.3 Explicitly stated location (fresh)
+If the user explicitly stated a location recently (“I’m in the kitchen”),
+and that statement is within the session horizon,
+“in here” may resolve to that location scope.
+
+Disallowed meanings:
+- “here means the last room used yesterday”
+- “here means wherever the user usually is”
+- “here means the only room with lights”
+Those are guesses.
+
+If “here” is not defined, Ashby asks:
+- “When you say ‘in here’, which room/area do you mean?”
+
+──────────────────────────────────────────────────────────────────────────────
+5) PRONOUNS: “IT / THAT / THOSE”
+──────────────────────────────────────────────────────────────────────────────
+
+Pronouns are resolvable only against a stable target anchor.
+
+Rules:
+
+5.1 Single last-target rule
+If the last confirmed target set is exactly one device/group,
+“it” may map to that target.
+
+5.2 Multi-target ambiguity
+If the last confirmed set contains multiple candidates,
+“it” is ambiguous unless the user also provided a selector (“the second one”).
+
+5.3 Time decay
+Pronoun anchors decay quickly.
+If the last-target reference is outside the allowed window or the session expired,
+Ashby must not assume continuity and must CLARIFY.
+
+5.4 “That one” with candidate lists
+If Ashby previously provided a candidate list (“did you mean A, B, or C?”),
+then “that one” may be resolved only if the user also disambiguates:
+- “the first”
+- “the hallway one”
+- “the one called ‘Desk Lamp’”
+
+Otherwise: CLARIFY.
+
+Pronoun resolution must be strict because it controls execution against real targets.
+
+──────────────────────────────────────────────────────────────────────────────
+6) “SAME AS BEFORE” / “DO IT AGAIN” (TEMPORAL CONTEXT)
+──────────────────────────────────────────────────────────────────────────────
+
+These phrases are requests to reuse a prior action specification, not to invent one.
+
+Allowed resolution:
+- repeat the last ActionRequest pattern for the same anchored target(s),
+  within a safe horizon, and only if the prior action is known.
+
+Examples:
+- user: “make it warmer” → (after a successful thermostat set)
+  user: “do it again”
+  → repeat the last temperature step on the same thermostat target
+
+Disallowed resolution:
+- interpreting “same as before” as “restore the state from last week”
+- interpreting “again” as “repeat something vaguely similar”
+- repeating actions that were not verified or were partially failed without saying so
+
+If the prior action was FAILED or UNKNOWN, “do it again” is allowed,
+but the response must not pretend it succeeded previously.
+It must present the posture honestly.
+
+If Ashby cannot identify what “before” refers to, it must CLARIFY:
+- “When you say ‘same as before’, which action are you referring to?”
+
+──────────────────────────────────────────────────────────────────────────────
+7) COMPARATIVES: “BRIGHTER / DIMMER / WARMER / COOLER”
+──────────────────────────────────────────────────────────────────────────────
+
+Comparatives require:
+- a target anchor (what device/system changes)
+- a baseline (relative to what)
+- a step model (how much change)
+
+Ashby may use a default step model only if the step model is explicitly defined as part of platform law
+(or as a module configuration), and the system can justify it.
+
+Example lawful approach:
+- define “brighter” as +10% brightness unless the module defines a different step,
+  and treat that as an explicit, logged rule.
+
+Forbidden approach:
+- “brighter means whatever looks right”
+- “brighter means max”
+- “warmer means +5 degrees always” (unless defined and logged)
+
+If the baseline is unknown (e.g., current brightness unknown),
+Ashby can still attempt a relative change if the device supports it,
+but must speak honestly about verification and state confidence.
+
+If the action is high-impact (security, money, access), comparatives are not accepted without clarity.
+
+──────────────────────────────────────────────────────────────────────────────
+8) CONTINUATIONS: “ALSO”, “AND THE REST”, “DO THE OTHERS”
+──────────────────────────────────────────────────────────────────────────────
+
+Continuation phrases can expand scope unintentionally.
+They are a blast-radius risk.
+
+Rules:
+- “also” applies only to the last explicitly defined group unless clarified
+- “the rest” requires a defined set (“rest of what?”) unless an explicit candidate set exists
+- “do the others” requires the system to know what “others” means within the anchor set
+
+If continuation expands to many targets or high-impact changes,
+Ashby must require confirmation.
+
+If the set is undefined, Ashby must CLARIFY.
+
+──────────────────────────────────────────────────────────────────────────────
+9) LOGGING REQUIREMENT (CONTEXT RESOLUTION MUST BE RECONSTRUCTABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+For every contextual resolution, the system must be able to reconstruct:
+- the phrase that was resolved
+- the anchor used (clarification/session/last-target/UI scope/evidence location)
+- the resulting target(s) or parameters
+- any decay or staleness considerations
+- whether confirmation was required due to expansion
+
+If context resolution is not observable, it becomes silent guessing by another name.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Contextual phrases are allowed.
+Guessing is forbidden.
+
+Ashby may resolve contextual phrases only when:
+- the anchor is explicit and within bounds
+- the resulting interpretation is unique enough to be safe
+- the resolution is justified and reconstructable
+
+Ashby must CLARIFY when:
+- “here” is undefined
+- pronouns do not map uniquely
+- “before” is unspecified
+- continuations expand an undefined set
+- resolution would rely on default assumptions
+
+Natural language is messy.
+Ashby stays honest by refusing to pretend it is not.
+
+END OF 15.2

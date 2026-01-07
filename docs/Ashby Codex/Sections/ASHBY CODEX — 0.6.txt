@@ -1,0 +1,365 @@
+# **ASHBY CODEX — 0.6**
+
+## **Permanence, Authority, and Control Sync**
+
+Ashby is not a casual system.
+
+It is a **permanent system** designed to survive time, scale, and replacement of its builders.
+That permanence requires explicit rules about **authority**, **change**, and **when change is allowed at all**.
+
+This section defines the **constitutional layer** of Ashby:
+
+* what is allowed to change,
+* what is not,
+* who decides,
+* and how permanent decisions are made without destroying the platform.
+
+If this section is violated, Ashby may still run —
+but it will no longer be Ashby.
+
+---
+
+## 1. PERMANENCE IS A DESIGN REQUIREMENT, NOT A CONSEQUENCE
+
+Ashby is built with the assumption that:
+
+* original authors will leave,
+* implementations will be rewritten,
+* hardware and vendors will change,
+* and future builders will *not* share the same intuitions.
+
+Therefore:
+
+> **Nothing that defines Ashby may rely on memory, convention, or culture.**
+
+Permanence means:
+
+* rules must be written,
+* authority must be explicit,
+* and change must be governed.
+
+Ashby is designed to be **reconstructed from text alone**.
+
+---
+
+## 2. SOURCES OF AUTHORITY IN ASHBY
+
+Ashby has **exactly four legitimate sources of authority**:
+
+### 2.1 The Codex (Constitutional Authority)
+
+The Codex is the **highest authority**.
+
+It defines:
+
+* invariants,
+* prohibitions,
+* definitions,
+* architectural boundaries,
+* and governance rules.
+
+If code conflicts with the Codex:
+
+* the code is wrong.
+
+If behavior conflicts with the Codex:
+
+* the behavior is wrong.
+
+The Codex outranks:
+
+* implementations,
+* optimizations,
+* product demands,
+* and expedient fixes.
+
+---
+
+### 2.2 The Engine (Operational Authority)
+
+The engine enforces Codex law at runtime.
+
+It has authority to:
+
+* evaluate policy,
+* gate execution,
+* enforce truth posture,
+* enforce scope boundaries,
+* enforce session and confirmation rules.
+
+The engine **does not have authority** to:
+
+* redefine law,
+* bypass governance,
+* or reinterpret the Codex.
+
+The engine executes law; it does not write it.
+
+---
+
+### 2.3 Evidence (Reality Authority)
+
+Reality enters Ashby **only through evidence**.
+
+Evidence includes:
+
+* ActionResults,
+* readbacks,
+* sensor inputs,
+* verifiable execution outcomes.
+
+Evidence is evaluated by the Truth Gate.
+
+No component may:
+
+* invent evidence,
+* substitute inference for evidence,
+* or upgrade evidence strength for convenience.
+
+Evidence defines what *may* be claimed — never what *should* be claimed.
+
+---
+
+### 2.4 Governance (Change Authority)
+
+Governance defines **when and how the Codex itself may change**.
+
+Governance is not continuous.
+Governance is invoked **only when required**.
+
+This is Control Sync.
+
+---
+
+## 3. WHAT “PERMANENT” MEANS IN ASHBY
+
+Permanent does **not** mean “never change.”
+
+Permanent means:
+
+* changes are deliberate,
+* changes are traceable,
+* changes are classified,
+* and changes never occur silently.
+
+Permanent systems do not resist change —
+they resist **accidental change**.
+
+---
+
+## 4. CONTROL SYNC: DEFINITION
+
+**Control Sync** is the only lawful mechanism by which Ashby’s **constitutional rules** may be altered.
+
+Control Sync is required when a change would affect:
+
+* meaning,
+* truth semantics,
+* authority boundaries,
+* or survivability of the platform.
+
+Control Sync is **not** a development tool.
+It is a constitutional procedure.
+
+---
+
+## 5. WHAT REQUIRES CONTROL SYNC (NON-NEGOTIABLE)
+
+Control Sync **must** be invoked when changing any of the following:
+
+### 5.1 Truth Semantics
+
+* truth classes
+* language constraints
+* evidence evaluation rules
+* Truth Gate behavior
+
+### 5.2 HouseState Semantics
+
+* belief structure
+* decay and staleness rules
+* mixed reality handling
+* persistence guarantees
+
+### 5.3 WHAT vs HOW Separation
+
+* boundaries between modules and adapters
+* vendor neutrality rules
+* execution authority placement
+
+### 5.4 Scope and Identity Law
+
+* scope containment rules
+* authority evaluation
+* identity continuity guarantees
+
+### 5.5 Governance Rules
+
+* Control Sync criteria itself
+* classification of changes
+* migration discipline
+
+### 5.6 Architectural Boundaries
+
+* allowed dependency directions
+* forbidden imports
+* removable vs permanent components
+
+If a change alters **how Ashby understands reality or authority**,
+Control Sync is mandatory.
+
+---
+
+## 6. WHAT DOES NOT REQUIRE CONTROL SYNC
+
+Control Sync is **not** required for:
+
+* bug fixes that do not alter semantics,
+* performance optimizations,
+* new modules that obey existing law,
+* new adapters/providers that obey interfaces,
+* new profiles, flags, or entitlements that obey constraints,
+* migrations performed according to existing rules.
+
+These are **implementation changes**, not constitutional changes.
+
+Confusing these categories leads to governance paralysis or silent drift.
+
+---
+
+## 7. CONTROL SYNC IS EXPLICIT, NOT IMPLICIT
+
+A Control Sync event must be:
+
+* declared,
+* documented,
+* justified,
+* and reviewed.
+
+A valid Control Sync includes:
+
+1. **Statement of Change**
+
+   * what rule is changing
+   * where it lives in the Codex
+
+2. **Reason**
+
+   * why the existing rule is insufficient
+   * which failure modes justify the change
+
+3. **Impact Analysis**
+
+   * which subsystems are affected
+   * which behaviors will differ
+   * which migrations are required
+
+4. **Compatibility Decision**
+
+   * backward compatible
+   * backward incompatible
+   * transitional (with timeline)
+
+5. **Acceptance Criteria**
+
+   * how compliance will be tested
+   * what must fail if the change is violated
+
+If any of these are missing, the Control Sync is invalid.
+
+---
+
+## 8. FORBIDDEN CHANGE MECHANISMS
+
+Ashby explicitly forbids:
+
+* “temporary” constitutional changes,
+* silent reinterpretation of rules,
+* fixing a violation by changing the rule to allow it,
+* shipping forks under different product names,
+* relying on “we all know how it works.”
+
+If a rule is inconvenient, that does not weaken the rule —
+it exposes pressure that the rule was designed to resist.
+
+---
+
+## 9. FAILURE MODE: PANIC GOVERNANCE
+
+The most dangerous moment for Ashby is under pressure:
+
+* outages,
+* security incidents,
+* customer escalations,
+* competitive deadlines.
+
+Ashby explicitly forbids **panic edits** to invariants.
+
+Under pressure:
+
+* implementation may pause,
+* execution may be disabled,
+* features may be shut off,
+* but constitutional rules must not be rewritten impulsively.
+
+Control Sync exists to slow change **exactly when speed feels necessary**.
+
+---
+
+## 10. PERMANENCE VS FLEXIBILITY (THE BALANCE)
+
+Ashby balances permanence and flexibility by:
+
+* locking *meaning*,
+* allowing *implementation*,
+* enforcing *boundaries*,
+* and governing *change*.
+
+This allows:
+
+* growth without collapse,
+* replacement without amnesia,
+* and evolution without loss of identity.
+
+---
+
+## 11. THE ROLE OF FUTURE BUILDERS
+
+Future builders are not expected to:
+
+* agree with every rule,
+* like every constraint,
+* or preserve Ashby exactly as it was.
+
+They **are required** to:
+
+* understand the rules,
+* respect the governance process,
+* and change the system deliberately rather than accidentally.
+
+Ashby is allowed to evolve.
+Ashby is not allowed to drift.
+
+---
+
+## ABSOLUTE CONSTRAINTS
+
+**Permanence, authority, and governance in Ashby require:**
+
+* the Codex as the highest authority,
+* evidence as the only source of reality,
+* the engine as an enforcer, not a legislator,
+* Control Sync as the only constitutional change mechanism,
+* explicit classification of changes,
+* zero silent drift.
+
+**Ashby forbids:**
+
+* undocumented rule changes,
+* convenience-based reinterpretation,
+* panic governance,
+* and forks disguised as progress.
+
+---
+
+**END OF 0.6**

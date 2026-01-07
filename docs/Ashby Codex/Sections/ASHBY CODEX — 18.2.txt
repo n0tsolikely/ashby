@@ -1,0 +1,413 @@
+ASHBY CODEX — 18.2
+INTERFACE CONTRACTS
+
+Interface contracts are the mechanical agreements that enforce WHAT vs HOW.
+
+They define:
+- what modules are allowed to request (WHAT)
+- what adapters are allowed to receive (HOW input shape)
+- what adapters must return (evidence)
+- what the router may rely on (selection and invocation law)
+- what the engine may trust (ActionResult as reality)
+
+If interface contracts drift, the platform collapses into vendor coupling.
+If interface contracts hold, execution remains swappable for decades.
+
+This section defines the contracts as law.
+
+──────────────────────────────────────────────────────────────────────────────
+THE EXECUTION BOUNDARY (WHAT CONTRACTS PROTECT)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby has a hard boundary:
+
+- Modules and core planning produce ActionRequest(s).
+  They define WHAT must be attempted.
+
+- The router selects an adapter and invokes it.
+  It decides HOW to attempt execution without changing meaning.
+
+- Adapters attempt execution against external systems.
+  They return ActionResult(s) as evidence.
+
+Contracts exist so that:
+- modules can remain vendor-blind
+- adapters can remain meaning-blind
+- the router stays thin
+- evidence remains standardized
+- truth remains gated by law
+
+Contracts are not “good style.”
+Contracts are survival.
+
+──────────────────────────────────────────────────────────────────────────────
+CORE CONTRACT PRINCIPLES (NON-NEGOTIABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+1) ONE-WAY DEPENDENCY DIRECTION
+modules/* → interfaces/* ← adapters/*
+Modules import interfaces.
+Adapters implement interfaces.
+No other dependency direction is allowed.
+
+2) INTERFACES DESCRIBE CAPABILITY, NOT IMPLEMENTATION
+An interface method name describes a stable capability (e.g., set_level),
+not a vendor SDK call.
+
+3) CANONICAL TYPES ONLY AT THE BOUNDARY
+Interfaces accept only canonical types and canonical units.
+No interface may require raw user text or vendor payload structures.
+
+4) ACTIONRESULT ALWAYS, INCLUDING FAILURE
+Every adapter call returns an ActionResult.
+No “None.”
+No “fire and forget.”
+No hidden exceptions crossing the boundary.
+
+5) VERIFICATION IS PART OF THE CONTRACT
+An adapter must report the best possible verification state for its attempt.
+The engine uses this evidence to enforce Action-Gated Truth and update HouseState.
+
+6) CAPABILITY MISMATCH MUST BE EXPLICIT
+If the adapter cannot satisfy the required capability for a target,
+it must return an ActionResult reflecting that mismatch, not attempt “something close.”
+
+7) SECRETS MUST NEVER CROSS THE BOUNDARY
+Secrets are configuration of adapters, never inputs or outputs of interface calls.
+Any error payloads must be sanitized.
+
+These principles are the reason a lights module can survive vendor churn.
+
+──────────────────────────────────────────────────────────────────────────────
+THE SHARED TYPES (CANONICAL SHAPES)
+──────────────────────────────────────────────────────────────────────────────
+
+The interface layer relies on shared canonical shapes.
+These shapes are referenced by multiple subsystems and must remain consistent.
+
+A) TARGETSET (RESOLVED TARGETS)
+TargetSet represents the resolved execution targets for an action.
+
+Representative shape:
+
+{
+  "devices": ["device_key_a", "device_key_b"],
+  "zone_id": "zone2" | null,
+  "category": "lights" | null,
+  "role": "ambient" | null
+}
+
+Rules:
+- devices is required and must contain concrete device_keys.
+- If devices is empty, treat it as an upstream planning failure:
+  return an ActionResult with failed.stage = "device_lookup" and ok = false.
+- zone_id/category/role are informational context only.
+  They must not be used as authority to widen targets.
+
+TargetSet exists to prevent adapters from doing target resolution.
+Target resolution is a planning responsibility.
+
+B) ACTIONREQUEST (PLANNED ACTION)
+ActionRequest is the planned artifact produced before execution.
+
+Key properties:
+- action_type is a stable label (e.g., set_brightness, turn_off).
+- target_set contains concrete device_keys by this stage.
+- parameters are canonical values (units already normalized).
+- correlation_id is required for traceability.
+
+ActionRequest is WHAT.
+It is never vendor-specific.
+
+C) ACTIONRESULT (EXECUTION EVIDENCE)
+ActionResult is the standardized evidence object returned by adapters.
+It captures what was attempted and what was observed.
+
+Canonical shape (non-negotiable):
+
+{
+  "ok": true | false,
+
+  "attempted": ["device_key"...],
+
+  "succeeded": ["device_key"...],
+
+  "failed": [
+    {
+      "device_key": "device_key",
+      "stage": "device_lookup" | "capability_mismatch" | "vendor_api" | "verification" | "<action-stage>",
+      "error": "timeout" | "auth_failed" | "unreachable" | "rate_limited" | "invalid_parameters" | "unknown",
+      "raw": "sanitized_vendor_error_or_context"
+    }
+  ],
+
+  "value": { ... },                 // canonical params attempted (not raw text)
+  "verification": "VERIFIED" | "LAST_KNOWN" | "UNKNOWN",
+  "retries": 0,
+  "executed_at": "ISO8601"
+}
+
+Rules:
+- attempted must include every device the adapter tried to affect.
+- succeeded is a subset of attempted.
+- ok is true only if failed is empty.
+- verification is the adapter’s best possible verification assessment for the attempt.
+  It is not “confidence in language.” It is evidence about confirmation/readback reality.
+- raw is permitted only when sanitized. It must never contain secrets.
+
+The engine does not invent reality.
+It consumes ActionResult.
+
+──────────────────────────────────────────────────────────────────────────────
+INPUT CONTRACTS (WHAT ADAPTER METHODS MAY ACCEPT)
+──────────────────────────────────────────────────────────────────────────────
+
+Interfaces accept canonical inputs only.
+
+An adapter method may accept:
+- TargetSet (with concrete device_keys)
+- canonical parameter values (already normalized)
+- correlation_id (optional at method signature, but required somewhere in invocation path)
+
+An adapter method must not accept:
+- raw user text as a substitute for normalized fields
+- vendor objects (SDK clients, vendor payload dicts, vendor ids)
+- secrets (tokens, passwords, API keys)
+- “room name” or “zone name” as targeting authority
+
+If an adapter requires “more info,” it is an upstream modeling issue.
+Adapters do not request clarification from users.
+
+Clarification is a module/engine concern.
+
+──────────────────────────────────────────────────────────────────────────────
+OUTPUT CONTRACTS (WHAT ADAPTER METHODS MUST RETURN)
+──────────────────────────────────────────────────────────────────────────────
+
+Every adapter method returns ActionResult.
+
+Rules:
+- total failure returns ActionResult with ok=false, attempted may be empty only if device_lookup failed before any attempt.
+- adapters must not throw raw vendor exceptions across the boundary.
+  If an exception occurs, it must be caught, sanitized, and represented as ActionResult failure evidence.
+- adapters must never report success without populating succeeded.
+- adapters must preserve partial success:
+  some devices may succeed while others fail.
+
+ActionResult is required even for read operations (e.g., read_temperature_c),
+with the value placed in ActionResult.value using canonical units.
+
+“Returning a value without ActionResult” is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+VERIFICATION SEMANTICS AT THE CONTRACT LEVEL
+──────────────────────────────────────────────────────────────────────────────
+
+Verification values represent what the adapter could confirm.
+
+VERIFIED means:
+- the adapter has evidence that the external system acknowledged the change
+  (readback, confirmation response, or durable artifact existence)
+- the adapter is not merely assuming delivery
+
+LAST_KNOWN means:
+- the adapter successfully issued the command
+- but confirmation readback did not occur (or is not supported)
+- the adapter cannot claim the external system is now in the intended state, only that the best evidence indicates the command was sent
+
+UNKNOWN means:
+- the adapter cannot honestly claim delivery or confirmation
+  (timeouts, unreachable systems, conflicting signals, partial knowledge)
+
+Rules:
+- adapters must not use VERIFIED unless evidence exists.
+- adapters must not “upgrade” verification to satisfy a pleasant user experience.
+- if verification is UNKNOWN, the engine must treat state as uncertain accordingly.
+
+Verification is not optional.
+It is a mandatory truth signal.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE TAXONOMY AND STAGE LABELING
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must map failure into a stable taxonomy.
+
+A failure record includes:
+- device_key
+- stage (where it failed)
+- error (what class of failure)
+- raw (sanitized details)
+
+Stage is a stable label for the pipeline segment.
+
+Required stage classes include:
+- "device_lookup"        (target missing / registry mismatch)
+- "capability_mismatch"  (device/adapter cannot satisfy required capability)
+- "vendor_api"           (vendor call failure)
+- "verification"         (readback or confirmation failure)
+
+Action-stage values may be used when useful (e.g., "set_brightness"),
+but they must remain stable enough for tests and observability.
+
+Error is a stable category, not vendor wording.
+
+Representative error categories:
+- timeout
+- unreachable
+- auth_failed
+- rate_limited
+- invalid_parameters
+- vendor_error
+- unknown
+
+Rules:
+- vendor error codes may be stored only in sanitized raw.
+- the platform must never expose raw vendor codes as user truth claims.
+- missing capability is not “mysterious failure.”
+  It is capability_mismatch.
+
+This taxonomy is what makes logs analyzable and rebuildable.
+
+──────────────────────────────────────────────────────────────────────────────
+IDEMPOTENCY, RETRIES, AND DUPLICATE SAFETY
+──────────────────────────────────────────────────────────────────────────────
+
+The execution boundary must be safe under retries.
+
+Rules:
+- the router controls retry policy (when, how many, backoff).
+- adapters must behave safely if invoked more than once for the same intent.
+- if an adapter or vendor API supports idempotency keys, the adapter should use the correlation_id (or a derived idempotency token) to enforce it.
+- adapters must never silently “double-apply” a non-idempotent operation.
+
+Non-idempotent actions (for example, “toggle”) are dangerous at the execution boundary.
+They should be avoided in canonical action types.
+If they exist, they require stricter routing and confirmation policy.
+
+Retry does not change meaning.
+It produces additional evidence.
+
+Adapters must report retries in ActionResult.retries.
+
+──────────────────────────────────────────────────────────────────────────────
+MULTI-TARGET CONTRACTS (BATCHING WITHOUT LYING)
+──────────────────────────────────────────────────────────────────────────────
+
+Most actions are applied to sets.
+
+Rules:
+- adapters may batch vendor calls internally, but ActionResult must remain per-target truthful.
+- attempted must include every device_key the adapter tried.
+- succeeded must include only those confirmed as succeeded by the adapter.
+- failed must include every device that did not succeed.
+
+Adapters must never:
+- treat “batch call returned 200” as proof every device succeeded
+- collapse mixed results into blanket success
+- omit failed devices to appear stable
+
+Mixed reality is normal.
+Contracts force it to remain visible.
+
+──────────────────────────────────────────────────────────────────────────────
+SECURITY AND SANITIZATION AT THE BOUNDARY
+──────────────────────────────────────────────────────────────────────────────
+
+Execution touches secrets.
+Contracts prevent secrets from leaking.
+
+Rules:
+- interfaces must not require secrets as parameters.
+- adapters load secrets from secure configuration, not from ActionRequests.
+- ActionResult.failed.raw must be sanitized:
+  - no tokens
+  - no passwords
+  - no raw URLs with embedded credentials
+  - no vendor payload dumps containing identifiers that act as secrets
+
+If a vendor response contains sensitive fields, store only a sanitized summary.
+
+Security is enforced by interface shape and by sanitization requirements.
+This is non-negotiable.
+
+──────────────────────────────────────────────────────────────────────────────
+REPRESENTATIVE INTERFACE SHAPES (EXAMPLES, NOT EXHAUSTIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+The following examples illustrate contract structure.
+They are representative and replaceable.
+They do not define the complete set of Ashby modules.
+
+LightsAdapter (representative):
+- set_level(target: TargetSet, level: int, correlation_id) -> ActionResult
+- turn_on(target: TargetSet, correlation_id) -> ActionResult
+- turn_off(target: TargetSet, correlation_id) -> ActionResult
+
+PlugsAdapter (representative):
+- set_on(target: TargetSet, on: bool, correlation_id) -> ActionResult
+
+ThermostatAdapter (representative):
+- set_heat_c(target: TargetSet, heat_c: float, correlation_id) -> ActionResult
+- read_temperature_c(target: TargetSet, correlation_id) -> ActionResult  (value.temperature_c in °C)
+
+CamerasAdapter (representative):
+- snapshot(target: TargetSet, correlation_id) -> ActionResult
+  (value contains storage key or file path, not a credentialed URL)
+- start_recording(target: TargetSet, duration_sec: int | None, correlation_id) -> ActionResult
+- stop_recording(target: TargetSet, correlation_id) -> ActionResult (optional)
+
+StorageAdapter (representative, for artifacts like meetings):
+- put_object(key: str, data: bytes | str, metadata: dict | None, correlation_id) -> ActionResult
+- get_object(key: str, correlation_id) -> ActionResult
+- list_objects(prefix: str, correlation_id) -> ActionResult
+
+Rules these examples demonstrate:
+- canonical units at the boundary
+- ActionResult always returned
+- verification included
+- secrets never in interface signatures
+
+Interfaces describe what must be possible, not how it is achieved.
+
+──────────────────────────────────────────────────────────────────────────────
+CONTRACT ENFORCEMENT (WHERE VIOLATIONS ARE CAUGHT)
+──────────────────────────────────────────────────────────────────────────────
+
+Contracts are enforced by:
+- static typing / protocol checks where applicable
+- adapter compliance tests
+- router-level validation (reject malformed results)
+- acceptance tests that assert evidence shape and failure taxonomy
+
+If an adapter returns malformed evidence, the router must treat it as failure evidence.
+A malformed ActionResult is a form of execution failure.
+
+Ashby must prefer refusal over undefined behavior.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Interface contracts must:
+- enforce one-way dependency (modules → interfaces ← adapters)
+- require canonical input types and canonical units
+- require ActionResult for every adapter invocation
+- require explicit capability mismatch and device lookup failure signals
+- require verification posture as part of ActionResult
+- preserve partial success and mixed reality
+- prevent secrets and vendor payloads from crossing the boundary
+- remain stable and only change via governance
+
+Interface contracts must never:
+- include vendor SDK types as required inputs
+- accept raw user language as a substitute for normalized data
+- allow adapters to update HouseState directly
+- allow adapters to generate user-facing language
+- allow “silent success” with missing evidence
+- allow exceptions to bypass ActionResult
+- collapse partial failure into success
+
+Contracts are the platform’s immune system.
+
+END OF 18.2

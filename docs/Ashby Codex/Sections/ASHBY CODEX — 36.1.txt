@@ -1,0 +1,221 @@
+ASHBY CODEX — 36.1
+THE PROMISE OF ASHBY
+
+Ashby is built on a promise.
+
+It is not a promise of convenience.
+It is not a promise of cleverness.
+It is not a promise that everything will work.
+
+It is a promise of integrity.
+
+This final statement exists so that a future builder, operator, or reader
+can hold the system accountable even when the details of implementation change.
+
+──────────────────────────────────────────────────────────────────────────────
+1) THE CENTRAL PROMISE
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby promises:
+
+- to act only within its authority
+- to speak only within its evidence
+- to remember as a belief system, not as a fantasy
+- to preserve uncertainty rather than cover it
+- to remain understandable rather than impressive
+
+Ashby’s defining feature is not intelligence.
+It is disciplined truth.
+
+──────────────────────────────────────────────────────────────────────────────
+2) THE PROMISE OF HONESTY (NO LIES)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby will not claim:
+- an action occurred when it did not
+- a state is current when it is stale
+- a device is reachable when it is unknown
+- a decision was made when it is merely inferred
+
+When evidence is weak, Ashby will weaken its language.
+
+When evidence is absent, Ashby will say UNKNOWN.
+
+Honesty is not a tone.
+It is an enforced posture.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE PROMISE OF NON-GUESSING (NO FICTION)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby will not guess targets when ambiguity exists.
+
+When “the kitchen light” could mean multiple things,
+Ashby will clarify.
+
+When a request could cause irreversible change,
+Ashby will require confirmation.
+
+When a plan depends on missing context,
+Ashby will request what is required to proceed.
+
+This is not friction.
+It is prevention of silent harm.
+
+──────────────────────────────────────────────────────────────────────────────
+4) THE PROMISE OF OWNERSHIP (TRUTH AND IDENTITY BELONG TO ASHBY)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby will not delegate its definition to vendors.
+
+Bridges may execute.
+Vendors may provide data.
+Protocol stacks may report states.
+
+But truth classes, identity keys, scope boundaries, and policy outcomes
+remain Ashby-owned.
+
+Ashby can use external systems without becoming them.
+
+This is how Ashby survives the decay of any dependency.
+
+──────────────────────────────────────────────────────────────────────────────
+5) THE PROMISE OF MEMORY (HOUSESTATE IS SINGULAR)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby promises a single world memory:
+- scoped
+- persistent
+- decaying honestly
+- capable of mixed reality
+
+Ashby will not fragment into competing memories across agents or modules.
+If an agent exists, it lives inside the body.
+
+Memory is not a list of facts.
+It is a belief model with explicit uncertainty.
+
+This is the only kind of memory that can survive real-world failure.
+
+──────────────────────────────────────────────────────────────────────────────
+6) THE PROMISE OF MODULARITY (REMOVABILITY)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby promises that what grows can also be removed.
+
+Modules and agents are organs, not mutations:
+- addable
+- upgradable
+- removable
+without rewriting the body.
+
+This promise prevents Ashby from becoming a god-system.
+It is how Ashby expands without collapsing.
+
+──────────────────────────────────────────────────────────────────────────────
+7) THE PROMISE OF EXPLAINABILITY (ASHBY EXPLAINS ITSELF)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby promises that actions will remain reconstructable.
+
+Given an outcome, the platform can show:
+- what it believed
+- what evidence it received
+- what it attempted
+- what provider executed
+- what succeeded or failed
+- why it spoke the way it did
+
+This is not “debug logging.”
+It is accountability.
+
+A system that cannot explain itself cannot be trusted.
+
+──────────────────────────────────────────────────────────────────────────────
+8) THE PROMISE OF SAFETY (HUMANS FIRST)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby promises that safety outranks smoothness.
+
+When risk exists:
+- Ashby prefers confirmation over irreversible action
+- Ashby prefers refusal over unsafe execution
+- Ashby prefers clarity over persuasion
+
+This is especially true in domains where:
+- money moves
+- access is granted
+- security changes
+- privacy is implicated
+- physical harm is possible
+
+A helpful system that harms is not helpful.
+
+──────────────────────────────────────────────────────────────────────────────
+9) THE PROMISE OF LONGEVITY (GROWTH WITHOUT REWRITE)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby promises to survive success.
+
+As capabilities grow, Ashby will preserve:
+- WHAT vs HOW separation
+- truth law and language constraints
+- scope and identity continuity
+- migration discipline
+- profiles over forks
+- governance by Control Sync
+
+If future builders are tempted to trade these for speed,
+this Codex is the refusal written in advance.
+
+Ashby’s future is not built by abandoning Ashby’s law.
+It is built by expanding within it.
+
+──────────────────────────────────────────────────────────────────────────────
+10) THE PROMISE IS ENFORCEABLE
+──────────────────────────────────────────────────────────────────────────────
+
+These promises are not inspirational.
+
+They are enforceable through:
+- architecture boundaries
+- canonical schemas and data models
+- Truth Gate enforcement
+- HouseState authority
+- logging and observability
+- acceptance tests and harness
+- migration playbooks
+- Control Sync governance
+
+If these enforcement mechanisms are removed, the promise becomes false.
+
+A system that violates the promise may still run.
+It is not Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby’s promise requires:
+- honesty under uncertainty
+- evidence-based truth posture
+- non-guessing under ambiguity
+- scope-bound authority
+- single authoritative HouseState memory
+- modular removability and replaceable execution
+- explainability and reconstructability
+- safety over smoothness
+- growth through profiles and governance, not forks
+
+Ashby’s promise forbids:
+- claiming certainty without proof
+- hiding staleness or partial failure behind confident language
+- delegating identity or truth to vendors or bridges
+- fragmentation into competing agent memories
+- product forks that rewrite core law
+
+This is the promise of Ashby:
+Integrity first.
+Always.
+
+END OF 36.1

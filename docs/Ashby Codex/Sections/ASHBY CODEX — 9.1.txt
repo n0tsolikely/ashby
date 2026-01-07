@@ -1,0 +1,137 @@
+ASHBY CODEX — 9.1
+WHAT THE ENGINE IS
+
+The engine is the governing core of Ashby.
+
+It is the system that decides:
+- what Ashby believes
+- what Ashby is allowed to do
+- what Ashby is allowed to claim
+
+The engine is not an execution layer.
+It is not an integration hub.
+It is not a convenience container.
+
+The engine is law made operational.
+
+──────────────────────────────────────────────────────────────────────────────
+ENGINE RESPONSIBILITIES
+──────────────────────────────────────────────────────────────────────────────
+
+The engine owns:
+
+1) INTENT INTERPRETATION
+   - interpreting normalized intent
+   - resolving meaning within scope
+   - distinguishing command, vibe, and inquiry
+
+2) POLICY DECISION
+   - act vs clarify vs refuse vs chat
+   - safety constraints
+   - permission constraints
+   - automation constraints
+
+3) SCOPE RESOLUTION
+   - determining the active scope
+   - enforcing containment and authority boundaries
+   - refusing unscoped action
+
+4) TRUTH ENFORCEMENT
+   - Action-Gated Truth
+   - confidence classification
+   - language constraint enforcement
+   - forbidden phrase enforcement
+
+5) STATE AUTHORITY
+   - authoritative belief storage by scope
+   - explicit confidence and decay
+   - reconciliation after contradiction
+
+6) MEMORY SEMANTICS
+   - what is remembered and why
+   - how memory is queried and applied
+   - how loss and decay are represented
+
+7) SESSION LAW
+   - context carryover rules
+   - pending clarification handling
+   - expiry and safety behavior
+
+8) EXPLAINABILITY
+   - traceable decisions
+   - evidence-based explanations
+   - refusal justification
+
+9) GOVERNANCE
+   - Control Sync enforcement for foundational change
+   - protection of invariants over time
+
+These responsibilities define Ashby’s identity.
+If they are altered without Control Sync,
+Ashby drifts.
+
+──────────────────────────────────────────────────────────────────────────────
+ENGINE INPUTS AND OUTPUTS
+──────────────────────────────────────────────────────────────────────────────
+
+The engine consumes:
+- user input (transport-neutral)
+- scope context
+- current state and confidence
+- session context
+- policy configuration
+- module capability declarations
+- ActionResults (as evidence)
+
+The engine produces:
+- decisions (act / clarify / refuse / chat)
+- ActionRequests (WHAT, not HOW)
+- constrained responses grounded in evidence
+- state transitions derived from evidence
+
+The engine never produces:
+- vendor calls
+- protocol traffic
+- hardware commands
+
+Execution is external.
+
+──────────────────────────────────────────────────────────────────────────────
+ENGINE AS A STABILITY ANCHOR
+──────────────────────────────────────────────────────────────────────────────
+
+The engine must remain stable
+as everything around it evolves.
+
+Modules will change.
+Vendors will change.
+Protocols will change.
+Agents will multiply.
+Products will diversify.
+
+The engine must not drift.
+
+This stability is what allows:
+- replaceability at the edges
+- rebuildability after loss
+- explainability under failure
+- trust accumulation over time
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+The engine must never:
+- import vendor SDKs
+- contain protocol logic
+- execute actions directly
+- special-case products
+- allow truth leakage
+- accept exception-based growth
+
+If a feature requires violating these constraints,
+the feature is incompatible with Ashby.
+
+The engine is what makes Ashby a platform.
+
+END OF 9.1

@@ -1,0 +1,185 @@
+ASHBY CODEX — 6.4
+SCOPES AS THE WORLD MODEL
+
+Scopes are the world model of Ashby.
+
+They are not labels.
+They are not folders.
+They are not convenience groupings.
+
+Scopes are the formal structure through which Ashby understands,
+reasons about, and acts within reality.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A SCOPE IS
+──────────────────────────────────────────────────────────────────────────────
+
+A scope is a bounded context that defines:
+- what exists
+- what may be acted upon
+- what state is authoritative
+- what authority applies
+- what history is relevant
+
+Every action Ashby takes occurs inside exactly one scope.
+
+There is no global, unscoped action.
+There is no unscoped state.
+There is no unscoped memory.
+
+If something cannot be placed in a scope,
+it does not exist to Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY SCOPES ARE REQUIRED
+──────────────────────────────────────────────────────────────────────────────
+
+Real-world systems are not flat.
+
+They are:
+- hierarchical
+- overlapping
+- partially isolated
+- governed by boundaries
+
+Without scopes, systems:
+- infer context implicitly
+- leak state between domains
+- apply actions too broadly
+- lose authority boundaries
+- become unsafe to automate
+
+Ashby treats scoping as mandatory
+to prevent these failures.
+
+Scopes make context explicit.
+They make authority visible.
+They make automation safe.
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPE OWNERSHIP AND AUTHORITY
+──────────────────────────────────────────────────────────────────────────────
+
+Each scope defines:
+- what Ashby is allowed to control
+- what Ashby may observe
+- what Ashby may remember
+- what Ashby may automate
+
+Authority is scoped.
+
+An action that is valid in one scope
+may be forbidden in another.
+
+State recorded in one scope
+does not silently affect another.
+
+This prevents:
+- cross-domain contamination
+- accidental overreach
+- unsafe automation
+- ambiguous responsibility
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPES AND STATE
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState is not global.
+
+State is always scoped.
+
+Each scope maintains:
+- its own beliefs
+- its own confidence levels
+- its own history
+- its own uncertainty
+
+State may be summarized upward.
+State may never leak sideways.
+
+A higher-level scope may:
+- observe aggregate state
+- reason about child scopes
+- issue policies affecting children
+
+A lower-level scope may never:
+- override parent authority
+- assume parent state
+- act outside its bounds
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPES AND EXECUTION
+──────────────────────────────────────────────────────────────────────────────
+
+Execution targets are resolved within scopes.
+
+When Ashby executes an action:
+- the target must exist in the scope
+- the adapter must support the scope
+- verification occurs within the scope
+- results are recorded in the scope
+
+An adapter that cannot respect scope boundaries
+is incompatible with Ashby.
+
+This ensures that execution respects:
+- physical boundaries
+- organizational boundaries
+- permission boundaries
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPES AND MEMORY
+──────────────────────────────────────────────────────────────────────────────
+
+Memory is scoped.
+
+Ashby remembers actions,
+outcomes,
+and uncertainty
+within the scope where they occurred.
+
+Memory does not bleed across scopes.
+
+This prevents:
+- false continuity
+- incorrect inference
+- unsafe assumptions
+
+When Ashby recalls history,
+it recalls it relative to scope.
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPES AS THE FOUNDATION FOR GROWTH
+──────────────────────────────────────────────────────────────────────────────
+
+Scopes are what allow Ashby to grow safely.
+
+New domains are added by:
+- defining new scopes
+- attaching modules to scopes
+- assigning authority explicitly
+
+No new domain requires redefining the world model.
+
+It requires defining a new scope.
+
+This allows Ashby to:
+- expand without rewriting law
+- add automation without increasing risk
+- support multiple environments simultaneously
+
+Scopes are the mechanism
+by which Ashby understands the world
+without flattening it.
+
+If scopes are weakened,
+Ashby becomes unsafe.
+
+If scopes are enforced,
+Ashby remains coherent.
+
+Scopes are not an implementation detail.
+
+They are Ashby’s model of reality.
+
+END OF 6.4

@@ -1,0 +1,256 @@
+ASHBY CODEX — 34.1
+When Control Sync Is Required
+
+Control Sync is constitutional governance.
+
+It is the only lawful mechanism for changing Ashby’s foundational definition:
+the invariants that make Ashby remain Ashby across time, teams, and implementations.
+
+Control Sync is not a meeting.
+It is not a refactor.
+It is not a release.
+It is a deliberate revision of the platform’s constitution.
+
+This subsection defines exactly when Control Sync is required.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITION: WHAT CONTROL SYNC IS
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is the process used to revise and realign the canonical sources of truth:
+
+- Table of Contents (structure authority)
+- Continuity Lock (authorial and output constraints)
+- Platform Principles (identity law)
+- Architecture Tree Vision (folder boundaries and growth law)
+- Preservation Packs (mechanical invariants: schemas, models, truth gate, tests, migration, security, logging, interface contracts, state sync, multi-agent coexistence)
+- Acceptance Tests and Harness (drift prevention)
+- Migration Playbook (continuity through change)
+
+Control Sync exists because foundational drift does not announce itself.
+It accumulates invisibly until Ashby stops being Ashby.
+
+Control Sync is required when the platform constitution must change.
+
+──────────────────────────────────────────────────────────────────────────────
+2) THE CORE TRIGGER: ANY CHANGE TO AN INVARIANT
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is required for any change that alters an invariant.
+
+An invariant is any rule that defines:
+- what Ashby is
+- what Ashby is allowed to do
+- how Ashby must represent truth and uncertainty
+- how Ashby must store and decay state
+- how Ashby must separate meaning from execution
+- how Ashby must remain rebuildable from the Codex
+
+If the change would make an older Codex section “no longer correct,”
+Control Sync is required.
+
+If the change would make a preservation pack “no longer binding,”
+Control Sync is required.
+
+If the change would make the architecture tree “no longer valid,”
+Control Sync is required.
+
+If the change would require changing the Table of Contents to remain coherent,
+Control Sync is required.
+
+──────────────────────────────────────────────────────────────────────────────
+3) SPECIFIC CATEGORIES THAT ALWAYS REQUIRE CONTROL SYNC
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is always required for changes to any of the following:
+
+A) STRUCTURE AUTHORITY
+- renumbering, renaming, or reordering the Codex
+- adding, removing, or merging top-level Parts
+- redefining what a section number represents
+
+B) TRUTH LAW
+- changing truth classes or semantics (VERIFIED / LAST_KNOWN / UNKNOWN / FAILED)
+- changing the meaning of “verification”
+- changing forbidden phrase law or response posture constraints
+- changing the rule that ActionResult evidence governs claims
+- changing how mixed outcomes and contradictions are represented
+
+C) HOUSESTATE LAW
+- changing what HouseState may store
+- changing staleness/decay rules
+- changing confidence rules
+- changing restart persistence semantics
+- changing how contradictions and partial success are encoded
+
+D) WHAT vs HOW SEPARATION
+- allowing vendor/protocol logic to enter engine or module meaning
+- allowing modules to execute directly
+- allowing adapters to reason, decide policy, or define truth
+- changing the boundary rules that keep meaning clean
+
+E) IDENTITY AND SCOPE LAW
+- changing canonical identity keys (device_key, entity_key, etc.)
+- changing scope semantics or permission models
+- changing external-id mapping rules (bridge/vendor/connector ids)
+
+F) SECURITY AND SECRETS LAW
+- changing secret handling rules
+- changing sanitization rules
+- changing logging restrictions related to sensitive data
+- changing credential lifecycle expectations
+
+G) OBSERVABILITY LAW
+- changing correlation_id requirements
+- changing required log fields for reconstructability
+- changing traceability guarantees for execution evidence
+
+H) ACCEPTANCE TEST AND HARNESS LAW
+- modifying what the harness guarantees
+- modifying golden flows in ways that redefine correctness
+- removing tests that enforce invariants
+
+I) MIGRATION AND STRUCTURAL REALIGNMENT LAW
+- changing schema versioning rules
+- changing migration methodology
+- changing how identity continuity is preserved across changes
+
+J) MULTI-AGENT COEXISTENCE LAW
+- allowing parallel truth/state systems
+- changing what “shared truth and state” means
+- changing how agents may share artifacts or state
+
+K) PRODUCTIZATION GOVERNANCE LAW
+- changing the definition of profiles vs forks
+- allowing flags/entitlements to alter truth, safety, or state semantics
+
+These are constitutional surfaces.
+They cannot be altered by “implementation iteration.”
+
+──────────────────────────────────────────────────────────────────────────────
+4) CONTROL SYNC IS REQUIRED WHEN DOCUMENTS DISAGREE
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is required when canonical documents conflict.
+
+Conflicts include:
+- a preservation pack mandates behavior that the Codex contradicts
+- the architecture tree mandates boundaries the repo violates
+- the platform principles are no longer reflected in implementation
+- acceptance tests encode a different truth posture than the Truth Gate doctrine
+
+When conflicts exist, Ashby becomes ambiguous.
+Ambiguity is drift.
+
+Control Sync resolves ambiguity by producing a single aligned constitution.
+
+──────────────────────────────────────────────────────────────────────────────
+5) CONTROL SYNC IS REQUIRED BEFORE “FOUNDATIONAL FIXES”
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is required before implementing any “foundational fix”
+that would otherwise be justified as “necessary to make it work.”
+
+Examples of foundational fixes (representative):
+- “the Truth Gate rules are too strict, relax them”
+- “HouseState decay is annoying, remove it”
+- “vendor logic belongs in the engine for speed”
+- “adapters should decide truth because they know the backend”
+- “profiles should change the engine because customers want different behavior”
+
+If “making it work” demands weakening invariants,
+Control Sync must occur before the change is allowed.
+
+Implementation pressure is not authority.
+
+──────────────────────────────────────────────────────────────────────────────
+6) THE CONTROL SYNC PROCEDURE (REQUIRED OUTPUTS)
+──────────────────────────────────────────────────────────────────────────────
+
+When Control Sync is required, the following procedure is mandatory.
+
+A) DECLARATION
+- declare that a Control Sync is being initiated
+- name the reason
+- name the impacted constitutional surfaces
+- freeze foundational changes outside the sync until completion
+
+B) BASELINE SNAPSHOT
+- record the current constitution version:
+  - Codex numbering and titles
+  - preservation pack versions
+  - architecture tree
+  - acceptance test baseline
+  - migration baseline
+
+C) PROPOSED AMENDMENTS
+For each change:
+- specify what is changing
+- specify the invariant being modified
+- specify the new invariant language
+- specify consequences and new constraints
+- specify what becomes invalidated
+
+D) COMPATIBILITY PLAN
+- specify migrations required
+- specify acceptance tests required or updated
+- specify how identity continuity is preserved
+- specify how old artifacts remain readable
+
+E) TRUTH AND SAFETY AUDIT
+- verify the amendment does not secretly weaken truth posture
+- verify it does not weaken security or secrets handling
+- verify it does not reduce reconstructability
+
+F) ALIGNMENT UPDATE
+Update the canonical corpus together:
+- Table of Contents (if structure changes)
+- Continuity Lock (if authorship constraints change)
+- Platform Principles (if identity law changes)
+- Architecture Tree Vision (if boundaries change)
+- Preservation Packs (if mechanical rules change)
+- Acceptance Tests (to enforce the new law)
+
+G) SIGN-OFF AND VERSIONING
+- produce a Control Sync ID (date + sequence)
+- record a diff summary of amendments
+- lock the new constitution as canonical for future work
+
+H) POST-SYNC VALIDATION
+- run the acceptance harness
+- verify boundary enforcement
+- verify truth posture under representative flows
+- verify migrations on a clean baseline
+
+No implementation may claim to be “Ashby” under the new law
+until post-sync validation is complete.
+
+──────────────────────────────────────────────────────────────────────────────
+7) THE CONTROL SYNC DOCTRINE (THE KEY RULE)
+──────────────────────────────────────────────────────────────────────────────
+
+A foundational change is not real until it is synced.
+
+“Implementation first, documentation later” is forbidden for invariants.
+That pattern produces drift and retroactive rationalization.
+
+Control Sync exists to prevent Ashby’s constitution from being rewritten by accident.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Control Sync is required whenever:
+- an invariant changes
+- canonical documents conflict
+- the platform constitution must be revised to remain coherent
+- a foundational fix would otherwise weaken or alter doctrine
+- the structure authority (TOC) must change
+- truth/state/scope/security/observability governance must change
+
+Control Sync is required before the change is implemented,
+not after.
+
+Ashby remains Ashby only by governed revision.
+
+END OF 34.1

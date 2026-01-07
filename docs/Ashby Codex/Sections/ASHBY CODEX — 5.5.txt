@@ -1,0 +1,92 @@
+ASHBY CODEX — 5.5
+COMMANDMENT IV — ASHBY SEPARATES WHAT FROM HOW
+
+Ashby strictly separates WHAT it does from HOW it is done.
+
+This separation is absolute.
+There are no exceptions.
+
+WHAT describes:
+- intent
+- meaning
+- policy
+- state transitions
+- truth semantics
+- user-facing behavior
+
+HOW describes:
+- execution
+- vendor interaction
+- protocol handling
+- API calls
+- retries
+- translation of commands
+
+Ashby enforces this separation because
+mixing these concerns is the fastest way to destroy a platform.
+
+When WHAT and HOW are mixed:
+- reasoning becomes vendor-specific
+- state becomes implicit
+- truth becomes narrative
+- refactoring becomes dangerous
+- growth becomes brittle
+
+Ashby enforces WHAT vs HOW through structure.
+
+WHAT lives in:
+- the engine
+- cognition
+- policy
+- sessions
+- modules
+
+HOW lives in:
+- adapters
+- bridges
+- native vendor integrations
+- connectors
+
+The engine must never:
+- import vendor SDKs
+- call external APIs
+- contain protocol logic
+- special-case vendors
+- encode execution details
+
+Execution layers must never:
+- reason about intent
+- infer user meaning
+- own state authority
+- bypass the Truth Gate
+- decide what Ashby should claim
+
+This commandment exists to preserve replaceability.
+
+When HOW is isolated:
+- vendors can be swapped
+- bridges can be removed
+- offline paths can be preferred
+- cloud paths can be optional
+- execution can evolve independently
+
+This commandment also preserves clarity.
+
+A builder must always be able to answer:
+“Is this WHAT or HOW?”
+
+If the answer is unclear,
+the design is wrong.
+
+Any feature that requires violating this separation
+is incompatible with Ashby.
+
+Ashby does not compromise on this law
+for convenience,
+for speed,
+or for short-term gain.
+
+WHAT and HOW must remain separate
+or Ashby ceases to be Ashby.
+
+END OF 5.5

@@ -1,0 +1,292 @@
+ASHBY CODEX — 8A.4
+modules/
+
+modules/ is the “WHAT” layer.
+
+It is where Ashby’s features live.
+
+A module is not infrastructure.
+A module is a removable feature bundle that:
+- reasons about a domain
+- plans actions
+- registers tools
+- composes workflows
+- expresses intent in canonical shapes
+
+If the platform is rebuilt, modules/ is where the builder rebuilds behavior.
+
+If modules/ becomes non-removable, Ashby stops being a platform and becomes a monolith.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF modules/
+──────────────────────────────────────────────────────────────────────────────
+
+modules/ exists to ensure that “what Ashby can do” is:
+- explicit
+- auditable
+- removable
+- growable without refactors
+- isolated from engine/ sanctity
+
+engine/ must remain generic.
+modules/ is where features are allowed to expand.
+
+This separation prevents:
+- engine bloat
+- dependency capture
+- feature lock-in
+- “one more exception” collapse
+
+──────────────────────────────────────────────────────────────────────────────
+2) THE MODULE CONTRACT (WHAT MAKES SOMETHING A MODULE)
+──────────────────────────────────────────────────────────────────────────────
+
+A valid module:
+
+A) Declares its domain
+The module states what capability or behavior it owns (lights, comfort, cameras, inventory, meetings).
+
+B) Exposes tools
+A module registers callable tools in a stable schema so the router can invoke it safely.
+
+C) Produces ActionRequests, not miracles
+A module may plan and decide, but execution occurs through adapters/connectors.
+
+D) Accepts removability
+If the module folder is removed or disabled:
+- Ashby still boots
+- other modules still work
+- the engine still enforces truth
+- packaging profiles remain coherent
+
+If removing a module breaks Ashby, the architecture is violated.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHAT BELONGS IN modules/
+──────────────────────────────────────────────────────────────────────────────
+
+modules/ can contain:
+- planning logic
+- feature workflows
+- domain-specific heuristics (inside the module, not in engine/)
+- tool registration scaffolding
+- optional heavy compute pipelines (ASR, diarization, vision, rendering)
+- module-specific configuration schemas
+- module-scoped helper logic for invoking adapters or connectors
+
+modules/ is where intelligence is allowed to be “feature-shaped.”
+
+This means heavy pipelines belong here.
+If heavy pipelines live in engine/, the engine becomes non-removable by gravity.
+
+──────────────────────────────────────────────────────────────────────────────
+4) WHAT IS FORBIDDEN IN modules/
+──────────────────────────────────────────────────────────────────────────────
+
+modules/ must never become execution infrastructure.
+
+Forbidden includes:
+- vendor drivers
+- vendor SDK usage directly inside modules/
+- direct OAuth/HTTP calls to external systems “because it’s easy”
+- secrets handling
+- truth authority (“I did it” without ActionResult evidence)
+- direct mutation of HouseState as if the module is the authority
+
+Modules may compute.
+Modules may plan.
+Modules may not declare truth.
+
+Truth is action-gated.
+
+The execution boundary is strict:
+- Modules call adapters/ and connectors/
+- Adapters/connectors talk to vendors and APIs
+
+──────────────────────────────────────────────────────────────────────────────
+5) CANONICAL MODULE LAYOUT (REPRESENTATIVE SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+A module should look boring on purpose.
+
+The architecture vision includes representative examples like:
+
+modules/
+├── lights/
+│   ├── handler.py
+│   ├── service.py
+│   ├── tools.py
+│   └── schemas.py
+│
+├── comfort/
+│   ├── handler.py
+│   └── service.py
+│
+├── cameras/
+│   ├── handler.py
+│   ├── service.py
+│   └── tools.py
+│
+├── image_gen/
+│   ├── handler.py
+│   ├── service.py
+│   ├── tools.py
+│   ├── schemas.py
+│   └── workflows/
+│       ├── flux_default.json
+│       └── workflow_2.json
+│
+├── stuart_meetings/
+│   ├── handler.py
+│   ├── service.py
+│   ├── tools.py
+│   ├── schemas.py
+│   ├── pipelines/
+│   │   ├── recorder.py
+│   │   ├── diarization.py
+│   │   ├── transcription.py
+│   │   ├── summarization.py
+│   │   └── search_index.py
+│   └── models/
+│       ├── (placeholder)_whisper/
+│       ├── (placeholder)_pyannote/
+│       └── (placeholder)_model_3/
+│
+├── tori_inventory/
+│   ├── handler.py
+│   ├── service.py
+│   ├── tools.py
+│   ├── schemas.py
+│   └── connectors/
+│       ├── shopify_helpers.py
+│       └── quickbooks_helpers.py
+│
+└── (placeholder)_module_4/
+    ├── handler.py
+    └── service.py
+
+This is not a mandatory file list.
+It is a proven shape that prevents drift:
+- handler.py is the boundary
+- tools.py is the surface
+- service.py is the body
+- schemas.py is the safety rail
+- pipelines/ and models/ keep heavy compute out of engine/
+
+──────────────────────────────────────────────────────────────────────────────
+6) MODULE INTERNAL ROLES (WHY THESE FILES EXIST)
+──────────────────────────────────────────────────────────────────────────────
+
+handler.py
+The boundary adapter between the router and the module.
+It wires tool calls to internal service logic.
+
+service.py
+The core implementation.
+This file is allowed to be large, because it is quarantined inside the module.
+
+tools.py
+The tool surface.
+This is where the module declares:
+- tool names
+- arguments
+- which actions are supported
+- what ActionRequests it produces
+
+schemas.py
+The safety layer.
+Schemas prevent ambiguity from becoming accidental behavior.
+Schemas are how the module stays stable across time.
+
+workflows/
+Static or semi-static workflow definitions (rendering, pipelines, etc).
+This keeps “workflow tuning” out of code and keeps execution reproducible.
+
+pipelines/
+Heavy compute orchestration.
+If it can take seconds or minutes, it belongs here, not in engine/.
+
+models/
+Local model artifacts and registries.
+This is not “memory.”
+This is “compute assets.”
+
+──────────────────────────────────────────────────────────────────────────────
+7) DEPENDENCY LAW FOR MODULES
+──────────────────────────────────────────────────────────────────────────────
+
+Modules may depend on:
+- domain/ (canonical types)
+- scopes/ (world model boundaries)
+- engine/ interfaces (only through stable, narrow contracts)
+- adapters/ (capability-level execution)
+- connectors/ (non-physical execution systems)
+
+Modules must not depend on:
+- bridge internals
+- native vendor internals
+- another module’s private internals
+
+Cross-module coupling is poison.
+
+If two modules must coordinate, they do so through:
+- shared domain types
+- engine eventing
+- explicit tool invocation
+- a shared, declared interface
+
+They do not import each other casually.
+
+──────────────────────────────────────────────────────────────────────────────
+8) REMOVABILITY GUARANTEES (WHAT MUST REMAIN TRUE)
+──────────────────────────────────────────────────────────────────────────────
+
+A removable module system implies:
+
+- Module enablement is controlled by packaging/profiles (not by code edits)
+- Module registration is discoverable
+- The router can determine “module absent” and degrade gracefully
+- No module is assumed by engine as “always present”
+- Module data, if persisted, is migrated safely when the module is removed
+
+If removing a module requires editing engine/, the architecture has failed.
+
+──────────────────────────────────────────────────────────────────────────────
+9) FAILURE MODES (WHAT RUINS modules/)
+──────────────────────────────────────────────────────────────────────────────
+
+A) Vendor leakage
+When modules start containing vendor calls.
+
+This destroys WHAT vs HOW.
+It makes removability fake.
+
+B) Engine reach-in
+When modules import engine internals and start relying on private state.
+
+This makes the engine unstable and untestable.
+
+C) Cross-module mesh
+When modules import each other until the platform becomes a dependency knot.
+
+D) Truth inflation
+When modules produce user-facing claims that are not backed by ActionResult evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+10) MINIMUM ACCEPTANCE CHECKLIST
+──────────────────────────────────────────────────────────────────────────────
+
+A builder should validate modules/ with these checks:
+
+- Each module has a clear boundary file (handler.py or equivalent)
+- Each module registers tools with explicit schemas
+- No module requires engine edits to be removed
+- No direct vendor SDK usage inside modules/
+- Modules return ActionRequests / plans, and accept ActionResults for verification
+- Any persistent data is written through approved storage/state pathways
+- Cross-module coordination is explicit and audited
+
+If these pass, modules/ is doing its job:
+it defines what Ashby does without corrupting how Ashby executes.
+
+END OF 8A.4

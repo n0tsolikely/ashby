@@ -1,0 +1,239 @@
+ASHBY CODEX — 8A.14
+support/
+
+support/ is Ashby’s operational empathy layer.
+
+Not emotional empathy.
+Operational empathy:
+the ability for the system to be debugged, repaired, and trusted by people
+who are not the original builders.
+
+support/ exists because:
+- production always breaks
+- users report symptoms, not root causes
+- and resurrection requires the ability to diagnose without guessing
+
+support/ is where Ashby becomes serviceable.
+
+If support/ is missing:
+- every issue becomes a mystery
+- every outage becomes a rewrite
+- and trust dies because nobody can explain what happened.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF support/
+──────────────────────────────────────────────────────────────────────────────
+
+support/ exists to provide:
+
+A) DIAGNOSTIC TOOLS
+- “what happened”
+- “what is failing”
+- “what does the system believe”
+- “what evidence do we have”
+
+B) SAFE RECOVERY FLOWS
+- retry safely
+- reset safely
+- re-sync safely
+- repair mappings safely
+
+C) SUPPORT BUNDLES (SANITIZED)
+- exportable diagnostics that contain:
+  - correlation_id traces
+  - evidence references (not secrets)
+  - configuration summaries (redacted)
+  - health checks
+so others can help without leaking private data.
+
+D) OPERATOR GUIDANCE
+- playbooks
+- common failure modes
+- known-safe procedures
+
+support/ is not the place where the system lies to look competent.
+It is the place where the system tells the truth about its own condition.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL support/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+support/
+├── diagnostics/
+│   ├── health_checks.py                    # service health, provider health, storage health
+│   ├── dependency_report.py                # versions, enabled modules, profiles
+│   └── truth_posture_report.py             # evidence vs claims sanity checks
+│
+├── bundles/
+│   ├── build_bundle.py                     # generate sanitized diagnostic bundle
+│   ├── redaction.py                        # ensure no secrets leak
+│   └── manifest_schema.json                # bundle structure
+│
+├── repair/
+│   ├── resync_housestate.py                # controlled re-syncs (policy-governed)
+│   ├── remap_identity.py                   # device_key mapping repairs
+│   └── clear_stale_sessions.py             # session cleanup
+│
+└── playbooks/
+    ├── offline_mode.md
+    ├── bridge_outage.md
+    ├── connector_oauth_fail.md
+    ├── identity_drift.md
+    └── truth_gate_investigation.md
+
+The exact file extensions can vary.
+The responsibilities are law.
+
+──────────────────────────────────────────────────────────────────────────────
+3) SUPPORT IS A TRUST SYSTEM (LANGUAGE AND POSTURE RULES)
+──────────────────────────────────────────────────────────────────────────────
+
+support/ must obey the same truth posture rules as the assistant itself.
+
+Rules:
+- no fabricated causes
+- no “it worked” claims without evidence
+- no certainty inflation
+- explicit “UNKNOWN” where evidence is missing
+
+Support output must be evidence-linked:
+- correlation_id
+- ActionResult references
+- staleness indicators
+- provider attribution
+
+Support is not allowed to be vague.
+
+If support tools are vague, humans will guess.
+Guessing is how invariants die.
+
+──────────────────────────────────────────────────────────────────────────────
+4) DIAGNOSTIC BUNDLES (THE SAFE EXPORT CONTRACT)
+──────────────────────────────────────────────────────────────────────────────
+
+A diagnostic bundle must be:
+
+A) SANITIZED
+- no secrets
+- no tokens
+- no raw OAuth payloads
+- no Wi-Fi credentials
+- no unredacted PII beyond what the operator explicitly permits
+
+B) INTERPRETABLE
+- include a manifest describing what is included
+- include versions and module list
+- include recent correlation traces (bounded time window)
+- include references to evidence artifacts (not raw sensitive blobs unless permitted)
+
+C) BOUNDED
+- bundles must be size-limited
+- time-window-limited
+- scope-limited
+to avoid accidental data exfiltration.
+
+D) AUDITABLE
+- creation event logged (who requested it, which scope, what included)
+- redaction report included
+
+Bundles are how Ashby can be helped by outsiders without becoming a leak.
+
+──────────────────────────────────────────────────────────────────────────────
+5) REPAIR TOOLS (WHY THEY ARE DANGEROUS)
+──────────────────────────────────────────────────────────────────────────────
+
+Repair tools can change reality (or belief about reality).
+Therefore they must obey policy law.
+
+Repair actions include:
+- resyncing HouseState
+- clearing mappings
+- resetting connectors
+- replaying events
+- removing stale automation triggers
+- clearing sessions
+
+Rules:
+- repair tools must require confirmation when impact is high
+- repairs must be observable (correlation_id)
+- repairs must produce ActionResults as evidence
+- repairs must not silently rewrite HouseState as “truth”
+- repairs must preserve history (don’t erase; mark and migrate)
+
+Support must never become an unlogged admin backdoor.
+
+──────────────────────────────────────────────────────────────────────────────
+6) COMMON FAILURE MODE PLAYBOOKS (THE REQUIRED SET)
+──────────────────────────────────────────────────────────────────────────────
+
+At minimum, support/ must have playbooks for:
+
+- offline mode / degraded mode (what Ashby can still do)
+- bridge outage (how to verify and route around)
+- connector OAuth failures (how to re-auth without leakage)
+- identity drift (duplicate devices, remap rules)
+- staleness and HouseState decay confusion (how to interpret beliefs)
+- Truth Gate investigations (why Ashby said VERIFIED vs LAST_KNOWN vs UNKNOWN)
+- automation misfires (eventing triggers, confirmation gates)
+
+Playbooks must not be vague.
+They must map symptoms → evidence sources → safe actions.
+
+The point is to reduce human guessing.
+
+──────────────────────────────────────────────────────────────────────────────
+7) DEPENDENCY LAW
+──────────────────────────────────────────────────────────────────────────────
+
+support/ may depend on:
+- observability outputs (logs/traces)
+- storage artifacts (evidence bundles)
+- engine reports (health checks)
+- schemas
+
+support/ must not depend on:
+- optional modules to function
+Support must work even when modules are broken.
+Otherwise support becomes useless.
+
+support/ must never require cloud to diagnose local failures.
+
+──────────────────────────────────────────────────────────────────────────────
+8) REQUIRED TEST SURFACES FOR support/
+──────────────────────────────────────────────────────────────────────────────
+
+Minimum test categories:
+
+- bundle redaction tests (secrets never included)
+- bundle interpretability tests (manifest complete)
+- health check tests (correct classification of failures)
+- repair tool confirmation tests (high-impact requires confirmation)
+- repair ActionResult evidence tests (no silent changes)
+- offline support tests (diagnose without cloud)
+- playbook completeness tests (required playbooks exist)
+
+Support that is not test-protected becomes a liability.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+support/ must:
+- provide evidence-linked diagnostics
+- preserve truth posture honesty
+- generate sanitized, bounded diagnostic bundles
+- offer repair tools that obey policy/confirmation law
+- preserve auditability and ActionResult evidence for repairs
+- include explicit playbooks mapping symptoms to safe procedures
+- work under degraded and offline conditions
+
+support/ must never:
+- leak secrets through bundles or logs
+- invent explanations
+- bypass confirmation gates for high-impact repair actions
+- erase history to “make it look clean”
+- depend on optional modules to be functional
+
+support/ is how Ashby stays serviceable after the original builders are gone.
+
+END OF 8A.14

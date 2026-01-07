@@ -1,0 +1,221 @@
+ASHBY CODEX — 11.5
+FAILURE TAXONOMY
+
+Failure taxonomy defines how Ashby names failure.
+
+It exists so that:
+- adapters report failures consistently
+- logs remain analyzable
+- acceptance tests remain deterministic
+- responses remain honest without leaking vendor detail
+- operators can diagnose root causes without guesswork
+
+A system that cannot name failure cannot explain itself.
+A system that cannot explain failure cannot be trusted.
+
+──────────────────────────────────────────────────────────────────────────────
+TWO AXES OF FAILURE
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby represents failure along two axes:
+
+1) FAILURE REASON
+What kind of failure occurred?
+
+2) FAILURE STAGE
+Where did it occur in the attempt?
+
+Both are required.
+
+Reason without stage is vague.
+Stage without reason is unusable.
+
+Together, they produce failures that are reconstructable.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL FAILURE REASONS
+──────────────────────────────────────────────────────────────────────────────
+
+Failure reasons are stable labels:
+- vendor-neutral
+- small in number
+- durable across time
+
+Canonical reasons:
+
+- timeout
+  The attempt exceeded a defined time boundary.
+
+- unreachable
+  The device, backend, or network path could not be contacted.
+
+- auth_failed
+  Credentials were missing, invalid, expired, or rejected.
+
+- invalid_target
+  The requested target does not exist in the active scope,
+  or could not be resolved to a known internal entity.
+
+- capability_mismatch
+  The target exists, but does not support the requested operation.
+
+- config_error
+  Required configuration was missing, invalid, or inconsistent.
+
+- unknown_error
+  An error occurred that could not be safely classified.
+
+Rules:
+- unknown_error is allowed, but must be rare.
+- repeated unknown_error must be investigated and mapped.
+- adding a new reason is a foundational change and must be deliberate.
+
+These labels are not “complete inventories of ways to fail.”
+They are stable buckets that keep the system analyzable.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL FAILURE STAGES
+──────────────────────────────────────────────────────────────────────────────
+
+Failure stage identifies where the attempt failed.
+
+Stages are normalized strings.
+
+Canonical stages (representative, non-exhaustive):
+
+- device_lookup
+  Failed to locate the target in the registry or active scope.
+
+- capability_mismatch
+  Target exists, but requested operation is not supported.
+
+- vendor_api
+  The vendor call failed, rejected, or returned an error condition.
+
+- verification_read
+  The command may have been sent, but confirmation readback failed.
+
+- on:switch
+  Switch-level “on” stage for simple devices.
+
+- off:switch
+  Switch-level “off” stage for simple devices.
+
+- set_brightness
+  Brightness adjustment stage.
+
+- set_temperature
+  Temperature set stage.
+
+- snapshot
+  Camera snapshot stage.
+
+- record_start
+  Recording start stage.
+
+- record_stop
+  Recording stop stage.
+
+Rules:
+- stage strings must be consistent across adapters.
+- stages must not include vendor names, URLs, SDK concepts, or protocol addresses.
+- stage strings are treated as durable identifiers for tests and analytics.
+- adding a new stage is allowed, but must be stable and deliberate.
+
+──────────────────────────────────────────────────────────────────────────────
+STAGE AND REASON MUST BOTH BE PRESENT
+──────────────────────────────────────────────────────────────────────────────
+
+A single failure event must include:
+- stage (where)
+- reason (what)
+
+Examples (illustrative only):
+
+- device_lookup + invalid_target
+  The device does not exist in the active scope.
+
+- set_brightness + timeout
+  The brightness call timed out during execution.
+
+- vendor_api + auth_failed
+  The vendor rejected the request due to credentials.
+
+- verification_read + unreachable
+  The command may have been sent, but readback could not be obtained.
+
+Stage provides context.
+Reason provides meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+MAPPING VENDOR ERRORS INTO TAXONOMY
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must translate vendor-specific failures into canonical stage + reason.
+
+Rules:
+- never bubble raw vendor exceptions into the engine
+- never return raw vendor payloads as canonical evidence
+- never store secrets in failure details
+- always return an ActionResult with explicit failures
+
+Optional raw detail may be attached as sanitized, replaceable context.
+Raw detail is not authoritative truth.
+
+The authoritative failure description is:
+(stage, reason)
+
+──────────────────────────────────────────────────────────────────────────────
+GLOBAL FAILURES STILL REQUIRE PER-TARGET REPORTING
+──────────────────────────────────────────────────────────────────────────────
+
+Some failures occur before individual device calls:
+- adapter cannot authenticate
+- backend is unreachable
+- configuration is invalid
+
+Even in these cases, the ActionResult must still preserve per-target visibility.
+
+Rules:
+- attempted must list the resolved targets that were intended
+- failed must include an entry for each attempted device_key
+- succeeded may be empty
+- ok must be false
+
+This prevents a single “it failed” blob from erasing partial reality.
+
+──────────────────────────────────────────────────────────────────────────────
+USER-FACING REPORTING VS INTERNAL DIAGNOSIS
+──────────────────────────────────────────────────────────────────────────────
+
+Failure taxonomy supports two outputs:
+
+1) USER-FACING HONESTY
+Responses should:
+- name the failure reason in plain language when safe
+- avoid leaking vendor detail
+- avoid raw stage strings unless they are meaningful to the user
+- offer a next step (retry, refresh, check connection)
+
+2) OPERATOR DIAGNOSIS
+Logs and metrics should:
+- aggregate failures by reason and stage
+- correlate failures to scopes, modules, and devices (by internal keys)
+- reveal patterns over time (e.g., repeated unreachable in one zone)
+
+Stage is primarily for diagnosis.
+Reason is primarily for explanation.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Failure taxonomy must never:
+- use vendor-specific reason labels as canonical truth
+- leak secrets through raw error payloads
+- collapse failures into generic “it didn’t work”
+- allow repeated unknown_error without investigation
+
+Failure naming is part of honesty.
+
+END OF 11.5

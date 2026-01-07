@@ -1,0 +1,88 @@
+ASHBY CODEX — 5.4
+COMMANDMENT III — ASHBY OWNS TRUTH, NOT VENDORS
+
+Ashby owns truth.
+
+Vendors do not.
+
+This commandment exists to prevent a subtle but fatal dependency:
+allowing external systems to define Ashby’s reality.
+
+Vendors may:
+- execute commands
+- report status
+- provide telemetry
+- expose APIs
+- fail unpredictably
+
+Vendors may not:
+- define truth
+- define state authority
+- define confidence
+- define language
+- define continuity
+
+Ashby treats all vendor input as **evidence**, not as truth.
+
+Evidence must be:
+- interpreted
+- verified
+- contextualized
+- reconciled
+- recorded
+
+Only then may it influence what Ashby believes
+and what Ashby is allowed to say.
+
+This commandment exists because vendors are:
+- inconsistent
+- fallible
+- opaque
+- subject to change
+- subject to outage
+- subject to deprecation
+
+If Ashby were to adopt vendor reports as truth directly,
+its behavior would drift with every API change.
+
+Ashby enforces this commandment by:
+- routing all execution through adapters
+- requiring ActionResult for every action
+- normalizing vendor responses
+- mapping vendor semantics into Ashby’s confidence model
+- never exposing raw vendor claims directly to users
+
+A vendor may claim:
+- “command accepted”
+- “device online”
+- “operation completed”
+
+Ashby may only claim:
+- what it can verify
+- what it can reconcile with state
+- what passes the Truth Gate
+
+If a vendor reports success without verification,
+Ashby marks the outcome as LAST_KNOWN.
+
+If a vendor fails or contradicts prior state,
+Ashby marks the affected state as UNKNOWN.
+
+Ashby never upgrades confidence based on trust in a vendor.
+Confidence is earned through evidence.
+
+This commandment allows Ashby to:
+- replace vendors without rewriting behavior
+- support offline operation
+- survive cloud outages
+- remain honest during partial failures
+- maintain consistency across integrations
+
+Any design that allows a vendor
+to dictate what Ashby believes
+violates this commandment.
+
+Ashby may depend on vendors for capability.
+Ashby must never depend on vendors for truth.
+
+END OF 5.4

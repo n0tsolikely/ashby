@@ -1,0 +1,122 @@
+ASHBY CODEX — 8.5
+SCOPES AND DOMAIN MODELING
+
+Domains in Ashby are modeled through scopes.
+
+Ashby does not model domains directly.
+It models reality through scoped contexts,
+and domains emerge from those contexts.
+
+This distinction prevents domain-specific assumptions
+from contaminating the core.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A DOMAIN IS
+──────────────────────────────────────────────────────────────────────────────
+
+A domain is a category of behavior
+that operates within defined scopes.
+
+Examples include:
+- lighting
+- irrigation
+- climate
+- monitoring
+- inventory
+- meetings
+
+These examples are illustrative,
+not exhaustive.
+
+Domains describe WHAT can happen.
+Scopes describe WHERE it may happen.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY DOMAIN MODELING IS SCOPE-FIRST
+──────────────────────────────────────────────────────────────────────────────
+
+If domains are modeled directly,
+they tend to hardcode assumptions:
+- where they operate
+- what they control
+- how authority is applied
+
+Ashby avoids this by anchoring domains to scopes.
+
+A domain declares:
+- which scope types it supports
+- what actions it may perform in those scopes
+- what state it maintains per scope
+- what safety constraints apply
+
+The scope remains authoritative.
+
+──────────────────────────────────────────────────────────────────────────────
+DOMAIN ISOLATION
+──────────────────────────────────────────────────────────────────────────────
+
+Domains must be isolated from each other.
+
+No domain may:
+- assume another domain exists
+- modify another domain’s state
+- infer cross-domain intent
+- bypass scope boundaries
+
+Cross-domain coordination occurs
+through the engine,
+not through direct coupling.
+
+This preserves removability.
+
+──────────────────────────────────────────────────────────────────────────────
+DOMAIN STATE AND SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+Domain state is always scoped.
+
+A lighting domain does not have “global state.”
+It has lighting state per scope.
+
+This allows:
+- partial failure isolation
+- local confidence degradation
+- precise explanation
+
+Domain state never escapes its scope.
+
+──────────────────────────────────────────────────────────────────────────────
+ADDING NEW DOMAINS
+──────────────────────────────────────────────────────────────────────────────
+
+New domains are added by:
+- defining supported scope types
+- defining actions within those scopes
+- defining state models per scope
+- integrating with cognition and execution layers
+
+No new domain requires
+changing the scope system.
+
+If it does,
+the design is invalid or incomplete.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Domains must never:
+- define new scope types implicitly
+- override scope authority
+- flatten scoped state
+- introduce global assumptions
+
+Scopes are the foundation.
+Domains adapt to scopes,
+not the reverse.
+
+This ensures that Ashby can expand
+into new domains
+without redefining reality.
+
+END OF 8.5

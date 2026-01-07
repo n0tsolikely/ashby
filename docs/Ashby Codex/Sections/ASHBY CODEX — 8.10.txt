@@ -1,0 +1,122 @@
+ASHBY CODEX — 8.10
+PLUGINS AND EXTENSION ECOSYSTEM
+
+Plugins extend Ashby without altering Ashby.
+
+They exist to allow experimentation,
+third-party contribution,
+and future growth
+without compromising core law.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A PLUGIN IS
+──────────────────────────────────────────────────────────────────────────────
+
+A plugin is an extension unit
+that augments Ashby’s capabilities
+without modifying the engine or core modules.
+
+Plugins may:
+- introduce new modules
+- add new agents
+- add new connectors or adapters
+- provide tooling or visualization
+
+Plugins must conform
+to existing contracts and laws.
+
+──────────────────────────────────────────────────────────────────────────────
+PLUGINS VS CORE COMPONENTS
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins are never core.
+
+They are:
+- optional
+- removable
+- sandboxed
+- versioned independently
+
+If removing a plugin
+changes Ashby’s identity,
+the plugin has violated architectural boundaries.
+
+──────────────────────────────────────────────────────────────────────────────
+PLUGIN ISOLATION
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins must be isolated.
+
+They must not:
+- write directly to HouseState
+- bypass Action-Gated Truth
+- modify engine internals
+- override scope law
+- introduce global assumptions
+
+Isolation is enforced structurally,
+not by convention.
+
+──────────────────────────────────────────────────────────────────────────────
+PLUGIN CONTRACTS
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins interact with Ashby
+through explicit contracts.
+
+These contracts define:
+- allowed inputs
+- allowed outputs
+- scope compatibility
+- execution boundaries
+- failure semantics
+
+A plugin that cannot express itself
+through existing contracts
+is incompatible.
+
+──────────────────────────────────────────────────────────────────────────────
+GOVERNANCE OF PLUGINS
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins do not bypass governance.
+
+If a plugin requires:
+- new engine behavior
+- new truth semantics
+- new scope rules
+
+a Control Sync is required.
+
+Plugins may expose new capabilities,
+but they may not redefine law.
+
+──────────────────────────────────────────────────────────────────────────────
+PLUGIN FAILURE HANDLING
+──────────────────────────────────────────────────────────────────────────────
+
+Plugin failure must be explicit.
+
+Failure must:
+- degrade capability honestly
+- not affect unrelated subsystems
+- not corrupt state
+- not alter truth semantics
+
+A failing plugin must never
+cause Ashby to lie.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins must never:
+- redefine Ashby
+- weaken safety guarantees
+- obscure accountability
+- hide uncertainty
+
+Plugins exist so Ashby can grow
+without losing its spine.
+
+END OF 8.10

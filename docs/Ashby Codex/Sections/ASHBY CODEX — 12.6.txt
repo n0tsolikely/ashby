@@ -1,0 +1,172 @@
+ASHBY CODEX — 12.6
+STALENESS AND DECAY
+
+Time increases uncertainty.
+
+Even a once-verified belief becomes less reliable as the world changes without
+Ashby observing it.
+
+Staleness and decay exist to prevent a slow, quiet lie:
+“Because it was verified once, it remains true.”
+
+Ashby forbids permanent certainty.
+
+HouseState must model time as an uncertainty force.
+
+──────────────────────────────────────────────────────────────────────────────
+STALENESS IS A FIRST-CLASS PROPERTY
+──────────────────────────────────────────────────────────────────────────────
+
+Staleness is the condition where a belief may still be correct,
+but the system no longer has strong justification to speak as if it is current.
+
+Staleness is not failure.
+Staleness is natural.
+
+The world changes:
+- humans act directly
+- devices drift
+- automations run outside Ashby
+- power cycles occur
+- networks partition
+
+A belief that is not refreshed becomes a story.
+
+Ashby must know when it is telling a story.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL DECAY DIRECTION (INVARIANT)
+──────────────────────────────────────────────────────────────────────────────
+
+Confidence may decay over time.
+
+The direction is fixed:
+
+VERIFIED → LAST_KNOWN → UNKNOWN
+
+Rules:
+- decay never upgrades confidence
+- decay never invents knowledge
+- decay is per-scope, per-entity, per-attribute
+
+Decay is applied using timestamps recorded with beliefs.
+A belief without timestamps cannot decay correctly and is invalid.
+
+──────────────────────────────────────────────────────────────────────────────
+DECAY WINDOWS (CONFIGURABLE, NOT FIXED)
+──────────────────────────────────────────────────────────────────────────────
+
+Decay windows are policy decisions.
+
+Different attributes decay at different rates.
+Different environments require different conservatism.
+
+Ashby permits configuration of decay windows by:
+- category (lights, plugs, thermostat, cameras, etc.)
+- attribute (on/off, brightness, setpoint, etc.)
+- scope (some scopes may require stricter truth posture)
+
+Representative example policy (illustrative only):
+- brightness VERIFIED decays to LAST_KNOWN after N minutes
+- brightness LAST_KNOWN decays to UNKNOWN after M minutes
+- thermostat readbacks may decay more slowly than light brightness
+- camera snapshot “currentness” decays rapidly
+
+This example is not authoritative.
+The invariant is the direction and the requirement for explicit decay.
+
+──────────────────────────────────────────────────────────────────────────────
+WHEN DECAY IS APPLIED
+──────────────────────────────────────────────────────────────────────────────
+
+Decay must be applied deterministically.
+
+Required triggers:
+1) ON LOAD / RESTART
+- decay rules must be applied immediately after loading persisted state
+
+2) ON READ (WHEN ANSWERING QUESTIONS)
+- when a user asks “what is the state,” Ashby must evaluate staleness before speaking
+
+3) ON PLAN (WHEN DECIDING NO-OP)
+- NO-OP decisions must evaluate staleness before claiming the world already matches belief
+
+Optional triggers (allowed, not required):
+- periodic decay sweeps
+- scheduled maintenance evaluation
+
+Decay must not be applied inconsistently.
+Inconsistency creates unpredictable truth posture.
+
+──────────────────────────────────────────────────────────────────────────────
+REFRESH / SYNC OPERATIONS
+──────────────────────────────────────────────────────────────────────────────
+
+A refresh is an explicit attempt to read reality.
+
+Refresh triggers (representative, non-exhaustive):
+- user asks for current state
+- user says “check” or “sync”
+- contradiction occurs
+- policy requests pre-automation validation
+
+Refresh semantics:
+- adapters attempt readback if supported
+- results are returned as evidence (ActionResult or equivalent verified read)
+- HouseState is updated from evidence
+- confidence upgrades are allowed only when VERIFIED evidence exists
+
+If readback is unsupported:
+- Ashby must say so
+- beliefs may remain LAST_KNOWN or UNKNOWN depending on prior evidence and staleness
+
+Refresh is not a story.
+Refresh is evidence acquisition.
+
+──────────────────────────────────────────────────────────────────────────────
+STALENESS AND SPEECH
+──────────────────────────────────────────────────────────────────────────────
+
+Language must remain within confidence after decay.
+
+Rules:
+- if decay downgraded a belief, language must downgrade with it
+- LAST_KNOWN language must not sound declarative
+- UNKNOWN must be explicit
+
+If Ashby speaks as verified while storing last-known,
+Ashby is lying twice:
+- to the user
+- to itself
+
+──────────────────────────────────────────────────────────────────────────────
+NO-OP GATING UNDER STALENESS
+──────────────────────────────────────────────────────────────────────────────
+
+NO-OP is permitted only when the requested state matches belief
+at acceptable confidence.
+
+Rules:
+- if the relevant belief is UNKNOWN, NO-OP is forbidden
+- if the belief is stale beyond policy windows, NO-OP is forbidden without refresh
+- if the belief is VERIFIED and within freshness window, NO-OP may be permitted
+- if the belief is LAST_KNOWN, NO-OP is permitted only if policy explicitly allows it
+
+NO-OP is a claim of sufficiency.
+Sufficiency requires evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Staleness and decay must never:
+- upgrade confidence
+- erase timestamps to avoid decay
+- allow old VERIFIED beliefs to be spoken as current fact indefinitely
+- apply inconsistently across reads and plans
+- substitute decay for refresh (decay is honesty, refresh is knowledge)
+
+Time increases uncertainty.
+Ashby must model and speak that truth mechanically.
+
+END OF 12.6

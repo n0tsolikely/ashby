@@ -1,0 +1,252 @@
+ASHBY CODEX — 35.1
+Technical Completion
+
+Technical completion is the engineering definition of “done.”
+
+It does not mean:
+- feature-complete
+- vendor-complete
+- market-complete
+- perfect
+
+It means:
+- the platform body exists
+- the invariants are enforced mechanically
+- the system can be rebuilt and validated from the Codex
+- the system can evolve without collapsing into drift
+
+Technical completion is achieved when Ashby can be operated safely
+and modified safely without requiring constitutional rewrites.
+
+──────────────────────────────────────────────────────────────────────────────
+1) COMPLETION IS NOT A FEATURE COUNT
+──────────────────────────────────────────────────────────────────────────────
+
+Technical completion is not measured by:
+- number of modules
+- number of vendors supported
+- UI polish
+
+It is measured by:
+- whether the platform loop is correct
+- whether truth posture is enforced
+- whether state is authoritative and decays correctly
+- whether execution evidence is auditable
+- whether boundaries prevent vendor leakage
+- whether tests prevent drift
+
+A small Ashby can be technically complete.
+A large Ashby can be technically incomplete.
+
+──────────────────────────────────────────────────────────────────────────────
+2) THE MINIMUM PLATFORM BODY (NON-NEGOTIABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby is technically complete only when the body exists and is correct:
+
+A) ENGINE + POLICY
+- intent normalization exists
+- policy produces bounded outcomes:
+  ACT / CLARIFY / CONFIRM / REFUSE / CHAT
+- planning produces ActionRequests (WHAT) without vendor leakage
+
+B) ROUTER + ADAPTER SYSTEM
+- router selects adapters by capability and availability
+- adapters execute through providers and return ActionResults
+- adapters do not reason, decide policy, or declare truth
+
+C) TRUTH GATE
+- evidence is classified into truth posture
+- forbidden phrases are blocked
+- language constraints are enforced
+- mixed outcomes and contradictions are representable and preserved
+
+D) HOUSESTATE
+- beliefs exist as a single scoped authority
+- beliefs record timestamps, confidence, and staleness
+- decay is enforced when evidence streams go silent
+- restart persistence behavior is defined and validated
+
+E) SCOPES + IDENTITY
+- scope boundaries exist and are enforced
+- stable platform identity keys exist
+- external id mapping exists for bridges/vendors/connectors
+- naming is aliasing, not identity
+
+F) SECURITY + SECRETS
+- secret storage exists
+- credentials never appear in logs or artifacts
+- sanitization rules are implemented and tested
+- least-privilege posture is supported where possible
+
+G) LOGGING + OBSERVABILITY
+- correlation_id exists and propagates end-to-end
+- logs can reconstruct:
+  input → policy → plan → provider attempts → evidence → truth classification → state update
+- provider attribution exists
+- log export exists for support
+
+If any of these are missing or implemented as informal convention,
+technical completion is not achieved.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE CLOSED LOOP MUST RUN END-TO-END (WITH REAL EVIDENCE)
+──────────────────────────────────────────────────────────────────────────────
+
+Technical completion requires at least one end-to-end working flow that proves the body:
+
+- a normalized intent is created
+- policy outcome is chosen correctly
+- ActionRequest is planned correctly
+- execution is attempted through an adapter/provider
+- ActionResult evidence is returned
+- Truth Gate classifies truth posture
+- HouseState updates appropriately (or refuses to update)
+- response language matches the truth posture
+
+The flow must remain correct under:
+- success
+- failure
+- partial success
+- staleness
+- identity ambiguity
+- permission denial
+
+End-to-end behavior under uncertainty is the real test.
+
+──────────────────────────────────────────────────────────────────────────────
+4) BOUNDARY ENFORCEMENT MUST BE MECHANICAL (NOT TRUST-BASED)
+──────────────────────────────────────────────────────────────────────────────
+
+Technical completion requires that the architecture tree boundaries are enforced.
+
+Evidence of enforcement:
+- boundary tests fail when:
+  - engine imports bridge/vendor code
+  - modules import bridge/vendor code
+  - domain imports execution layers
+- provider interfaces remain swappable without module changes
+- bridges remain isolated and optional
+- native_vendor remains isolated and optional per provider availability
+
+If boundaries are enforced only by “developer discipline,”
+the system is not complete.
+It will drift.
+
+──────────────────────────────────────────────────────────────────────────────
+5) ACCEPTANCE TESTS AND HARNESS MUST EXIST (DRIFT PREVENTION)
+──────────────────────────────────────────────────────────────────────────────
+
+Technical completion requires an operational harness that verifies invariants.
+
+At minimum, the harness must validate:
+
+A) TRUTH POSTURE
+- verified vs last-known vs unknown behavior
+- forbidden phrase prevention
+- mixed outcome preservation
+
+B) STATE SEMANTICS
+- staleness/decay behavior
+- persistence/restart behavior
+- contradiction representation
+
+C) EXECUTION EVIDENCE
+- ActionResult shapes are canonical and validated
+- provider attribution is present
+- failure taxonomy is used
+
+D) BOUNDARIES
+- forbidden dependencies are rejected
+- modules cannot execute directly
+
+E) MIGRATION SAFETY (BASIC)
+- schema versions are tracked
+- at least one migration path exists and is testable
+
+Without a harness, technical completion cannot be claimed.
+The platform will silently mutate.
+
+──────────────────────────────────────────────────────────────────────────────
+6) MIGRATION DISCIPLINE MUST BE REAL (CONTINUITY THROUGH CHANGE)
+──────────────────────────────────────────────────────────────────────────────
+
+Technical completion requires that Ashby can change without destroying history.
+
+Minimum migration requirements:
+- persisted schemas have versions
+- migrations are explicit and versioned
+- migrations are tested on a clean baseline
+- identity continuity is preserved across migration
+- the system can load old artifacts/state or migrate them forward
+
+A platform that cannot migrate cannot survive iteration.
+
+──────────────────────────────────────────────────────────────────────────────
+7) OPERATIONAL SAFETY MUST BE IMPLEMENTED
+──────────────────────────────────────────────────────────────────────────────
+
+Technical completion requires safe operational behavior:
+
+- kill switches or safe-disable mechanisms exist for risky execution paths
+- timeouts and bounded retries exist for execution attempts
+- partial results are preserved and surfaced honestly
+- offline and degraded modes are represented as staleness and unknown, not lies
+- error messages are sanitized and traceable (correlation_id)
+
+“Works on a good day” is not completion.
+
+Completion means:
+- predictable behavior under real failure modes.
+
+──────────────────────────────────────────────────────────────────────────────
+8) MODULARITY AND REMOVABILITY MUST BE TRUE
+──────────────────────────────────────────────────────────────────────────────
+
+Technical completion requires that modules and agents are truly removable:
+
+- enabling/disabling modules is declarative (profile-based)
+- disabling a module does not break the platform body
+- artifacts remain accessible only through governed storage paths
+- a bridge being absent does not collapse the platform
+
+If removing a module breaks the core loop,
+the platform has inverted its priorities and is not complete.
+
+──────────────────────────────────────────────────────────────────────────────
+9) REBUILD VALIDATION: A CLEAN-ROOM TEST
+──────────────────────────────────────────────────────────────────────────────
+
+The strongest technical completion test is a clean-room rebuild:
+
+- start from a fresh repo
+- implement only what the Codex and preservation packs require
+- run the acceptance harness
+- demonstrate the end-to-end loop under uncertainty
+- verify no forbidden dependencies exist
+- verify secrets do not leak
+- verify logs reconstruct actions and evidence
+
+If the clean-room rebuild cannot succeed,
+technical completion is not achieved.
+
+A platform that cannot be rebuilt is not a platform.
+It is a one-off project.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby is technically complete only when:
+- the platform body exists and enforces invariants mechanically
+- the closed loop runs end-to-end with evidence-driven truth posture
+- boundaries prevent vendor leakage and bridge takeover
+- tests and harness prevent drift
+- migrations preserve continuity
+- operational safety is real
+- modularity and removability are true
+- a clean-room rebuild can validate correctness
+
+Technical completion is the moment Ashby becomes self-preserving.
+
+END OF 35.1

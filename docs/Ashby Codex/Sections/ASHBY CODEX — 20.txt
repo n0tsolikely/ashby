@@ -1,0 +1,350 @@
+ASHBY CODEX — 20
+PRESERVATION PACK #2 — CANONICAL DATA MODELS
+
+This section is a mechanical invariant.
+
+It defines the canonical data structures that Ashby relies on to remain:
+- deterministic
+- debuggable
+- swappable
+- rebuildable
+- truthful under Action-Gated Truth
+
+If these models drift, every other subsystem drifts with them.
+
+The models below are not “suggested shapes.”
+They are binding contracts.
+
+──────────────────────────────────────────────────────────────────────────────
+HOW THIS PACK IS USED (NORMATIVE INTEGRATION NOTES)
+──────────────────────────────────────────────────────────────────────────────
+
+1) These structures must exist before any real device execution is attempted.
+Any system that “executes first and figures out models later” cannot be trusted.
+
+2) These structures must be stable across:
+- transports (chat, voice, CLI)
+- modules (domain meaning)
+- adapters (execution)
+- storage (persistence)
+- tests (acceptance harness)
+
+3) Every boundary in the system must accept and emit canonical types:
+- NLU emits Intent (normalized form)
+- planning emits ActionRequest
+- adapters emit ActionResult
+- the Truth Gate consumes ActionResult + current belief and produces:
+  - truth class assignments
+  - allowed language constraints
+  - state transition decisions
+
+4) Canonical units are part of the model.
+If the model says brightness is 0–1000 internally, no subsystem may reinterpret it.
+
+5) A rebuild must be possible with different vendors and different transports.
+This pack is what makes that possible.
+
+6) Versioning is allowed only through explicit, deliberate migration.
+Silent field drift is forbidden.
+If a future change is required, it must be governed under structural realignment law.
+
+──────────────────────────────────────────────────────────────────────────────
+FULL PRESERVATION PACK CONTENT (AUTHORITATIVE)
+──────────────────────────────────────────────────────────────────────────────
+ASHBY PRESERVATION PACK #2 — CANONICAL DATA MODELS (INTENT, ACTION, STATE)
+Version: 1.0
+Date: 2025-12-22
+Goal: Define the exact canonical data structures Ashby relies on so the system can be rebuilt
+correctly and deterministically. These models are the backbone of Action-Gated Truth.
+
+This pack defines:
+  - Intent (normalized)
+  - ActionRequest
+  - ActionResult
+  - Verification / Confidence semantics
+  - HouseState (authoritative state model)
+  - State transitions and invariants
+
+Nothing in this file is optional.
+
+──────────────────────────────────────────────────────────────────────────────
+1) INTENT (NORMALIZED FORM)
+──────────────────────────────────────────────────────────────────────────────
+Purpose:
+  - Provide a single, normalized representation of what the user wants.
+  - Hide NLU source differences (local rules vs GPT).
+  - Be stable across transports (Telegram, CLI, voice, etc.).
+
+Rules:
+  - All NLU engines MUST emit this structure.
+  - Router, policy, and modules may rely on its shape.
+  - Never pass raw text downstream as a substitute for Intent fields.
+
+Canonical structure (JSON-like):
+
+{
+  "type": "lights.on" | "lights.off" | "lights.adjust" |
+          "plugs.on" | "plugs.off" |
+          "thermostat.set" | "thermostat.adjust" |
+          "cameras.snapshot" | "cameras.record" |
+          "meetings.start" | "meetings.stop" |
+          "chat" | "unknown",
+
+  "targets": {
+    "device_key": "thor_bulb" | null,
+    "zone_id": "zone2" | null,
+    "room_name": "bedroom" | null,
+    "category": "lights" | null,
+    "role": "ambient" | null
+  },
+
+  "parameters": {
+    "brightness": 600 | null,     // ALWAYS 0–1000 internal scale
+    "delta": 100 | -100 | null,   // relative change, internal scale
+    "temperature_c": 21.0 | null,
+    "duration_sec": 60 | null
+  },
+
+  "mode": "max" | "min" | "scene" | null,
+
+  "confidence": "HIGH" | "MEDIUM" | "LOW",
+
+  "raw_text": "turn on thor",
+
+  "source": "local_nlu" | "gpt_nlu"
+}
+
+Intent invariants:
+  - brightness and delta MUST already be normalized to 0–1000 semantics.
+  - Percent parsing is NOT a router concern; it belongs to NLU normalization.
+  - confidence expresses NLU certainty, NOT execution certainty.
+
+──────────────────────────────────────────────────────────────────────────────
+2) ACTIONREQUEST (PLANNED ACTION)
+──────────────────────────────────────────────────────────────────────────────
+Purpose:
+  - Represent a concrete, executable plan derived from Intent + resolution.
+  - Decouple planning from execution.
+
+Canonical structure:
+
+{
+  "action_type": "set_brightness" | "turn_on" | "turn_off" |
+                 "set_temperature" | "adjust_temperature" |
+                 "snapshot" | "record" | "noop",
+
+  "target_set": {
+    "devices": ["thor_bulb", "captain_america_bulb"],
+    "zone_id": "zone2",
+    "category": "lights"
+  },
+
+  "parameters": {
+    "brightness": 600,
+    "delta": null,
+    "temperature_c": null
+  },
+
+  "user_id": "telegram:123456",
+  "correlation_id": "uuid-1234",
+  "requested_at": "2025-12-22T18:10:00Z"
+}
+
+Rules:
+  - target_set.devices MUST be concrete device_keys by this stage.
+  - If no concrete targets can be resolved, do NOT emit ActionRequest.
+    → trigger clarification instead.
+  - correlation_id is required for tracing and debugging.
+
+──────────────────────────────────────────────────────────────────────────────
+3) ACTIONRESULT (EXECUTION OUTCOME)
+──────────────────────────────────────────────────────────────────────────────
+Purpose:
+  - Capture exactly what was attempted and what actually happened.
+  - Enforce Action-Gated Truth.
+
+This structure is NON-NEGOTIABLE.
+
+Canonical structure:
+
+{
+  "ok": true | false,
+
+  "attempted": ["thor_bulb", "captain_america_bulb"],
+
+  "succeeded": ["thor_bulb"],
+
+  "failed": [
+    {
+      "device_key": "captain_america_bulb",
+      "stage": "set_brightness",
+      "error": "timeout",
+      "raw": "vendor error payload"
+    }
+  ],
+
+  "value": {
+    "brightness": 600,
+    "temperature_c": null
+  },
+
+  "verification": "VERIFIED" | "LAST_KNOWN" | "UNKNOWN",
+
+  "retries": 1,
+
+  "executed_at": "2025-12-22T18:10:02Z"
+}
+
+Rules:
+  - attempted = what Ashby tried to control
+  - succeeded = subset of attempted
+  - failed = any device that did not succeed, with reason
+  - ok = true ONLY if failed is empty
+  - verification semantics defined below
+
+──────────────────────────────────────────────────────────────────────────────
+4) VERIFICATION & CONFIDENCE SEMANTICS
+──────────────────────────────────────────────────────────────────────────────
+Ashby distinguishes EXECUTION from KNOWLEDGE.
+
+Verification values:
+
+VERIFIED:
+  - The adapter confirmed success (API success + confirmation)
+  - HouseState may be updated with high confidence
+  - Ashby may speak in past tense: “Done.”
+
+LAST_KNOWN:
+  - Command was sent successfully
+  - No explicit confirmation readback occurred
+  - State assumed unchanged except for the command
+  - Ashby must say: “I set it to X (last known).”
+
+UNKNOWN:
+  - Failure, timeout, contradiction, or restart without refresh
+  - HouseState must mark device confidence UNKNOWN
+  - Ashby must avoid declarative claims
+
+Important:
+  - verification applies per ActionResult, but HouseState stores per-device confidence.
+  - NEVER upgrade UNKNOWN → VERIFIED without a confirmed read or action.
+
+──────────────────────────────────────────────────────────────────────────────
+5) HOUSESTATE (AUTHORITATIVE STATE MODEL)
+──────────────────────────────────────────────────────────────────────────────
+Purpose:
+  - Be the single source of truth for what Ashby believes about the world.
+  - Prevent hallucinated continuity.
+
+Canonical structure:
+
+{
+  "devices": {
+    "thor_bulb": {
+      "on": true,
+      "brightness": 600,
+      "last_verified_ts": "2025-12-22T18:10:02Z",
+      "confidence": "VERIFIED"
+    },
+    "captain_america_bulb": {
+      "on": null,
+      "brightness": null,
+      "last_verified_ts": null,
+      "confidence": "UNKNOWN"
+    }
+  },
+
+  "sessions": {
+    "lights": {
+      "active": true,
+      "target_devices": ["thor_bulb"],
+      "current_level": 600,
+      "last_delta": 100,
+      "updated_at": "2025-12-22T18:10:02Z"
+    },
+    "comfort": {
+      "active": false
+    }
+  },
+
+  "environment": {
+    "last_known_temp_c": 20.0,
+    "preferred_temp_c": 21.0
+  },
+
+  "last_action": {
+    "action_type": "set_brightness",
+    "targets": ["thor_bulb"],
+    "value": { "brightness": 600 },
+    "verification": "VERIFIED",
+    "executed_at": "2025-12-22T18:10:02Z"
+  }
+}
+
+HouseState invariants:
+  - confidence MUST exist for every device
+  - null fields mean “unknown,” not “off”
+  - sessions are ephemeral and time-bound
+  - last_action is informational, not authoritative
+
+──────────────────────────────────────────────────────────────────────────────
+6) STATE TRANSITIONS (CRITICAL RULES)
+──────────────────────────────────────────────────────────────────────────────
+On VERIFIED success:
+  - Update device state fields
+  - Set confidence = VERIFIED
+  - Update last_verified_ts
+
+On LAST_KNOWN success:
+  - Update state fields
+  - Set confidence = LAST_KNOWN
+
+On failure or contradiction:
+  - Set affected device confidence = UNKNOWN
+  - Do NOT invent replacement values
+
+On user contradiction:
+  User: “No, it’s actually full brightness.”
+  → Mark brightness = null, confidence = UNKNOWN
+  → Offer refresh or explicit re-set
+
+On restart:
+  - Persist HouseState to disk
+  - On startup, reload with previous confidence flags intact
+  - Never assume VERIFIED after restart unless refreshed
+
+──────────────────────────────────────────────────────────────────────────────
+7) NO-OP & REDUNDANCY RULES
+──────────────────────────────────────────────────────────────────────────────
+If HouseState says:
+  - device.on = true AND confidence = VERIFIED
+And user says:
+  - “turn it on”
+Then:
+  - Emit NO-OP ActionRequest
+  - Respond: “It’s already on.”
+
+Same for brightness:
+  - VERIFIED brightness == requested brightness
+  → no execution
+
+This reduces unnecessary calls and preserves trust.
+
+──────────────────────────────────────────────────────────────────────────────
+8) WHY THIS PACK MATTERS
+──────────────────────────────────────────────────────────────────────────────
+If these structures drift:
+  - Action-Gated Truth collapses
+  - Router becomes a god file again
+  - LLM starts hallucinating continuity
+  - Debugging becomes impossible
+
+If these structures are preserved:
+  - Ashby remains deterministic
+  - Multiple agents/modules can coexist
+  - New transports can be added safely
+  - New engineers can reason about the system
+
+END OF PACK #2
+
+END OF 20

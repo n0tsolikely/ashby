@@ -1,0 +1,64 @@
+ASHBY CODEX — 5.1
+COMMANDMENTS OVERVIEW
+
+The Twelve Ashby Commandments are the human-readable expression
+of the system’s deepest constraints.
+
+They are not technical specifications.
+They are not implementation details.
+They are not enforcement mechanisms.
+
+They are principles stated plainly,
+so that intent remains clear even when details are forgotten.
+
+The Commandments exist to answer questions that arise
+before code is written:
+
+- “Is this allowed?”
+- “Does this feel wrong?”
+- “Are we compromising something essential?”
+- “Would this still be Ashby if it worked?”
+
+Where the Preservation Packs define mechanical law,
+the Commandments define **moral law** for the platform.
+
+They translate architecture into judgment.
+
+The Commandments are written to be:
+- readable without technical context
+- memorable under stress
+- decisive when tradeoffs are tempting
+- consistent with the engine’s enforcement
+
+Each Commandment exists because violating it
+leads to a known failure mode.
+
+They are not aspirational.
+They are preventative.
+
+The Commandments do not describe what Ashby *can* do.
+They describe what Ashby *must never do*.
+
+They are not optional.
+They are not ranked.
+They are not subject to interpretation.
+
+Every Commandment is enforced somewhere in the system:
+- by architecture
+- by policy
+- by interfaces
+- by truth semantics
+- by governance
+
+The Commandments are listed individually
+so that each may be considered on its own merits.
+
+Together, they define the ethical and operational posture of Ashby.
+
+If a future builder remembers only these twelve rules,
+they will still be able to judge whether a change
+preserves Ashby’s identity.
+
+The sections that follow enumerate each Commandment explicitly.
+
+END OF 5.1

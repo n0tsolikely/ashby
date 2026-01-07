@@ -1,0 +1,200 @@
+ASHBY CODEX — 14.3
+TIME-BOUND SESSIONS (IRRIGATION ARCHETYPE)
+
+A time-bound session is the archetypal session pattern for actions that have
+duration, lifecycle, and safety implications over time.
+
+It exists to support natural commands such as:
+- “water the front lawn for 10 minutes”
+- “stop”
+- “pause it”
+- “resume”
+- “how much time is left?”
+
+without forcing the user to restate targets or timing every turn.
+
+The irrigation archetype is representative, not exhaustive.
+It applies to any domain where:
+- actions run over time
+- “start” and “stop” are separate operations
+- the system must track active state and remaining duration
+- safety requires explicit limits
+
+──────────────────────────────────────────────────────────────────────────────
+WHY TIME-BOUND SESSIONS MUST EXIST
+──────────────────────────────────────────────────────────────────────────────
+
+Without time-bound sessions, the platform is forced into unsafe behavior:
+
+- “stop” becomes ambiguous without an active session anchor
+- duration-based actions become hard to audit
+- the system may fail to reconcile what should still be running
+- restarts can produce silent hazards (“still running” without awareness)
+
+Time-bound sessions make lifecycle explicit.
+
+──────────────────────────────────────────────────────────────────────────────
+CANONICAL SESSION SHAPE (REPRESENTATIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+The shape below is representative.
+Fields may vary by module, but the semantics are stable.
+
+{
+  "session_type": "irrigation",
+  "scope_id": "<scope_id>",
+  "active": true,
+
+  "target_set": {
+    "zones": ["<zone_key>", "..."] | [],
+    "devices": ["<device_key>", "..."] | []
+  },
+
+  "lifecycle": {
+    "state": "running" | "paused" | "stopped",
+    "duration_sec": <int> | null,
+    "started_at": "<ISO8601>" | null,
+    "paused_at": "<ISO8601>" | null,
+    "ends_at": "<ISO8601>" | null
+  },
+
+  "safety": {
+    "max_duration_sec": <int> | null,
+    "confirmation_required": <bool> | null,
+    "max_targets": <int> | null
+  },
+
+  "last_action": {
+    "type": "irrigation.start" | "irrigation.stop" | "irrigation.pause" | "irrigation.resume" | null,
+    "correlation_id": "<correlation_id>" | null
+  },
+
+  "created_at": "<ISO8601>",
+  "updated_at": "<ISO8601>",
+  "expires_at": "<ISO8601>"
+}
+
+Notes:
+- time-bound sessions track intended lifecycle, not guaranteed world state
+- verification and belief confidence remain evidence-bound
+- no vendor identifiers or secrets may exist in session state
+
+──────────────────────────────────────────────────────────────────────────────
+SESSION CREATION AND START RULES
+──────────────────────────────────────────────────────────────────────────────
+
+A time-bound session is created when the system resolves a time-bound control intent
+with concrete targets and lawful timing.
+
+Rules:
+- scope must be resolved
+- targets must be resolved
+- duration must be explicit or derived from policy defaults
+- safety constraints must be evaluated before producing ActionRequest
+
+If duration is missing and no safe default exists:
+- Ashby must clarify
+- not assume an infinite run
+
+If duration exceeds policy limits:
+- Ashby must require confirmation or refuse per policy
+
+Time-bound sessions exist because “how long” is part of meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+LIFECYCLE COMMAND INTERPRETATION
+──────────────────────────────────────────────────────────────────────────────
+
+Once a time-bound session exists, follow-ups map to lifecycle operations.
+
+Representative follow-ups:
+- “stop” → stop the active time-bound session’s targets
+- “pause” → pause the active run if supported
+- “resume” → resume a paused run if supported
+- “extend by 5 minutes” → adjust duration within safety limits
+- “time left?” → compute remaining time from session timestamps (not from guess)
+
+Rules:
+- lifecycle verbs are interpreted within the session only if it is active
+- if no relevant session exists, Ashby must clarify what should be stopped/paused
+- lifecycle operations always produce ActionRequests and ActionResults
+- lifecycle language must remain evidence-bound (VERIFIED / LAST_KNOWN / UNKNOWN / FAILED)
+
+Time-bound sessions enable “stop” without becoming unscoped authority.
+
+──────────────────────────────────────────────────────────────────────────────
+TIMER ACCOUNTING IS NOT VERIFICATION
+──────────────────────────────────────────────────────────────────────────────
+
+A session’s “ends_at” and “time left” are scheduling intent.
+
+They are not proof that the external system is running or stopped.
+
+Rules:
+- timer values may be used to plan a stop action
+- timer values must not be spoken as if they guarantee external state
+- when asked “is it still running?”, Ashby must answer from evidence
+  (HouseState confidence + verification), not from the timer alone
+
+Time is a plan. Evidence is truth.
+
+──────────────────────────────────────────────────────────────────────────────
+RESTART BEHAVIOR FOR TIME-BOUND SESSIONS
+──────────────────────────────────────────────────────────────────────────────
+
+Restart breaks continuity.
+
+A time-bound session must not survive restart as “active by assumption.”
+
+Rules:
+- on restart, persisted session state may be loaded as history
+- but active lifecycle state must be treated as uncertain
+- any claim about “still running” must be UNKNOWN unless verified by refresh/readback
+
+Because irrigation-like domains can be safety-sensitive, policy may allow a
+fail-safe stop attempt after restart when an active run was previously scheduled.
+
+If a fail-safe stop is performed:
+- it must be treated as a normal action attempt with evidence reporting
+- it must be logged and correlated
+- it must not be represented as proof that the system was previously running
+
+Safety actions are allowed.
+State assumptions are forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+EXPIRY AND COMPLETION
+──────────────────────────────────────────────────────────────────────────────
+
+Time-bound sessions expire or complete explicitly.
+
+Rules:
+- when a run reaches its planned end, the module must attempt the stop action
+  (unless the external system is self-terminating and verification exists)
+- on completion, the session transitions to stopped and expires soon after
+- expired sessions must not be used to interpret “stop” commands hours later
+
+Expiry prevents stale authority.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Time-bound sessions must:
+- remain scope-bound
+- track lifecycle explicitly (running/paused/stopped)
+- enforce duration and safety limits
+- treat timers as intent, not verification
+- degrade honesty on restart
+- never upgrade truth without evidence
+
+Time-bound sessions must never:
+- allow indefinite runs by omission
+- treat schedule timestamps as proof of state
+- persist active authority after restart by assumption
+- hide lifecycle ambiguity behind fluency
+- bypass policy or Truth Gate constraints
+
+Time-bound sessions make duration controllable without making truth optional.
+
+END OF 14.3

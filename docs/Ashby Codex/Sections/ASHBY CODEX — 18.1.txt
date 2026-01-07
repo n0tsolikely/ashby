@@ -1,0 +1,277 @@
+ASHBY CODEX — 18.1
+CAPABILITY-BASED ADAPTERS
+
+Adapters are the execution boundary of Ashby.
+
+They exist to perform HOW:
+- vendor calls
+- protocol traffic
+- network requests
+- device commands
+- external system mutations
+
+They do not decide WHAT.
+They do not decide IF.
+They do not decide WHY.
+
+Capability-based adapters are the mechanism that keeps execution swappable.
+
+If Ashby can swap execution backends without rewriting modules,
+Ashby remains a platform.
+If Ashby cannot, Ashby collapses into vendor-specific code.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINITIONS (CANONICAL)
+──────────────────────────────────────────────────────────────────────────────
+
+ADAPTER
+A replaceable implementation that can attempt an ActionRequest
+against an external system and return an ActionResult.
+
+CAPABILITY
+A stable, vendor-neutral label describing an execution ability,
+such as:
+- “set_level” for lights
+- “turn_off” for plugs
+- “set_setpoint” for thermostat
+- “start_recording” for camera
+- “put_object” for storage
+
+Capabilities describe WHAT can be attempted,
+not the method used to attempt it.
+
+CAPABILITY-BASED SELECTION
+The rule that the router selects an adapter because it can satisfy
+the required capability for the target(s) in the active scope,
+not because of vendor identity, convenience, or hardcoded special cases.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY CAPABILITY-BASED ADAPTERS ARE REQUIRED
+──────────────────────────────────────────────────────────────────────────────
+
+Execution backends change:
+- vendors churn
+- bridges come and go
+- protocols shift
+- cloud services degrade
+- local networks break
+- new hardware appears
+
+If modules and core logic are written against specific vendors,
+every change becomes a rewrite.
+
+Capability-based selection prevents this by enforcing:
+- stable interfaces
+- stable capability labels
+- one-way dependency direction (modules → interfaces ← adapters)
+
+The result is replaceability:
+- replace Tuya without touching lights module
+- replace a bridge without touching router law
+- add a new protocol backend without rewriting intents
+
+This is not convenience.
+This is survivability.
+
+──────────────────────────────────────────────────────────────────────────────
+THE ADAPTER SYSTEM’S PLACE IN THE PIPELINE
+──────────────────────────────────────────────────────────────────────────────
+
+The execution system exists only after planning resolves to ACT.
+
+Canonical flow (conceptual):
+1) Engine interprets intent and applies policy
+2) Planning produces ActionRequest(s) (WHAT)
+3) Router selects adapter(s) by capability (HOW)
+4) Adapter attempts execution and returns ActionResult(s) (evidence)
+5) Engine updates HouseState and speaks through Truth Gate
+
+Rules:
+- adapters never receive raw user language
+- adapters never receive unplanned intent
+- adapters never update HouseState directly
+- adapters never generate user-facing claims
+
+Adapters produce evidence.
+The engine assigns meaning.
+
+──────────────────────────────────────────────────────────────────────────────
+CAPABILITY DECLARATION (WHAT AN ADAPTER MUST PUBLISH)
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters must declare capabilities explicitly.
+
+A capability declaration must be:
+- stable (labels do not drift casually)
+- vendor-neutral (no vendor names embedded)
+- auditable (visible to the router and tests)
+- scope-eligible (enabled/disabled by scope configuration)
+
+Capability declarations must include:
+
+1) SUPPORTED CAPABILITIES
+A list of capability labels the adapter implements.
+
+2) CAPABILITY QUALIFIERS (OPTIONAL, POLICY-DEFINED)
+Some capabilities require qualifiers, such as:
+- local vs cloud execution mode
+- readback support (verification potential)
+- rate limits or throughput class
+- device-category specialization
+
+Qualifiers are not implementation details.
+They are routing-relevant properties used for deterministic preference.
+
+3) TARGET COMPATIBILITY
+The adapter must be able to answer:
+- “Can I execute this capability for this target device_key?”
+Compatibility must never be guessed.
+If unknown, it is unsupported.
+
+4) REQUIRED INPUT SHAPE
+Adapters must accept canonical types only:
+- device_keys
+- canonical parameter units
+- correlation identifiers
+
+No adapter contract may require vendor payload structures as inputs.
+
+──────────────────────────────────────────────────────────────────────────────
+CAPABILITY-BASED ADAPTER SELECTION (DETERMINISTIC RULES)
+──────────────────────────────────────────────────────────────────────────────
+
+Adapter selection is performed by the router.
+
+Selection must be deterministic and auditable.
+
+Given:
+- an ActionRequest with action_type and canonical parameters
+- a resolved TargetSet (device_keys) inside a scope
+- the set of enabled adapters in the scope
+
+The router must:
+
+1) DERIVE REQUIRED CAPABILITY
+Map the action_type to a capability label (or set of labels).
+This mapping is stable platform law.
+
+2) COLLECT CANDIDATES
+For each target:
+- collect adapters that claim support for the required capability
+- and claim compatibility with the target device_key
+- and are enabled for this scope
+
+3) APPLY PREFERENCE ORDER (POLICY-DEFINED)
+If multiple candidates exist, prefer by policy.
+Examples of preference dimensions (representative):
+- offline/local over cloud (see 18.3–18.4)
+- stronger verification potential over write-only
+- higher reliability class over lower
+- lower latency over higher (only within safe bounds)
+
+Preference must be configured and stable.
+It must not be improvised per request.
+
+4) ENSURE COVERAGE
+If a single adapter can cover all targets, selection may choose that adapter.
+If different targets require different adapters:
+- planning may split into multiple ActionRequests, or
+- the router may execute per-adapter batches, but only if explicitly planned and auditable
+
+No silent partial execution is allowed.
+
+5) HANDLE “NO ADAPTER” AS A LAWFUL FAILURE
+If no adapter supports the capability for a target:
+- execution for that target is impossible
+- the correct result is explicit failure evidence, not a crash
+- the user-facing system must refuse or clarify based on policy
+
+Absence of capability is not an error.
+It is reality.
+
+──────────────────────────────────────────────────────────────────────────────
+MULTI-TARGET ACTIONS AND PARTIAL CAPABILITY
+──────────────────────────────────────────────────────────────────────────────
+
+Multi-target actions are common.
+
+Capability-based routing must preserve mixed reality.
+
+Rules:
+- if some targets are supported and some are not:
+  - the platform must not silently execute only the supported subset
+  - the platform must either:
+    - CONFIRM partial execution, or
+    - CLARIFY/narrow, or
+    - REFUSE if policy requires all-or-nothing
+- if splitting is used, it must be explicit in audit artifacts
+- ActionResults must remain per-target truthful
+
+The router must not “do what it can” without telling the truth about what it cannot.
+
+──────────────────────────────────────────────────────────────────────────────
+CAPABILITY MISMATCH AND DEVICE LOOKUP FAILURES
+──────────────────────────────────────────────────────────────────────────────
+
+Failure reasons must be explicit and standardized.
+
+Representative failure stages:
+- device_lookup (target not present in registry or not in scope)
+- capability_mismatch (adapter cannot satisfy required capability for target)
+- execution (vendor call failed)
+- verification (readback failed, if attempted)
+
+Rules:
+- adapters and router must never return vendor error codes as platform truth
+- vendor errors must be mapped into canonical failure taxonomy upstream
+- missing capability must not be framed as “Ashby error” or “mystery”
+  It is simply unsupported in this scope/configuration.
+
+Capability mismatch is a core signal that preserves modularity.
+
+──────────────────────────────────────────────────────────────────────────────
+ADAPTER AVAILABILITY AND HEALTH
+──────────────────────────────────────────────────────────────────────────────
+
+Adapters may be temporarily unhealthy.
+
+Health affects selection only through policy-defined signals.
+
+Rules:
+- health signals must be auditable and time-bound
+- health must not change capability labels
+- health may influence preference order (e.g., avoid a failing adapter)
+- health must not cause silent rerouting that changes semantics without audit
+
+Rerouting is allowed only when it preserves meaning
+and remains visible in evidence.
+
+If rerouting changes meaning (e.g., local verified vs cloud write-only),
+the system must treat it as a different truth risk
+and handle it explicitly via policy.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Capability-based adapters must:
+- remain vendor-neutral at the interface level
+- declare capabilities explicitly and stably
+- be selected deterministically and auditable by the router
+- operate only on canonical ActionRequests and device_keys
+- return ActionResult evidence for every attempt
+- preserve mixed reality for multi-target actions
+- treat absence of capability as explicit failure, not crash
+
+Capability-based adapters must never:
+- be selected by vendor identity or hardcoded special cases
+- import module meaning logic into execution
+- accept raw user language as input
+- update HouseState directly
+- generate user-facing language or truth claims
+- silently execute partial subsets when capability is missing
+- leak secrets or raw vendor payloads into outputs
+
+Capability-based routing is the hinge that keeps Ashby swappable.
+
+END OF 18.1

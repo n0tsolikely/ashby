@@ -1,0 +1,231 @@
+ASHBY CODEX — 33.2
+What Must Exist First
+
+This subsection defines the minimum kernel that must exist before any “feature work”
+is allowed to proceed.
+
+If these prerequisites do not exist, any subsequent implementation becomes:
+- untestable
+- un-auditable
+- migration-hostile
+- truth-corrupting
+
+This is not a suggestion.
+These are stop-lines.
+
+──────────────────────────────────────────────────────────────────────────────
+0) THE FIRST RULE: INVARIANTS BEFORE CAPABILITIES
+──────────────────────────────────────────────────────────────────────────────
+
+The platform must be lawful before it is useful.
+
+“Useful” code that violates invariants produces a false Ashby:
+- it can act
+- but it cannot be trusted
+- and it cannot be rebuilt
+
+Therefore the first existence requirements are the ones that enforce law.
+
+──────────────────────────────────────────────────────────────────────────────
+1) A CANONICAL REPO SHAPE WITH ENFORCED BOUNDARIES
+──────────────────────────────────────────────────────────────────────────────
+
+Before writing core logic, the builder must have:
+
+- the architecture tree folders instantiated
+- a dependency direction policy enforced
+- automated boundary checks
+
+Minimum boundary guarantees:
+- modules cannot import bridges or vendors
+- engine cannot import bridges or vendors
+- domain cannot import execution layers
+- providers are swappable behind interfaces
+
+Stop-line:
+If forbidden dependencies are possible, do not proceed.
+You are building a fork factory.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL DATA MODELS + STRICT VALIDATION
+──────────────────────────────────────────────────────────────────────────────
+
+The system must have canonical data models for:
+- Intent
+- ActionRequest
+- ActionResult
+- verification semantics
+- failure taxonomy
+
+And it must enforce validation:
+- parsing must reject malformed inputs
+- execution outputs must be structurally constrained
+- failures must be classified, not hand-waved
+
+Stop-line:
+If ActionRequests and ActionResults are not canonical and validated,
+do not proceed to real execution.
+You will produce evidence that cannot be trusted or migrated.
+
+──────────────────────────────────────────────────────────────────────────────
+3) CORRELATION AND TRACEABILITY (OBSERVABILITY BASELINE)
+──────────────────────────────────────────────────────────────────────────────
+
+Before any adapter/provider integration:
+
+- correlation_id exists
+- it propagates through the pipeline
+- logs are structured
+- logs record:
+  - input intent (sanitized)
+  - policy outcome
+  - plan summary (WHAT)
+  - execution attempts (HOW providers called)
+  - returned evidence
+  - truth classification
+  - state update decisions
+
+Stop-line:
+If an execution attempt cannot be reconstructed from logs,
+do not integrate a vendor or bridge.
+Debugging without traces becomes mythology.
+
+──────────────────────────────────────────────────────────────────────────────
+4) SECRETS HANDLING (SECURITY BASELINE)
+──────────────────────────────────────────────────────────────────────────────
+
+Before any connector/provider integration:
+
+- a secret store exists
+- credentials are referenced by handles, not stored in config
+- sanitization prevents secrets from leaking into logs/errors/artifacts
+- rotation and revocation are possible
+
+Stop-line:
+If secrets can appear in logs or artifacts, do not connect anything.
+A leaked key compromises the entire environment.
+
+──────────────────────────────────────────────────────────────────────────────
+5) SCOPES + IDENTITY (WORLD MODEL MUST EXIST)
+──────────────────────────────────────────────────────────────────────────────
+
+Before you control anything:
+
+- scope model exists
+- permissions/authority evaluation exists
+- stable identities exist:
+  - device_keys (or equivalent platform-owned ids)
+  - external id mapping structures
+
+Stop-line:
+If targets cannot be resolved into a scoped, stable identity,
+do not execute.
+You will create irreversible actions against ambiguous reality.
+
+──────────────────────────────────────────────────────────────────────────────
+6) TRUTH GATE ENFORCEMENT (NO CLAIMS WITHOUT EVIDENCE)
+──────────────────────────────────────────────────────────────────────────────
+
+Before the system is allowed to say “done”:
+
+- Truth Gate exists and is applied to all outcomes
+- truth classes are enforced
+- forbidden phrases are blocked
+- inference is not upgraded into certainty
+- ActionResult evidence is the sole basis of reality claims
+
+Stop-line:
+If the system can claim success without evidence,
+do not proceed.
+You have built a liar.
+
+──────────────────────────────────────────────────────────────────────────────
+7) HOUSESTATE AUTHORITY (STATE MUST BE SINGULAR AND DECAYING)
+──────────────────────────────────────────────────────────────────────────────
+
+Before the system is allowed to “remember”:
+
+- HouseState exists as a canonical belief store
+- beliefs have confidence and staleness/decay
+- mixed reality and partial success are representable
+- restart and persistence behavior is defined and tested
+
+Stop-line:
+If state is implemented as ad-hoc caches or agent memory,
+do not proceed.
+You have built fragmentation.
+
+──────────────────────────────────────────────────────────────────────────────
+8) A MINIMUM ENGINE LOOP (POLICY → PLAN → EXECUTE → EVIDENCE → TRUTH)
+──────────────────────────────────────────────────────────────────────────────
+
+Before adding modules:
+
+- the canonical control pipeline exists end-to-end
+- policy produces bounded outcomes (ACT/CLARIFY/CONFIRM/REFUSE/CHAT)
+- planning produces ActionRequests without vendor leakage
+- execution produces ActionResults
+- Truth Gate constrains response language and state updates
+
+Stop-line:
+If the loop cannot run end-to-end with a stub adapter,
+do not add features.
+You will accumulate “modules” that cannot be trusted.
+
+──────────────────────────────────────────────────────────────────────────────
+9) TEST HARNESS SKELETON (EVEN IF SMALL)
+──────────────────────────────────────────────────────────────────────────────
+
+Before real integrations:
+
+- a test harness exists
+- at least one golden flow exists end-to-end
+- boundary tests exist
+- truth posture tests exist
+
+Stop-line:
+If you cannot test invariants, you cannot preserve them.
+A system without tests will drift.
+
+──────────────────────────────────────────────────────────────────────────────
+10) THE FIRST VALID DEMONSTRATION (MINIMUM PROOF)
+──────────────────────────────────────────────────────────────────────────────
+
+Only after all prerequisites exist should the system demonstrate:
+
+- a single module (lights-like) that:
+  - takes intent
+  - produces ActionRequests
+  - executes via an adapter
+  - returns ActionResults
+  - updates state through Truth Gate
+  - responds with correct truth posture
+
+This proof is required because it demonstrates:
+- policy outcomes are bounded
+- evidence pipeline is real
+- state is authoritative
+- language is constrained
+
+If this proof cannot be achieved, do not proceed to breadth.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+What must exist first is the platform kernel:
+- boundaries
+- schemas
+- models
+- correlation and logs
+- secrets handling
+- scopes and identity
+- Truth Gate
+- HouseState
+- the closed-loop pipeline
+- a minimal test harness
+
+Everything else can be added later.
+If these do not exist, everything added later will be wrong.
+
+END OF 33.2

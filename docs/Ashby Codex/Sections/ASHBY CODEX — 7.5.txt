@@ -1,0 +1,122 @@
+ASHBY CODEX — 7.5
+SCOPE HIERARCHIES AND CONTAINMENT
+
+Scopes are hierarchical.
+
+They form containment relationships
+that define authority, inheritance, and limits.
+
+Hierarchy is not optional.
+It is required to model reality safely.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY HIERARCHY EXISTS
+──────────────────────────────────────────────────────────────────────────────
+
+Real environments are nested.
+
+A room exists inside a zone.
+A zone exists inside a property.
+A property exists inside an organization.
+
+Without hierarchy:
+- authority becomes ambiguous
+- automation becomes unsafe
+- overrides become unpredictable
+- explanations become unclear
+
+Hierarchy allows Ashby to reason
+about where actions apply
+and where they must stop.
+
+──────────────────────────────────────────────────────────────────────────────
+PARENT AND CHILD SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+A parent scope:
+- defines upper bounds of authority
+- may impose policy on child scopes
+- may observe aggregated state
+- may restrict child behavior
+
+A child scope:
+- operates within parent constraints
+- owns its local state
+- may not override parent authority
+- may not assume parent intent
+
+Authority flows downward.
+Constraints flow downward.
+Overrides never flow upward implicitly.
+
+──────────────────────────────────────────────────────────────────────────────
+CONTAINMENT RULES
+──────────────────────────────────────────────────────────────────────────────
+
+Containment is explicit.
+
+A scope must declare:
+- its parent scope
+- its containment boundaries
+- its authority limits
+
+Implicit containment is forbidden.
+
+If containment cannot be expressed clearly,
+the scope definition is invalid.
+
+──────────────────────────────────────────────────────────────────────────────
+STATE AND CONTAINMENT
+──────────────────────────────────────────────────────────────────────────────
+
+State is contained.
+
+Child scope state:
+- does not silently modify parent state
+- may be summarized upward explicitly
+- retains its own confidence and history
+
+Parent scopes may reason
+about child scope state,
+but must not overwrite it.
+
+This prevents:
+- hidden coupling
+- false global assumptions
+- cascading errors
+
+──────────────────────────────────────────────────────────────────────────────
+CONTAINMENT AND AUTOMATION
+──────────────────────────────────────────────────────────────────────────────
+
+Automation respects containment.
+
+An automation defined at a parent scope:
+- applies only to contained scopes
+- may be restricted by child configuration
+- must respect local uncertainty
+
+An automation defined at a child scope:
+- must not escape its boundary
+- must not affect siblings
+- must not bypass parent policy
+
+Containment defines blast radius.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Scopes must never:
+- infer containment
+- collapse hierarchy for convenience
+- bypass parent constraints
+- override child state silently
+
+Any design that flattens scope hierarchy
+violates Ashby’s world model.
+
+Hierarchy is how Ashby
+models complexity without losing control.
+
+END OF 7.5

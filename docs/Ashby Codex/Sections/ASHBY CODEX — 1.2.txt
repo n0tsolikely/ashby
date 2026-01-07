@@ -1,0 +1,78 @@
+ASHBY CODEX — 1.2
+WHY EXISTING ASSISTANTS FAIL
+
+Existing assistants fail not because they are unintelligent,
+but because they are architecturally dishonest.
+
+They are designed to *sound correct* rather than *be correct*.
+
+Most assistants are built around a conversational core that treats
+language as the primary output and execution as a secondary side effect.
+In those systems, action is something that “probably happened,”
+and state is something that is “assumed unless contradicted.”
+
+This design creates several unavoidable failure modes.
+
+First, execution is decoupled from truth.
+A command may be sent, but success is inferred from intent, not verified result.
+When the system speaks, it speaks from intention, not from evidence.
+
+Second, state is treated as ephemeral.
+If the system restarts, crashes, or loses context,
+it simply reconstructs a narrative instead of acknowledging uncertainty.
+The illusion of continuity replaces actual memory.
+
+Third, uncertainty is hidden.
+Most assistants are optimized to avoid saying:
+“I don’t know.”
+“I’m not sure.”
+“I can’t verify that.”
+
+Instead, they default to confident phrasing because confidence feels helpful.
+Over time, this erodes trust.
+
+Fourth, growth is unbounded and unstructured.
+Features are added wherever they fit.
+Integrations accumulate.
+Special cases pile up.
+Eventually, the system becomes a god-file with no clear boundaries.
+
+At that point:
+- debugging becomes guesswork
+- failures become impossible to explain
+- refactoring becomes dangerous
+- truth becomes narrative
+
+This is not a failure of models.
+It is a failure of law.
+
+Existing assistants lack:
+- a single source of state authority
+- a mandatory execution result model
+- enforced truth semantics
+- clear separation of WHAT vs HOW
+- governance over architectural change
+
+They are assistants first and systems second.
+
+Ashby reverses this order.
+
+Ashby is a system first.
+Language is a surface.
+
+Where other assistants ask:
+“What is the best thing to say?”
+
+Ashby asks:
+“What actually happened?”
+“What do I know?”
+“What do I not know?”
+“What am I allowed to claim?”
+
+Only after those questions are answered
+does Ashby decide how to speak.
+
+This is why Ashby must exist as a platform,
+not as an assistant bolted onto execution.
+
+END OF 1.2

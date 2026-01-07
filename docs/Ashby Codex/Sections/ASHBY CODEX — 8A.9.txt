@@ -1,0 +1,328 @@
+ASHBY CODEX — 8A.9
+plugins/
+
+plugins/ is Ashby’s third-party extension ecosystem.
+
+It exists so Ashby can grow beyond what the core team can ship,
+without sacrificing:
+- truth posture
+- safety posture
+- scope and identity law
+- removability
+- explainability
+- governance
+
+plugins/ is not “run arbitrary code.”
+plugins/ is not “let anyone change the engine.”
+plugins/ is not “a marketplace for hacks.”
+
+plugins/ is a controlled ingestion lane for external capabilities
+that must behave like Ashby, not like a random script.
+
+If plugins/ is loose, Ashby becomes malware-shaped.
+If plugins/ is ungoverned, Ashby becomes forked by strangers.
+If plugins/ is treated as “optional so it can be sloppy,” Ashby becomes unrebuildable.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF plugins/
+──────────────────────────────────────────────────────────────────────────────
+
+plugins/ exists to enable:
+
+A) EXTENSION WITHOUT CORE CONTAMINATION
+Third parties can add capability surfaces without touching engine/ invariants.
+
+B) DISTRIBUTION WITH SAFETY
+Plugins can be packaged, installed, enabled, disabled, and removed cleanly.
+
+C) GOVERNED PERMISSIONS
+Plugins must declare what they can do, and the platform must enforce it.
+
+D) REVOCATION AND UPDATES
+If a plugin is unsafe or compromised, it must be:
+- disabled
+- revoked
+- removed
+without breaking the platform.
+
+The purpose is expansion under law.
+Not expansion by trust.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT A PLUGIN IS (DEFINITION)
+──────────────────────────────────────────────────────────────────────────────
+
+A plugin is a packaged, signed extension bundle that may contribute one or more of:
+
+- module packs (new domain meaning and planning surfaces)
+- connector packs (new external system tool surfaces)
+- adapter packs (new execution adapters) — only if allowed by profile/security policy
+- UI/IO helpers (presentation-only, never business logic) — optional and tightly bounded
+
+A plugin is not allowed to contribute:
+- changes to engine/ constitutional semantics
+- Truth Gate rules
+- HouseState semantics
+- scope/identity law
+
+If a plugin can change those, it is not a plugin.
+It is a fork mechanism.
+
+──────────────────────────────────────────────────────────────────────────────
+3) CANONICAL plugins/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+plugins/
+├── sdk/                                   # what third parties code against
+│   ├── plugin_api.py                      # stable API contracts
+│   ├── schemas.py                         # canonical manifest + permission schemas
+│   └── examples/                          # minimal reference implementations
+│
+├── manifests/                             # installed plugin manifests (validated)
+│   ├── schema.json
+│   └── installed/                         # per-plugin validated manifest snapshots
+│
+├── signing/                               # trust, provenance, and revocation
+│   ├── public_keys/                       # trusted publisher keys
+│   ├── verify.py                          # signature verification
+│   ├── revocation_list.json               # explicit revocations
+│   └── trust_policy.py                    # what keys are accepted where
+│
+└── marketplace/                           # optional distribution layer
+    ├── catalog.json                       # curated listing
+    ├── fetch.py                           # download client (optional)
+    └── cache/                             # local cache of plugin packages
+
+This is the canonical template.
+If the distribution mechanism changes, the manifest + signing law does not.
+
+──────────────────────────────────────────────────────────────────────────────
+4) PLUGIN MANIFESTS (THE NON-NEGOTIABLE CONTRACT)
+──────────────────────────────────────────────────────────────────────────────
+
+Every plugin must have a manifest.
+No manifest, no load.
+
+The manifest must declare:
+
+A) IDENTITY
+- plugin_id (stable)
+- publisher_id
+- version
+- build hash / artifact digest
+
+B) CAPABILITY CONTRIBUTIONS
+- which modules it adds (module_keys, capabilities)
+- which connectors it adds (connector_keys, methods)
+- which adapters it adds (adapter_keys) — if permitted
+- any IO helpers (if permitted)
+
+C) PERMISSIONS (STRICT AND ENUMERATED)
+A plugin must request explicit permission categories such as:
+- “read HouseState (scoped)”
+- “write HouseState (never allowed for plugins)”  → rejected
+- “execute tools” (by tool category, not arbitrary)
+- “network access” (domain allowlist)
+- “filesystem access” (usually forbidden; if allowed, bounded)
+- “secrets access” (by handle only, never raw secret material)
+- “event subscriptions” (which events)
+- “background tasks” (allowed or forbidden; if allowed, bounded)
+
+D) SCOPES AND AVAILABILITY
+- which profiles allow it
+- whether it is scope-bound (most should be)
+- whether it is disabled by default (recommended)
+
+E) COMPLIANCE CLAIMS (VERIFIED BY TESTS, NOT TRUSTED)
+- required conformance tests passed (harness categories)
+- minimum platform version
+- required interface contracts
+
+Manifest claims are not trusted.
+They are validated.
+
+──────────────────────────────────────────────────────────────────────────────
+5) SIGNING AND TRUST (WHY THIS IS NOT OPTIONAL)
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins must be signed.
+
+Rules:
+
+A) PLATFORM ACCEPTS ONLY TRUSTED PUBLISHERS
+- plugin packages must be signed by a publisher key
+- publisher keys are admitted by trust policy (local, org, or curated)
+- unsigned packages are rejected
+
+B) SIGNATURE VERIFICATION IS MANDATORY
+- verify the artifact digest matches the signed digest
+- verify key chain matches trusted policy
+- verify version and publisher_id consistency
+
+C) REVOCATION MUST WORK
+If a plugin is compromised:
+- add it to the revocation list
+- engine refuses to load it
+- marketplace client refuses to fetch it
+- already-installed plugin is disabled
+
+Trust is not “we liked it.”
+Trust is cryptographic enforcement.
+
+──────────────────────────────────────────────────────────────────────────────
+6) SANDBOXING AND ISOLATION (PLUGINS ARE UNTRUSTED)
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins must be treated as hostile by default.
+
+A plugin must not be able to:
+- read raw secrets
+- bypass policy
+- bypass truth posture constraints
+- write arbitrary state
+- persist arbitrary files outside allowed storage APIs
+- start unbounded background processes
+- open unbounded network connections
+
+Required isolation properties:
+
+A) CONTROLLED API SURFACE ONLY
+Plugins must call the platform through plugin_api interfaces, not internal modules.
+
+B) RESOURCE LIMITS
+- CPU/time limits (no infinite loops)
+- memory limits
+- concurrency limits
+- rate limits on tool execution and network calls
+
+C) NETWORK POLICY
+If a plugin needs network access:
+- it must declare it
+- it must be allowlisted
+- requests must be observable and attributable
+
+D) NO DIRECT ENGINE MODIFICATION
+Plugins must not be able to import engine internals or monkey patch behavior.
+If that’s possible, the platform is not secure.
+
+In short: plugins run inside a cage.
+
+──────────────────────────────────────────────────────────────────────────────
+7) WHAT PLUGINS MAY AND MAY NOT DO (THE ZONING LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+Allowed:
+- add new modules that produce ActionRequests and ClarifyRequests
+- add new connectors that expose external tools (e.g., Shopify, QuickBooks)
+- add new adapter implementations (rare; controlled by profile/security posture)
+- add new schemas for their own artifacts (stored via platform storage APIs)
+- read HouseState through scoped read APIs (if granted)
+
+Forbidden:
+- changing Truth Gate semantics
+- changing HouseState semantics
+- writing to HouseState directly outside the canonical update path
+- inventing “verified” language or bypassing response constraints
+- bypassing policy outcomes or confirmation requirements
+- storing or exfiltrating secrets
+- becoming a private agent memory system
+- calling vendor SDKs from modules/ (vendor code belongs in adapters/ or native_vendor/ lanes)
+
+A plugin that violates these is not “bad.”
+It is simply not allowed to exist in Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+8) INSTALL / ENABLE / DISABLE / REMOVE (THE LIFECYCLE)
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins must have a clean lifecycle:
+
+A) INSTALL
+- fetch package (optional marketplace)
+- verify signature and digest
+- validate manifest schema
+- run conformance checks (or require attestation + verify later)
+- register contributions (module registry, connector registry, etc.)
+- default state: disabled unless explicitly enabled by profile
+
+B) ENABLE
+- enablement is external (profiles/flags/entitlements)
+- enablement is scope-bound where applicable
+- enabling never changes platform law
+
+C) DISABLE
+- plugin becomes unroutable
+- background tasks stop
+- scheduled triggers stop
+- user-facing requests for plugin capabilities yield honest refusal/unavailability
+
+D) REMOVE
+- uninstall the package
+- remove registry entries
+- keep artifacts readable through generic viewers/export
+- never erase traces silently
+
+This mirrors Ashby’s removability guarantees.
+Plugins must obey the same constitution.
+
+──────────────────────────────────────────────────────────────────────────────
+9) GOVERNANCE: WHEN PLUGINS REQUIRE CONTROL SYNC (RARE, BUT REAL)
+──────────────────────────────────────────────────────────────────────────────
+
+Plugins themselves do not trigger Control Sync.
+
+However, Control Sync is required if the platform changes
+the plugin system’s constitutional boundaries, such as:
+- expanding what plugins are allowed to touch in engine/
+- changing trust policy from curated to open
+- allowing plugins to write state directly
+- weakening sandboxing requirements
+- allowing plugins to override truth posture constraints
+
+In other words:
+Control Sync governs the plugin *system*, not individual plugins.
+
+──────────────────────────────────────────────────────────────────────────────
+10) REQUIRED TEST SURFACES FOR plugins/
+──────────────────────────────────────────────────────────────────────────────
+
+The plugin ecosystem must be guarded by tests, not hope.
+
+Minimum required test categories:
+
+- manifest validation tests (schema strict)
+- signing verification tests (tamper rejection)
+- revocation tests (revoked cannot load)
+- sandbox escape tests (plugin cannot import forbidden internals)
+- permission enforcement tests (denied calls fail cleanly)
+- resource limit tests (timeouts, memory, concurrency)
+- tool execution attribution tests (plugin actions traceable)
+- secrets leakage tests (logs/artifacts sanitized)
+- removability tests (disable/remove stops background effects)
+
+If these tests are absent, plugins/ becomes a backdoor.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+plugins/ must:
+- provide a stable SDK API surface
+- require manifests with explicit contributions and permissions
+- require cryptographic signing and enforce revocation
+- sandbox plugins as untrusted code by default
+- enforce resource and network policy
+- preserve platform invariants (truth, state, scope, WHAT/HOW)
+- support clean lifecycle operations (install/enable/disable/remove)
+- remain auditable and attributable (correlation + logs)
+
+plugins/ must never:
+- permit plugins to modify engine/ law or truth/state semantics
+- accept unsigned packages
+- rely on “trust the publisher” without verification
+- allow silent background execution without visibility
+- become an unbounded code execution channel
+
+plugins/ exists so Ashby can grow without losing itself.
+
+END OF 8A.9

@@ -1,0 +1,77 @@
+ASHBY CODEX — 0.1
+WHY THIS CODEX EXISTS
+
+This Codex exists because Ashby is not “software.”
+Ashby is a platform with a personality, a discipline, and a set of laws that must survive growth.
+
+Software can be rewritten.
+Platforms collapse when their core truths are forgotten.
+
+This document is the permanent preservation of Ashby’s:
+- purpose
+- identity
+- governing law
+- architecture shape
+- mechanical invariants
+- rebuild procedure
+- future-proof growth path
+
+It is written so that if every repo file vanished, every chat was gone, and all that survived
+was this printed Codex, a competent engineer could recreate Ashby exactly as intended.
+
+Not “an assistant like Ashby.”
+Not “a smart home bot.”
+Ashby.
+
+This Codex exists to prevent the three slow deaths of ambitious systems:
+
+1) DRIFT
+   Small compromises accumulate:
+   “just put it here for now”
+   “we’ll refactor later”
+   “it’s fine, it works”
+   until Ashby becomes an unmaintainable god-system.
+
+2) LIES
+   If Ashby ever claims certainty without proof, trust dies.
+   If trust dies, Ashby becomes a toy.
+   If Ashby becomes a toy, it stops being Ashby.
+
+3) FRAGMENTATION
+   If every new feature becomes its own fork, its own platform, its own truth system,
+   Ashby becomes a family of inconsistent systems instead of one coherent engine.
+
+This Codex prevents those deaths by defining what cannot be negotiated.
+
+Ashby will expand:
+- more modules
+- more agents
+- more integrations
+- more products
+- more scopes
+
+But expansion must never require rewriting the soul.
+
+This Codex is that soul, expressed as law.
+
+It also exists for the opposite reason: freedom.
+
+When the core is locked, the surface can grow without fear.
+When boundaries are clear, creation accelerates.
+When truth enforcement is non-negotiable, new capabilities can be added safely.
+
+Ashby must be able to operate offline.
+Ashby may use cloud services when chosen.
+But offline capability must always remain possible for any customer who demands it,
+by selecting appropriate brands and execution paths.
+
+Ashby is designed to be:
+- reliable under stress
+- understandable when tired
+- honest when uncertain
+- modular when expanding
+- consistent across time
+
+This Codex is the foundation that makes that possible.
+
+END OF 0.1

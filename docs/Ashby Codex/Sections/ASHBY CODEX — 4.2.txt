@@ -1,0 +1,100 @@
+ASHBY CODEX — 4.2
+DESIGNING FOR GROWTH WITHOUT COLLAPSE
+
+Most systems fail not because they stop growing,
+but because they grow without constraint.
+
+Growth introduces:
+- new features
+- new integrations
+- new edge cases
+- new stakeholders
+- new expectations
+
+Without architectural law, each addition bends the system slightly.
+Over time, those bends become breaks.
+
+Ashby is explicitly designed to grow
+without changing its identity.
+
+This is achieved through three deliberate choices.
+
+First, Ashby separates **invariants from instances**.
+
+The engine defines invariants:
+- how truth is enforced
+- how state is owned
+- how execution is verified
+- how uncertainty is expressed
+- how authority is scoped
+
+Modules define instances:
+- what actions exist
+- what domains are supported
+- what capabilities are exposed
+
+Growth happens by adding instances,
+not by rewriting invariants.
+
+Second, Ashby treats boundaries as sacred.
+
+Every capability must live in exactly one place.
+Every layer has a defined responsibility.
+Every crossing of layers is explicit and audited.
+
+When a new feature is proposed, the first question is not:
+“Can we build this?”
+
+The first question is:
+“Where does this belong?”
+
+If the answer is unclear,
+the design is incomplete.
+
+Third, Ashby enforces removability.
+
+Any module that cannot be removed safely
+is a violation of the platform.
+
+Removability forces discipline:
+- no hidden dependencies
+- no shared mutable state
+- no engine pollution
+- no exception-based design
+
+This discipline allows Ashby to expand confidently.
+
+Growth without collapse also requires restraint.
+
+Ashby does not chase completeness.
+It does not attempt to model the entire world at once.
+It grows by adding domains only when the existing structure can support them.
+
+When a new domain fits the existing model,
+it is added as a module.
+
+When a new domain does not fit,
+that is a signal that the engine must be examined carefully,
+not rushed.
+
+Ashby’s growth strategy assumes that:
+- mistakes will be made
+- integrations will fail
+- vendors will change
+- ideas will evolve
+
+The system is designed to survive those realities.
+
+Ashby grows by accumulation at the edges
+and stability at the core.
+
+This balance is what allows Ashby
+to become larger without becoming fragile.
+
+Designing for growth without collapse
+is not about predicting the future.
+
+It is about refusing to compromise the present.
+
+END OF 4.2
+

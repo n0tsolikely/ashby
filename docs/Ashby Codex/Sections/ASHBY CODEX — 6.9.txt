@@ -1,0 +1,144 @@
+ASHBY CODEX — 6.9
+PROFILES OVER FORKS
+
+Ashby uses profiles, not forks.
+
+Forking is the fastest way to destroy a platform.
+
+Profiles are the mechanism by which Ashby supports
+multiple products, environments, and behaviors
+without duplicating truth, state, or law.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A PROFILE IS
+──────────────────────────────────────────────────────────────────────────────
+
+A profile is a configuration that selects:
+- which modules are enabled
+- which agents are active
+- which execution paths are allowed
+- which adapters are preferred
+- which features are exposed
+- which policies apply
+
+A profile does not:
+- change engine behavior
+- redefine truth semantics
+- alter state authority
+- bypass governance
+- fork code
+
+Profiles describe composition,
+not divergence.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY FORKS ARE FORBIDDEN
+──────────────────────────────────────────────────────────────────────────────
+
+Forks create parallel realities.
+
+Each fork:
+- duplicates assumptions
+- drifts independently
+- accumulates exceptions
+- fractures understanding
+- multiplies failure modes
+
+Over time:
+- fixes do not propagate
+- behavior diverges
+- trust becomes inconsistent
+- rebuildability is lost
+
+Forks feel fast.
+They are never safe.
+
+Ashby forbids forks at the platform level.
+
+──────────────────────────────────────────────────────────────────────────────
+PROFILES AND PRODUCTS
+──────────────────────────────────────────────────────────────────────────────
+
+Products in Ashby are profiles.
+
+A home automation product
+is a profile.
+
+A meetings capture product
+is a profile.
+
+An inventory operations product
+is a profile.
+
+These profiles:
+- share the same engine
+- share the same truth system
+- share the same state model
+- share the same governance
+
+Only configuration differs.
+
+This allows Ashby to:
+- ship multiple products safely
+- evolve capabilities independently
+- avoid product-driven architecture
+- preserve long-term coherence
+
+──────────────────────────────────────────────────────────────────────────────
+PROFILES AND SAFETY
+──────────────────────────────────────────────────────────────────────────────
+
+Profiles enforce safety by constraint.
+
+A profile may:
+- disable dangerous capabilities
+- restrict automation scope
+- require confirmation
+- prefer conservative execution paths
+
+Profiles do not:
+- weaken core law
+- introduce exceptions
+- change semantics to fit a product
+
+Safety is achieved by selection,
+not by modification.
+
+──────────────────────────────────────────────────────────────────────────────
+ENFORCEMENT
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby enforces profiles structurally.
+
+The engine:
+- loads configuration
+- evaluates policy
+- reasons generically
+
+No code path may:
+- assume a specific profile
+- branch on product identity
+- special-case behavior per product
+
+If behavior must differ,
+it must be expressed as configuration.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSEQUENCES
+──────────────────────────────────────────────────────────────────────────────
+
+If a requirement cannot be met via profiles,
+it does not belong on the platform.
+
+If a feature requires forking,
+the feature is rejected.
+
+Ashby remains coherent
+because there is one system,
+many profiles,
+and zero forks.
+
+Profiles are how Ashby scales
+without losing itself.
+
+END OF 6.9

@@ -1,0 +1,158 @@
+ASHBY CODEX — 7.3
+ZONES AS A SPECIALIZATION OF SCOPE
+
+Zones are a specialized form of scope.
+
+They exist to bridge human language and physical reality
+without compromising Ashby’s world model.
+
+A zone is not merely a room name.
+A zone is a controllable physical region
+with defined boundaries, authority, and state.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY ZONES EXIST
+──────────────────────────────────────────────────────────────────────────────
+
+Humans think and speak in zones.
+
+They say:
+- “the bedroom”
+- “upstairs”
+- “the backyard”
+- “the shop”
+- “the east side of the property”
+
+These phrases describe regions,
+not individual devices.
+
+Zones allow Ashby to map this natural language
+onto explicit, enforceable scopes.
+
+Without zones:
+- language becomes ambiguous
+- automation becomes unsafe
+- actions become overly broad
+- confirmation logic becomes inconsistent
+
+Zones resolve this tension.
+
+──────────────────────────────────────────────────────────────────────────────
+ZONES VS ROOMS
+──────────────────────────────────────────────────────────────────────────────
+
+Rooms are human labels.
+Zones are operational scopes.
+
+A single room label may:
+- map to one zone
+- map to part of a zone
+- map to multiple zones
+
+A zone may:
+- contain multiple rooms
+- contain part of a room
+- exist without a room label
+
+This separation prevents
+human naming from defining reality.
+
+Reality is defined by zones.
+Language adapts to zones,
+not the reverse.
+
+──────────────────────────────────────────────────────────────────────────────
+ZONE AUTHORITY
+──────────────────────────────────────────────────────────────────────────────
+
+Zones define authority boundaries for physical action.
+
+Within a zone, Ashby may:
+- control devices assigned to the zone
+- aggregate sensor data
+- apply automation policies
+- reason about state cohesively
+
+Across zones, Ashby must:
+- respect boundaries
+- require explicit intent
+- avoid implicit spillover
+
+A command such as:
+“turn off the lights”
+
+is incomplete without zone resolution.
+
+──────────────────────────────────────────────────────────────────────────────
+ZONE COMPOSITION
+──────────────────────────────────────────────────────────────────────────────
+
+Zones are composable.
+
+A zone may:
+- exist inside another zone
+- overlap with another zone
+- share devices with another zone (explicitly)
+
+Composition must always be explicit.
+
+Implicit overlap is forbidden.
+
+This allows:
+- hierarchical control
+- partial automation
+- targeted overrides
+without ambiguity.
+
+──────────────────────────────────────────────────────────────────────────────
+ZONES AND STATE
+──────────────────────────────────────────────────────────────────────────────
+
+Zone state is authoritative for that region.
+
+Ashby tracks:
+- device state by zone
+- confidence by zone
+- history by zone
+- uncertainty by zone
+
+Zone-level state allows Ashby to:
+- explain what changed where
+- isolate failures
+- degrade confidence locally
+- avoid global assumptions
+
+──────────────────────────────────────────────────────────────────────────────
+ZONES AND AUTOMATION SAFETY
+──────────────────────────────────────────────────────────────────────────────
+
+Zones are a primary safety mechanism.
+
+Automation applies to zones,
+not to the entire system.
+
+This allows:
+- scoped automation
+- bounded blast radius
+- predictable behavior
+
+If zone resolution is ambiguous,
+Ashby must pause or clarify.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Zones must never:
+- be inferred silently
+- be overridden by convenience
+- collapse into global state
+
+Any design that allows actions
+to bypass zone boundaries
+violates Ashby’s world model.
+
+Zones are how Ashby understands
+and safely controls physical space.
+
+END OF 7.3

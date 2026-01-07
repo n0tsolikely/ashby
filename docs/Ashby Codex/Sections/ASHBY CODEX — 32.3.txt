@@ -1,0 +1,287 @@
+ASHBY CODEX — 32.3
+Licensing and Entitlements
+
+Ashby is a platform.
+Products built on Ashby may be free, paid, or tiered.
+
+Licensing and entitlements exist to control:
+- which product surfaces are available
+- which integrations may be configured
+- which advanced capabilities are allowed
+- which usage limits apply
+
+Entitlements must never compromise safety.
+Entitlements must never lie about reality.
+Entitlements must never become “security by obscurity.”
+
+This subsection defines licensing and entitlements as a governed gate,
+separate from scope authority and separate from truth law.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITIONS
+──────────────────────────────────────────────────────────────────────────────
+
+LICENSE
+A commercial or contractual grant that enables a bundle of entitlements.
+
+ENTITLEMENT
+A concrete, machine-evaluable permission to use a feature surface.
+
+Examples (illustrative only):
+- enable_cloud_fallback
+- enable_meetings_agent
+- enable_inventory_connector_shopify
+- enable_multi_site_scopes
+- enable_advanced_automation
+- enable_audit_exports
+
+LIMIT
+A quantitative constraint applied to an entitlement.
+Examples (illustrative only):
+- max_scopes
+- max_connectors
+- max_devices
+- max_monthly_actions
+- max_storage_gb
+
+SCOPE AUTHORITY (NOT LICENSING)
+Scope authority is the world-model permission system:
+- who can control what
+- within which scope
+- with which permissions
+
+Licensing is not the authority model.
+Licensing determines what product surfaces exist.
+
+SECURITY (NOT LICENSING)
+Security and secrets handling protect credentials and sensitive data.
+Licensing does not excuse weaker security.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHY ENTITLEMENTS MUST BE EXPLICIT
+──────────────────────────────────────────────────────────────────────────────
+
+Productization pressure creates a temptation:
+- “just hide the button”
+- “just block it in the UI”
+- “just let it fail quietly”
+
+Those approaches are incompatible with Ashby because:
+- they create confusing user experiences
+- they create hidden forks (different behavior depending on invisible state)
+- they make support impossible
+- they encourage the system to invent reasons (“it didn’t work”)
+- they harm rebuildability
+
+Entitlements must be explicit, deterministic, and visible in logs.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE ENTITLEMENT CHECK POINTS (WHERE ENFORCEMENT OCCURS)
+──────────────────────────────────────────────────────────────────────────────
+
+Entitlements must be enforced at defined gates, not scattered.
+
+Canonical gates:
+
+A) SURFACE GATE (DISCOVERY/UI)
+- whether a feature surface is shown or offered
+- prevents users from forming expectations about unavailable features
+
+B) INTENT GATE (ROUTER PRE-PLANNING)
+- whether an intent is valid under the current product/entitlements
+- if not, the correct outcome is:
+  - REFUSE with honest explanation
+  - or CLARIFY if the user might be asking for a different available action
+
+C) ACTIONREQUEST GATE (PRE-EXECUTION)
+- whether an ActionRequest may be executed at all
+- critical for preventing “silent no-op” behavior
+
+D) CONFIG GATE (SETUP/ONBOARDING)
+- whether a connector or module can be configured
+- prevents storing unusable configurations
+
+These gates ensure that entitlements affect availability without corrupting truth.
+
+──────────────────────────────────────────────────────────────────────────────
+4) ENTITLEMENTS VS TRUTH (A CRITICAL SEPARATION)
+──────────────────────────────────────────────────────────────────────────────
+
+Entitlements control permission, not reality.
+
+Rules:
+- if an action is not entitled, Ashby must not claim it attempted execution
+- if an action is not entitled, Ashby must not claim it failed “due to a device”
+- the system must speak plainly: “This feature isn’t enabled in your product.”
+
+Entitlements must not change:
+- what VERIFIED means
+- what LAST_KNOWN means
+- what UNKNOWN means
+- what FAILED means
+
+If entitlements alter truth posture, the platform becomes untrustworthy.
+
+──────────────────────────────────────────────────────────────────────────────
+5) ENTITLEMENTS VS SAFETY (ENTITLEMENT DOES NOT EQUAL APPROVAL)
+──────────────────────────────────────────────────────────────────────────────
+
+Having an entitlement does not mean an action should execute immediately.
+
+Entitlements answer:
+- “is this feature allowed to exist?”
+
+Safety policy answers:
+- “should this action happen now?”
+- “is clarification required?”
+- “is confirmation required?”
+- “is refusal required?”
+
+Example:
+A user may be entitled to “inventory.adjust.”
+That does not remove confirmation requirements for high-impact mutations.
+
+Entitlements may not bypass safety gates.
+
+──────────────────────────────────────────────────────────────────────────────
+6) ENTITLEMENT SCOPE (WHO OR WHAT IS LICENSED)
+──────────────────────────────────────────────────────────────────────────────
+
+Entitlements must be scoped.
+
+Possible entitlement scopes (illustrative):
+- instance-wide (the whole Ashby instance)
+- per user
+- per organization scope
+- per business scope
+- per physical site
+- per device class
+
+Rules:
+- entitlement scope must be explicit
+- entitlement enforcement must respect Ashby scopes
+- entitlement decisions must be logged with the applicable scope_id
+
+Licensing often aligns to organizational boundaries.
+Ashby already has scope boundaries.
+Entitlements must bind to them.
+
+──────────────────────────────────────────────────────────────────────────────
+7) OFFLINE CAPABILITY (LICENSING MUST NOT REQUIRE CONSTANT CLOUD)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby is designed to be offline-capable.
+
+Licensing and entitlements must not assume constant cloud access.
+
+Requirements:
+- entitlement evaluation must have an offline-valid mode
+- caches must have explicit freshness rules (staleness is real)
+- if an entitlement check cannot be performed due to offline state:
+  - the system must choose a safe posture
+  - it must not silently “grant everything”
+  - it must not falsely “deny everything” without stating uncertainty
+
+The safe posture must be explicit in policy and logged.
+
+This preserves integrity under connectivity loss.
+
+──────────────────────────────────────────────────────────────────────────────
+8) SECURITY AND PRIVACY (LICENSE KEYS ARE SENSITIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+Licensing systems often involve:
+- license keys
+- entitlement tokens
+- signed claims
+- renewal credentials
+
+Rules:
+- licensing secrets are treated as secrets
+- license keys and entitlement tokens must never appear in logs
+- license keys must never be embedded in artifacts
+- entitlement decisions may be logged as:
+  - entitlement name
+  - allowed/denied
+  - reason code
+  - scope_id
+  - correlation_id
+without any secret payload
+
+Licensing must never become an avenue for secret leakage.
+
+──────────────────────────────────────────────────────────────────────────────
+9) OBSERVABILITY AND SUPPORT (WHY WAS IT DENIED?)
+──────────────────────────────────────────────────────────────────────────────
+
+When a feature is denied, support must be able to reconstruct why.
+
+Logs must allow answering:
+- what entitlement was required
+- whether it was present
+- whether a limit was exceeded
+- whether the check was stale/unknown due to offline state
+- what gate denied it (surface, intent, pre-exec, config)
+- what the user was trying to do (intent type, not raw secrets)
+
+Denials must be deterministic and explainable.
+Mystery denials create distrust.
+
+──────────────────────────────────────────────────────────────────────────────
+10) MIGRATION AND TIER CHANGES (UPGRADES MUST NOT CORRUPT STATE)
+──────────────────────────────────────────────────────────────────────────────
+
+Users may upgrade or downgrade.
+
+Rules:
+- upgrading enables new surfaces; it must not rewrite old artifacts
+- downgrading disables new surfaces; it must not destroy data
+- disabled modules may leave artifacts behind; those artifacts remain accessible
+  only through governed storage access paths
+- connectors disabled by tier must not continue to execute silently
+- any persistent configuration changes must follow schema and migration law
+
+Product tier shifts are not an excuse for state corruption.
+
+──────────────────────────────────────────────────────────────────────────────
+11) THE CORE FAILURE MODE: ENTITLEMENTS AS HIDDEN FORKS
+──────────────────────────────────────────────────────────────────────────────
+
+Entitlement systems fail when they are implemented as scattered exceptions.
+
+Examples of forbidden drift:
+- adapters behave differently under different tiers without logs
+- Truth Gate claims change under different tiers
+- state schemas change under different tiers
+- safety prompts disappear under “pro” tier
+
+Tiers may change what is available.
+They may not change what is true or safe.
+
+Entitlements must remain a clean gate, not a behavioral rewrite.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Licensing and entitlements must:
+- be explicit, deterministic, and auditable
+- gate feature availability at defined points (surface/intent/pre-exec/config)
+- respect scope boundaries and record scope_id in decisions
+- remain offline-capable with explicit safe posture when checks are stale/unknown
+- keep license secrets out of logs and artifacts
+- preserve truth posture and safety behavior regardless of tier
+- support upgrades/downgrades without corrupting data or state
+
+Licensing and entitlements must never:
+- modify Truth Gate semantics or HouseState law
+- bypass confirmation/clarification requirements
+- treat UI hiding as the enforcement mechanism
+- scatter hidden tier-specific behavior throughout core logic
+- leak license keys/tokens through logs, errors, or artifacts
+- destroy artifacts or state on downgrade
+
+Entitlements decide what may be used.
+Ashby still decides what is true.
+
+END OF 32.3

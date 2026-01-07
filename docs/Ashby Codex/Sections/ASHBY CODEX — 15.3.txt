@@ -1,0 +1,306 @@
+ASHBY CODEX — 15.3
+MERGE-AND-COMPLETE FLOW
+
+Most real user commands arrive incomplete.
+
+Not because the user is careless,
+but because humans speak in fragments that assume shared context:
+
+- “turn the lights on” (which lights?)
+- “order more” (what product, how many, from where?)
+- “send it to them” (who is them, what is it?)
+- “same as last time” (which time?)
+- “set it up” (what is “it”?)
+
+Ashby must support completion without guessing.
+That requires a disciplined multi-turn transaction model.
+
+This section defines the merge-and-complete flow:
+how Ashby safely resumes an incomplete intent, merges new information,
+and completes the original request with full auditability.
+
+──────────────────────────────────────────────────────────────────────────────
+1) THE CORE MODEL: A CLARIFICATION IS AN INCOMPLETE CONTROL TRANSACTION
+──────────────────────────────────────────────────────────────────────────────
+
+When Ashby asks a clarification question, it is not “chatting.”
+It is pausing an incomplete control transaction.
+
+Therefore:
+- the system must preserve the incomplete intent
+- the system must preserve what is missing
+- the system must preserve candidates already discovered
+- the system must preserve the safety posture already determined
+
+This is the job of pending clarification sessions.
+
+The merge-and-complete flow is “resume transaction,” not “start over.”
+
+──────────────────────────────────────────────────────────────────────────────
+2) REQUIRED ARTIFACT: PENDING CLARIFICATION SESSION
+──────────────────────────────────────────────────────────────────────────────
+
+When policy outcome is CLARIFY (or CONFIRM with missing parameters),
+the engine must create a pending clarification session artifact.
+
+Minimum required fields (conceptual; exact schema may evolve under law):
+
+- clarify_id (stable identifier for this transaction)
+- created_at and expires_at
+- original intent (raw + normalized)
+- missing fields:
+  - targets
+  - scope
+  - parameters
+  - safety_confirmation
+- candidates (if discovered):
+  - target candidate sets
+  - scopes or zones
+  - parameter candidate lists
+- constraints:
+  - required confirmation posture
+  - blast-radius limits
+  - disallowed defaults
+
+The artifact exists so Ashby can complete without guessing,
+and so future builders can reconstruct why the system asked what it asked.
+
+──────────────────────────────────────────────────────────────────────────────
+3) REPLY CLASSIFICATION: IS THE USER ANSWERING OR CHANGING TOPIC?
+──────────────────────────────────────────────────────────────────────────────
+
+When a new user message arrives and a pending clarification session exists,
+the engine must classify the message as one of:
+
+A) ANSWER (resume the transaction)
+The message plausibly answers the pending question.
+Examples:
+- “kitchen”
+- “the desk lamp”
+- “the second one”
+- “2 boxes”
+- “tomorrow morning”
+
+B) MODIFICATION (answer plus change)
+The message answers the question but also changes the request.
+Examples:
+- “kitchen, and make them 50%”
+- “actually bedroom, not kitchen”
+- “two of them, and cancel the other order”
+
+C) NEW INTENT (do not merge)
+The message is a new request.
+Examples:
+- “never mind”
+- “what time is it?”
+- “turn off the hallway lights instead”
+- “also, add milk to the list” (could be new intent unless the pending intent was shopping)
+
+D) INVALID / UNCLEAR (clarify the clarification)
+The message cannot be confidently interpreted as an answer.
+Examples:
+- “yes”
+- “that”
+- “whatever”
+when candidates are not uniquely defined.
+
+This classification must be conservative.
+Misclassifying a new intent as an answer is how accidental execution happens.
+
+──────────────────────────────────────────────────────────────────────────────
+4) MERGE RULES: FILL MISSING FIELDS, DO NOT INVENT
+──────────────────────────────────────────────────────────────────────────────
+
+When the message is classified as ANSWER or MODIFICATION,
+Ashby merges the new info into the pending transaction.
+
+Rules:
+
+4.1 Fill only what was asked for (first)
+Start by filling the explicitly missing fields.
+Do not opportunistically infer additional fields unless they are explicit.
+
+4.2 Use the candidate sets
+If the pending session contains candidate options,
+resolve answers against those options first.
+This prevents drift and guessing.
+
+4.3 Apply contextual phrase resolution law
+If the user uses contextual phrases (“that one”, “in here”, “same as before”),
+resolve them only using the context anchor stack (Section 15.2 law).
+If resolution is not unique, ask again.
+
+4.4 Explicit overrides win
+If the user explicitly contradicts earlier assumptions (“actually bedroom”),
+the explicit statement overrides the pending selection.
+
+4.5 Do not merge across scope boundaries casually
+If the new answer implies a different scope,
+Ashby must ensure authority checks and scope validity are re-evaluated.
+
+4.6 Re-run planning after merge
+After merge, the engine must re-run:
+- validation
+- policy evaluation (if risk changed)
+- planning (ActionRequests may change)
+before execution.
+
+Merging is not execution.
+Merging is preparation for lawful execution.
+
+──────────────────────────────────────────────────────────────────────────────
+5) THE “COMPLETE WHAT YOU CAN” QUESTION (ATOMICITY VS PARTIAL EXECUTION)
+──────────────────────────────────────────────────────────────────────────────
+
+Sometimes a user request contains multiple actions and only one is missing data.
+
+Example:
+- “turn off the kitchen lights and lock the front door”
+If “kitchen lights” is ambiguous but “front door” is unambiguous,
+should Ashby lock the door now?
+
+Ashby must not silently split execution.
+It may split only under explicit, predictable rules.
+
+Allowed approach:
+- If the actions are independent and low-risk, Ashby may execute the unambiguous part
+  only if it explicitly states:
+  - what it executed
+  - what it is waiting on
+  - what question remains
+
+Disallowed approach:
+- executing a subset silently and pretending the full request was completed
+- executing a high-impact subset while waiting on a low-impact clarification
+  without explicit confirmation posture
+
+High-impact actions (security, access, money) should bias toward:
+- hold until the whole transaction is safe and confirmed
+
+This keeps the system from “helpfully” doing the wrong thing.
+
+──────────────────────────────────────────────────────────────────────────────
+6) CONFIRMATION IN THE MERGE FLOW (WHEN THE ANSWER CHANGES RISK)
+──────────────────────────────────────────────────────────────────────────────
+
+A merge can change blast radius.
+
+Example:
+- “turn off the lights” → clarify: “which ones?”
+- user answers: “all of them”
+
+That answer expands scope.
+Ashby must:
+- re-evaluate whether confirmation is required
+- if required, transition the pending session into CONFIRM posture:
+  - summarize the intended action in bounded, audit-friendly language
+  - require explicit approval
+  - then execute
+
+The merge flow must not treat “answering the question” as implicit consent for expanded impact.
+
+Answers provide information.
+Consent is separate.
+
+──────────────────────────────────────────────────────────────────────────────
+7) COMPLETION: EXECUTE, VERIFY, AND SPEAK WITH TRUTH POSTURE
+──────────────────────────────────────────────────────────────────────────────
+
+Once the transaction is complete:
+- generate ActionRequests
+- execute via adapters/providers
+- collect ActionResults
+- apply Truth Gate
+- update HouseState
+- respond with lawful posture
+
+Critical rule:
+The response must reflect reality evidence, not conversational closure.
+
+A completed merge flow is not:
+- “okay done”
+It is:
+- “attempted X; evidence indicates VERIFIED/LAST_KNOWN/UNKNOWN/FAILED for Y.”
+
+This is where most assistants lie.
+Ashby must not.
+
+──────────────────────────────────────────────────────────────────────────────
+8) EXPIRY AND STALENESS (WHEN TO REFUSE TO MERGE)
+──────────────────────────────────────────────────────────────────────────────
+
+Pending clarification sessions expire.
+
+If the pending transaction is expired or stale, Ashby must not merge blindly.
+It must re-establish context.
+
+Examples of required re-establishment:
+- “Are you still trying to turn on the kitchen lights?”
+- “Just confirming — which device did you mean?”
+
+The exact expiry window is configurable, but the rule is invariant:
+old context is not a license to guess.
+
+Expired sessions must fail safe.
+
+──────────────────────────────────────────────────────────────────────────────
+9) IDEMPOTENCY AND DUPLICATE PREVENTION (MERGE SHOULD NOT DOUBLE-EXECUTE)
+──────────────────────────────────────────────────────────────────────────────
+
+Users repeat themselves.
+Networks duplicate messages.
+Surfaces resend.
+
+The merge flow must prevent accidental double execution.
+
+Minimum requirements:
+- the pending session tracks whether execution already occurred
+- action_ids and correlation_id are used to detect duplicates
+- if a user repeats the same answer after completion,
+  Ashby should not re-execute automatically without clear intent
+
+If the user wants repetition, they can say so explicitly (“do it again”).
+
+This protects the user from “helpfulness as harm.”
+
+──────────────────────────────────────────────────────────────────────────────
+10) LOGGING REQUIREMENT (TRANSACTION RESUMPTION MUST BE RECONSTRUCTABLE)
+──────────────────────────────────────────────────────────────────────────────
+
+The system must log:
+- the clarify_id
+- the question asked
+- the user answer classification (answer/modification/new intent/unclear)
+- the merge result (fields filled, candidates chosen)
+- whether policy posture changed (clarify → confirm → act)
+- what executed, with provider attribution
+- what evidence returned
+- what truth class was claimed
+
+If a future builder cannot reconstruct why the merge happened,
+they will replace it with “whatever feels right,” and the platform will drift.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+The merge-and-complete flow must:
+- treat clarifications as incomplete control transactions
+- preserve incomplete intent and missing fields in a session artifact
+- merge answers conservatively using explicit anchors and candidate sets
+- re-run validation, policy, and planning after merge
+- require confirmation when answers expand risk
+- execute only with evidence-based truth posture
+- expire safely and refuse to merge stale context blindly
+- prevent duplicate execution
+
+The merge-and-complete flow must never:
+- guess missing fields
+- treat an answer as consent for expanded blast radius
+- silently execute subsets of a compound request
+- “complete” by narrative closure instead of verified evidence posture
+
+Completion is not a feeling.
+Completion is a lawful control transaction.
+
+END OF 15.3

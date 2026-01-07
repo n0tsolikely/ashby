@@ -1,0 +1,128 @@
+ASHBY CODEX — 7.2
+TYPES OF SCOPES (PHYSICAL, LOGICAL, ORGANIZATIONAL)
+
+Scopes in Ashby are not uniform.
+
+They represent different kinds of boundaries that exist in the real world.
+Understanding these distinctions is required to reason safely,
+apply authority correctly,
+and scale the system without flattening reality.
+
+Ashby recognizes multiple scope archetypes.
+These archetypes describe shape, not limits.
+
+──────────────────────────────────────────────────────────────────────────────
+PHYSICAL SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+Physical scopes represent bounded regions of the physical world.
+
+Examples include:
+- a room
+- a floor
+- a building
+- a property
+- a zone within a property
+
+Physical scopes define:
+- where devices exist
+- where sensors report from
+- where actions have physical consequences
+
+A light exists in a physical scope.
+A thermostat exists in a physical scope.
+A camera exists in a physical scope.
+
+Physical scope boundaries prevent:
+- actions from leaking across spaces
+- automation from affecting unintended areas
+- ambiguous targeting
+
+A command such as “turn off the lights”
+is meaningless without physical scope resolution.
+
+──────────────────────────────────────────────────────────────────────────────
+LOGICAL SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+Logical scopes represent conceptual groupings
+that do not map directly to physical space.
+
+Examples include:
+- a device group
+- a functional role
+- a system capability
+- a virtual collection
+
+Logical scopes allow Ashby to reason about:
+- related capabilities
+- shared behavior
+- abstract targets
+
+A logical scope may span:
+- multiple rooms
+- multiple buildings
+- multiple physical scopes
+
+Logical scopes never override physical safety.
+They operate within physical constraints.
+
+──────────────────────────────────────────────────────────────────────────────
+ORGANIZATIONAL SCOPES
+──────────────────────────────────────────────────────────────────────────────
+
+Organizational scopes represent authority and ownership.
+
+Examples include:
+- a household
+- a business unit
+- a tenant
+- a customer account
+- an operational boundary
+
+Organizational scopes define:
+- who may issue commands
+- what automations are permitted
+- what data may be retained
+- what actions require confirmation
+
+Organizational scope boundaries are critical
+in multi-user and multi-tenant systems.
+
+No action may cross organizational scopes
+without explicit authorization.
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPE COMPOSITION
+──────────────────────────────────────────────────────────────────────────────
+
+Scopes are composable.
+
+A physical scope may exist inside
+an organizational scope.
+
+A logical scope may reference
+multiple physical scopes.
+
+This composition allows Ashby to model reality
+without collapsing it into a single dimension.
+
+Composition is explicit.
+Implicit scope inheritance is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+No scope type may:
+- bypass another scope’s authority
+- override safety constraints
+- collapse boundaries for convenience
+
+If a design requires flattening scope types,
+the design is invalid.
+
+Scopes model reality as it is,
+not as it is convenient to automate.
+
+END OF 7.2

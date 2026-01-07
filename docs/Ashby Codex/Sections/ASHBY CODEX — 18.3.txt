@@ -1,0 +1,272 @@
+ASHBY CODEX — 18.3
+OFFLINE-FIRST PREFERENCE
+
+Offline-first preference is execution routing law.
+
+It defines how Ashby chooses among multiple valid execution paths when:
+- both local (offline-capable) and cloud paths exist
+- multiple adapters can satisfy a capability
+- verification and reliability differ across those paths
+
+Offline-first is a preference order, not a guarantee.
+
+Ashby must be able to operate without cloud dependence.
+Ashby may use cloud execution when chosen by configuration and policy.
+
+Offline-first preference exists to preserve:
+- resilience under internet failure
+- privacy by default (less data leaves the environment)
+- lower latency where possible
+- control locality (the user owns the environment)
+- long-lived survivability when vendors change terms
+
+Offline-first is how Ashby stays free.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFINITIONS (EXECUTION-SIDE, NOT MARKETING)
+──────────────────────────────────────────────────────────────────────────────
+
+OFFLINE-CAPABLE EXECUTION
+An execution path that does not require the public internet to succeed.
+It may still require:
+- local network
+- local bridge
+- on-prem controller
+- local credentials
+
+LOCAL-FIRST EXECUTION
+A strict subset of offline-capable execution:
+the adapter targets a device or a local system directly over LAN,
+without delegating to a vendor’s cloud API.
+
+CLOUD EXECUTION
+An execution path that requires a vendor or third-party cloud service to succeed.
+
+OFFLINE-FIRST PREFERENCE
+The routing rule that, when two paths can satisfy the same capability,
+offline-capable paths are preferred by default, unless policy dictates otherwise.
+
+These are execution-mode concepts.
+They do not change WHAT is being attempted.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT OFFLINE-FIRST DOES (AND DOES NOT DO)
+──────────────────────────────────────────────────────────────────────────────
+
+Offline-first preference DOES:
+- influence adapter selection when multiple adapters can satisfy a capability
+- enforce a deterministic ranking that prefers offline-capable execution
+- require auditability of the chosen execution path
+- preserve optionality: cloud can be allowed, but not required
+
+Offline-first preference DOES NOT:
+- guarantee success without the internet
+- change Action-Gated Truth posture
+- authorize execution without planning
+- override safety policy
+- force a weaker verification path when a stronger one is required by policy
+
+Offline-first affects HOW, not WHAT, and not truth law.
+
+──────────────────────────────────────────────────────────────────────────────
+REQUIRED CAPABILITY QUALIFIERS (FOR ROUTING)
+──────────────────────────────────────────────────────────────────────────────
+
+Offline-first cannot be enforced by guessing.
+Adapters must declare routing-relevant qualifiers.
+
+At minimum, each adapter capability declaration must expose:
+
+1) EXECUTION MODE
+One of:
+- local
+- offline_capable (not strictly local)
+- cloud
+
+2) VERIFICATION POTENTIAL
+One of:
+- readback_supported (adapter can confirm resulting state or artifact)
+- write_only (adapter can issue commands but cannot confirm)
+- mixed (depends on target or vendor tier)
+
+3) RELIABILITY CLASS (POLICY-DEFINED)
+A stable classification derived from observed health and historical reliability.
+This is not a “marketing score.”
+It is operational evidence used by policy.
+
+4) RATE / LATENCY CLASS (OPTIONAL)
+Used only as a tie-breaker after safety and verification.
+
+Qualifiers must be stable enough for:
+- deterministic routing
+- test assertions
+- operator reasoning
+
+If qualifiers are missing, the router cannot prefer safely.
+
+──────────────────────────────────────────────────────────────────────────────
+THE OFFLINE-FIRST SELECTION ORDER (DETERMINISTIC)
+──────────────────────────────────────────────────────────────────────────────
+
+The router must apply a deterministic preference order.
+
+A representative ordering (policy-defined, but the structure is invariant):
+
+Step 1: Filter by capability + target compatibility + scope enablement.
+Only candidates that can execute the required capability on the target remain.
+
+Step 2: Filter by policy constraints.
+Examples of constraints:
+- cloud_disallowed in this scope
+- offline_required for this user/profile
+- verification_required for this action_type
+
+Step 3: Rank remaining candidates by preference dimensions.
+
+Preference dimensions (ordered):
+1) Execution mode: prefer local, then offline_capable, then cloud
+2) Verification potential: prefer readback_supported over write_only
+3) Reliability class: prefer higher over lower
+4) Health at time-of-call: prefer healthy over degraded
+5) Latency class: prefer lower only after meaning and verification are satisfied
+
+Rules:
+- preference must be configured, not improvised.
+- preference must be visible in audit logs.
+- preference must not cause semantic change.
+
+Offline-first is the default dimension, not the only dimension.
+Verification and safety remain higher-order constraints.
+
+──────────────────────────────────────────────────────────────────────────────
+SCOPE AND PROFILE INTERACTION
+──────────────────────────────────────────────────────────────────────────────
+
+Offline-first preference is scoped.
+
+A scope may enforce one of these modes (representative):
+
+A) OFFLINE-ONLY
+- cloud execution is forbidden.
+- if no offline-capable adapter exists, the platform must refuse execution.
+
+B) OFFLINE-PREFERRED (DEFAULT)
+- offline-capable adapters are preferred.
+- cloud may be used only if offline is unavailable or policy allows fallback.
+
+C) CLOUD-PREFERRED (RARE)
+- used only when local infrastructure is not present or not trusted.
+- still must remain truthful and auditable.
+
+D) CLOUD-ONLY (PROFILED PRODUCT)
+- permitted only when explicitly configured as a product profile.
+- must not leak into core law.
+- must remain removable and reversible.
+
+Rules:
+- scope config expresses allowed execution modes.
+- adapters do not decide this.
+- modules do not decide this.
+- the router enforces it.
+
+This is how Ashby supports different customer realities without forking.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY OFFLINE-FIRST DOES NOT MEAN “ALWAYS LOCAL”
+──────────────────────────────────────────────────────────────────────────────
+
+Some local paths are weaker than cloud paths.
+
+Examples:
+- a local bridge that cannot confirm state (write-only)
+- a local path that is currently unhealthy
+- a local path that lacks a necessary capability while cloud supports it
+
+Offline-first is not an excuse to degrade truth posture.
+If policy requires verification and the offline path cannot provide it,
+the router must either:
+- select a path that can verify (even if cloud), if allowed
+- or refuse/confirm based on policy
+
+Offline-first preference must never become “offline at any cost.”
+The cost may be truth.
+
+──────────────────────────────────────────────────────────────────────────────
+OFFLINE-FIRST AND ACTION TYPES (IDEMPOTENCY EXPECTATIONS)
+──────────────────────────────────────────────────────────────────────────────
+
+Offline-first preference is often paired with fallback behavior (18.4).
+This introduces retry/double-attempt risk.
+
+Therefore, offline-first routing must prefer:
+- idempotent action types (“set_on”, “set_level”, “set_heat_c”)
+- actions that can be safely repeated without compounding effects
+
+Actions that are not safely repeatable:
+- “toggle”
+- “advance_scene”
+- “next_track”
+- “open” when state is unknown and there is no safe stop
+
+Such actions must be treated with stricter policy:
+- require verification-capable execution, or
+- require confirmation before retry/fallback, or
+- refuse if risk is unacceptable
+
+Offline-first is not just connectivity.
+It is operational safety under uncertain paths.
+
+──────────────────────────────────────────────────────────────────────────────
+AUDITABILITY REQUIREMENTS
+──────────────────────────────────────────────────────────────────────────────
+
+Offline-first selection must be visible.
+
+At minimum, the router must record (in logs/audit artifacts):
+- which adapter was selected
+- which execution mode was chosen (local/offline_capable/cloud)
+- which preference rule decided the tie-break
+- correlation_id linking selection to ActionRequest and ActionResult
+
+This information may live in router logs rather than in ActionResult,
+so that canonical evidence shape remains stable.
+
+Without auditability, “offline-first” becomes an untraceable superstition.
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE POSTURE UNDER OFFLINE-FIRST PREFERENCE
+──────────────────────────────────────────────────────────────────────────────
+
+Offline-first does not change failure semantics.
+
+Rules:
+- if the offline-capable adapter fails, it must return ActionResult evidence.
+- the router must not rewrite failure into success.
+- the engine must not speak beyond evidence.
+
+Offline-first also does not authorize silent rerouting.
+If a different adapter is selected due to failure,
+that selection must remain auditable and policy-governed (18.4).
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Offline-first preference must:
+- remain a deterministic routing policy, not an emergent behavior
+- prefer offline-capable execution paths by default when otherwise equivalent
+- respect scope/profile execution-mode constraints
+- remain subordinate to verification and safety constraints
+- remain auditable via correlation_id-linked records
+- preserve WHAT vs HOW separation and Action-Gated Truth
+
+Offline-first preference must never:
+- override policy, permissions, or scope constraints
+- degrade truth posture to satisfy “offline at any cost”
+- introduce silent rerouting without audit
+- allow adapters to decide execution mode on their own
+- smuggle vendor-specific assumptions into module meaning
+
+Offline-first is the default stance that keeps Ashby resilient and owned.
+
+END OF 18.3

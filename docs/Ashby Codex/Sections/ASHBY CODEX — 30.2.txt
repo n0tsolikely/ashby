@@ -1,0 +1,373 @@
+ASHBY CODEX — 30.2
+Inventory-Style Agent (Tori-Like)
+
+This subsection describes a representative “inventory agent” archetype.
+It demonstrates how Ashby hosts a business-domain agent that operates on records,
+integrates with external systems through connectors, and produces auditable outcomes
+without collapsing into spreadsheet automation or vendor-specific scripts.
+
+Names are illustrative.
+The architectural pattern is canonical.
+
+An inventory-style agent exists to maintain a coherent, truth-bound model of business inventory:
+- what items exist
+- where they are
+- how many exist (by confidence and freshness)
+- what is expected (orders, shipments, allocations)
+- what changed (adjustments, reconciliations, events)
+- what actions should occur next (reorder, investigate, confirm)
+
+Inventory is not “device control,” but it still requires:
+- scoped authority
+- truth semantics
+- idempotent execution
+- audit trails
+
+──────────────────────────────────────────────────────────────────────────────
+1) THE INVENTORY AGENT’S PURPOSE (WHY IT IS AN AGENT)
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory workflows are inherently multi-step and cross-system.
+
+Common realities:
+- multiple sources of truth exist (POS, commerce, accounting, warehouse)
+- counts drift
+- synchronization is delayed
+- high-impact actions exist (ordering, refunds, adjustments)
+- human confirmation is sometimes required
+
+An inventory agent must therefore be:
+- record-centric (manages structured entities)
+- reconciliation-driven (resolves contradictions explicitly)
+- audit-first (every mutation has a reason and evidence)
+- idempotent (duplicate orders are catastrophic)
+- scope-aware (inventory belongs to a business scope, location scope, or project scope)
+
+An inventory agent is not a “bot that edits tables.”
+It is a disciplined operator inside Ashby’s law.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL VS REPRESENTATIVE
+──────────────────────────────────────────────────────────────────────────────
+
+CANONICAL (INVARIANTS):
+- the inventory agent is a removable module
+- it uses connectors and adapters; it never calls vendor APIs directly
+- it produces ActionRequests for mutations (orders, adjustments, updates)
+- it returns ActionResults as evidence
+- it stores durable artifacts through StorageAdapter (reports, exports, snapshots)
+- it remains truth-bound and audit-bound under the Truth Gate
+
+REPRESENTATIVE (EXAMPLES ONLY):
+- “Tori” as a display name
+- the specific external systems referenced (Shopify, Square, QuickBooks, etc.)
+- the precise intent strings and workflows listed below
+- the internal database choice (sqlite, local files, cloud)
+
+The invariants preserve Ashby.
+The examples illustrate a useful instance.
+
+──────────────────────────────────────────────────────────────────────────────
+3) DOMAIN MODEL (WHAT INVENTORY “IS” IN ASHBY TERMS)
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory is a domain of entities and events.
+
+Representative entity types:
+- Item (canonical identity, name, attributes)
+- SKU (sellable unit; may map to multiple systems)
+- Location (warehouse, shelf, store, client site)
+- StockPosition (count + confidence + freshness per location)
+- Vendor / Supplier
+- PurchaseOrder (intent to buy)
+- SalesOrder (intent to sell / allocation)
+- Shipment / ReceivingEvent
+- AdjustmentEvent (manual or reconciled change)
+- ReconciliationReport (derived artifact)
+
+Core rule:
+- inventory truth is not a single number
+- it is a belief model with evidence, staleness, and contradictions
+
+A mature inventory agent must track:
+- “what we last knew”
+- “what we believe now”
+- “how confident we are”
+- “what evidence supports it”
+- “what is disputed”
+
+This is the same posture Ashby applies to lights and sensors,
+expressed in a non-physical domain.
+
+──────────────────────────────────────────────────────────────────────────────
+4) NORMALIZED INTENTS (INVENTORY DOMAIN)
+──────────────────────────────────────────────────────────────────────────────
+
+Representative intent types include:
+- inventory.lookup(item_query)
+- inventory.list(low_stock | location | category)
+- inventory.adjust(item, location, delta, reason)
+- inventory.set_count(item, location, count, reason)
+- inventory.receive(po_id | shipment_id)
+- inventory.reconcile(source_a, source_b, ruleset)
+- inventory.reorder(item | category, target_level)
+- inventory.create_po(vendor, items)
+- inventory.approve_po(po_id)
+- inventory.export(report_type, format)
+
+Rules:
+- intent parsing and target resolution belong to Ashby core + domain resolution layers
+- the agent is invoked after normalization
+- the agent must reject mutation intents that lack required fields
+  (no “guessing a vendor” or “assuming a location” for irreversible actions)
+
+Inventory actions tend to be high-impact.
+The agent must be conservative by default.
+
+──────────────────────────────────────────────────────────────────────────────
+5) SESSIONS (INVENTORY IS OFTEN MULTI-TURN)
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory workflows frequently require clarification and confirmation.
+
+Representative session types:
+- inventory_ops (active workflow context)
+- reconciliation (conflict resolution workflow)
+- ordering (purchase order creation + approval)
+- audit (physical count capture workflow)
+
+Representative session fields:
+{
+  "session_type": "inventory_ops",
+  "scope_id": "scope:business:…",
+  "active": true,
+  "workflow": "reconcile | reorder | adjust | audit | export",
+  "draft": { ... },                  // pending structured plan
+  "constraints": { ... },            // budget, approval rules, preferred vendors
+  "correlation_id": "string",
+  "started_at": "ISO8601",
+  "expires_at": "ISO8601"
+}
+
+Session invariants:
+- sessions are scoped (inventory is meaningless without scope)
+- session expiration is enforced (stale drafts are dangerous)
+- drafts do not execute without explicit policy outcome (ACT/CONFIRM)
+- sessions must record who approved a mutation (when required)
+
+Inventory sessions exist to prevent:
+- accidental irreversible changes
+- “fast automation” that bypasses human control
+
+──────────────────────────────────────────────────────────────────────────────
+6) CONNECTORS AND EXTERNAL SYSTEMS (HOW INVENTORY TOUCHES REALITY)
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory often lives in external systems:
+- commerce platforms
+- accounting tools
+- warehouse management systems
+- spreadsheets or CSV exports (in early stages)
+
+In Ashby, non-physical systems are integrated through connectors.
+
+Rules:
+- connectors are execution-layer components (HOW)
+- the inventory agent calls connector interfaces, not vendor SDKs
+- connector results become evidence, not truth
+- connector tokens/credentials are secrets handled by platform security law
+
+Common connector actions:
+- fetch item list / SKU list
+- fetch stock counts by location
+- fetch orders and shipments
+- post adjustments
+- create purchase orders
+- retrieve invoices or receipts
+
+Every connector invocation must produce:
+- an ActionResult
+- with correlation_id
+- with sanitized error reporting on failure
+
+No silent “best effort” is allowed in business domains.
+
+──────────────────────────────────────────────────────────────────────────────
+7) RECONCILIATION (THE CORE INVENTORY WORKFLOW)
+──────────────────────────────────────────────────────────────────────────────
+
+Reconciliation is the act of reconciling conflicting evidence.
+
+Typical conflicts:
+- System A says 12 units, System B says 9
+- Sales allocation says 5 reserved, warehouse says 4 shipped
+- Physical count contradicts digital count
+- A vendor shipment is delayed but a system marked it received
+
+A correct inventory agent must:
+- preserve contradictions explicitly
+- avoid overwriting one system with another without policy
+- produce a ReconciliationReport artifact that records:
+  - sources consulted
+  - timestamps / staleness
+  - differences discovered
+  - proposed resolution actions
+  - required confirmations (if any)
+  - executed actions and their evidence
+
+Reconciliation modes (representative):
+A) READ-ONLY RECONCILIATION
+- detect and report conflicts
+- do not mutate external systems
+- used when policy forbids mutation or approvals are missing
+
+B) MUTATING RECONCILIATION (GOVERNED)
+- proposes actions (adjustments, sync pushes)
+- requires confirm when high-impact
+- executes through connectors with idempotency keys
+- records ActionResults per system
+
+No reconciliation may be “silent.”
+If the agent repairs data, the repair must be auditable.
+
+──────────────────────────────────────────────────────────────────────────────
+8) MUTATIONS (ORDERS, ADJUSTMENTS, AND IRREVERSIBLE ACTIONS)
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory mutation is where most systems become unsafe.
+
+Canonical constraints:
+- any mutation must be idempotent
+- any mutation must be attributable (who/why)
+- any mutation must be reversible by a compensating action when possible
+- any mutation must be confirmed when policy declares it high-risk
+- mutation outcomes must be reported as evidence, not confidence
+
+Examples of high-risk actions:
+- creating a purchase order
+- placing an order (payment / commitment)
+- posting accounting entries
+- mass adjustments across many SKUs
+- changing vendor mappings
+
+Required safeguards:
+- draft → confirm → execute flow
+- stable idempotency key per mutation attempt
+- explicit target set (items, locations)
+- explicit reason strings (human-readable audit)
+
+If a user says:
+“reorder ink”
+The agent must not place an order until:
+- item identity is resolved
+- vendor path is resolved
+- budget/approval rules are satisfied
+- the user confirms the irreversible action (if policy requires)
+
+An inventory agent must value safety over speed.
+
+──────────────────────────────────────────────────────────────────────────────
+9) TRUTH AND STATE (INVENTORY AS BELIEF WITH STALENESS)
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory truth is time-sensitive.
+
+Counts become stale.
+Allocations change.
+Shipments arrive late.
+
+Rules:
+- inventory state is stored as beliefs with freshness and confidence
+- beliefs decay with time when no new evidence arrives
+- the agent must surface staleness in responses
+- the agent must not present LAST_KNOWN counts as VERIFIED
+
+When external evidence is uncertain:
+- the agent must represent UNKNOWN explicitly
+- it may propose an audit workflow
+- it may propose readbacks from multiple sources
+- it may refuse to mutate if uncertainty is too high
+
+Inventory is a domain where “unknown” is normal.
+Ashby must treat it honestly.
+
+──────────────────────────────────────────────────────────────────────────────
+10) ARTIFACTS (REPORTS, EXPORTS, SNAPSHOTS)
+──────────────────────────────────────────────────────────────────────────────
+
+Inventory agents produce artifacts:
+- inventory snapshots
+- reconciliation reports
+- reorder proposals
+- exported CSVs / PDFs
+- audit logs suitable for humans
+
+Rules:
+- artifacts are stored through StorageAdapter
+- artifacts must not contain secrets
+- artifacts must include metadata: scope_id, created_at, correlation_id, sources
+- exports must be permissioned and scope-bound
+- artifacts do not override state; they inform it through evidence
+
+An inventory agent must be able to hand an auditor the record trail.
+
+──────────────────────────────────────────────────────────────────────────────
+11) FAILURE MODES (BUSINESS DOMAINS ARE BRITTLE)
+──────────────────────────────────────────────────────────────────────────────
+
+Failure modes include:
+- connector auth failure
+- rate limits
+- inconsistent vendor APIs
+- partial updates (some SKUs updated, others failed)
+- duplicate mutation risk (retries creating duplicates)
+- stale data causing wrong action
+
+Canonical response behavior:
+- preserve partial results explicitly
+- never claim completion when ActionResult indicates failure/unknown
+- never retry an irreversible mutation without idempotency safeguards
+- never hide which system succeeded vs failed
+- if a mutation is ambiguous, require clarification/confirmation
+
+Business domains require explicitness.
+Fluency is not acceptable as a substitute.
+
+──────────────────────────────────────────────────────────────────────────────
+12) REMOVABILITY (THE INVENTORY AGENT IS OPTIONAL)
+──────────────────────────────────────────────────────────────────────────────
+
+The inventory agent must be removable.
+
+Rules:
+- disabling it removes inventory-specific intents and workflows
+- disabling it must not break Ashby core or unrelated modules
+- artifacts remain accessible only through explicit storage tooling
+- connector integrations may remain for other modules, but inventory logic is gone
+
+Ashby is a platform.
+Inventory is one product surface.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+An inventory-style agent must:
+- operate as a removable module inside Ashby
+- use connectors/adapters for external system interaction
+- preserve audit trails and reasons for all mutations
+- use idempotency safeguards for irreversible operations
+- represent inventory state as evidence-bearing belief with staleness
+- surface contradictions explicitly (mixed reality)
+- require confirmation for high-impact actions when policy dictates
+- store artifacts via StorageAdapter and keep secrets out of artifacts/logs
+
+An inventory-style agent must never:
+- bypass connector interfaces to call vendor APIs directly
+- treat one external system as unquestionable truth
+- silently overwrite counts without evidence and audit
+- place orders or post accounting changes without required confirmations
+- hide partial failures or collapse mixed outcomes into a single narrative
+- rely on stale data while presenting certainty
+
+END OF 30.2

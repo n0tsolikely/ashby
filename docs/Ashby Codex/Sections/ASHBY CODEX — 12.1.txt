@@ -1,0 +1,187 @@
+ASHBY CODEX — 12.1
+STATE AS BELIEF
+
+HouseState is Ashby’s authoritative belief about the world.
+
+It is not a mirror of vendor state.
+It is not a guess.
+It is not a conversational memory.
+It is not “whatever the last model output implied.”
+
+HouseState exists because real systems are noisy:
+- devices fail intermittently
+- networks degrade
+- vendors acknowledge commands without guaranteeing effect
+- restarts happen
+- humans contradict the system
+- reality drifts while no one is watching
+
+A platform that acts in the real world must maintain belief
+and must know when belief is uncertain.
+
+State without uncertainty is a lie.
+
+──────────────────────────────────────────────────────────────────────────────
+STATE IS NOT FACT
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState represents belief, not fact.
+
+Facts exist in the external world.
+Beliefs exist in Ashby.
+
+Beliefs can be:
+- confirmed
+- likely
+- unknown
+- stale
+- wrong
+
+Ashby must:
+- know what it believes
+- know how certain it is
+- speak within those limits
+
+If Ashby speaks as if belief is fact,
+Ashby becomes a confident liar.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY STATE AUTHORITY EXISTS
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState is required for:
+
+1) CONTINUITY OVER TIME
+Ashby must remain coherent across interactions.
+The system must not behave as if every command is the first command.
+
+2) HONEST ANSWERS TO “WHAT IS THE STATE?”
+A truthful system must be able to answer:
+- what it knows
+- what it last knew
+- what it does not know
+
+3) SAFE DECISION-MAKING
+Planning depends on belief:
+- deciding whether an action is needed (NO-OP)
+- deciding whether clarification is required
+- deciding whether automation is permitted
+
+4) EXPLAINABILITY
+If an action is taken or withheld,
+Ashby must be able to explain why.
+
+5) REBUILDABILITY
+A future rebuild must be able to reconstruct the state model
+from law alone, not from vendor quirks.
+
+──────────────────────────────────────────────────────────────────────────────
+HOUSESTATE IS SCOPED REALITY
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState is never global.
+
+State exists only within scopes.
+
+Rules:
+- each scope has its own state authority
+- devices/entities exist only inside scopes
+- beliefs do not “bleed” across scope boundaries
+- memory and history are interpreted within the active scope
+
+If Ashby cannot determine the scope,
+Ashby cannot claim a state.
+If Ashby cannot determine the scope,
+Ashby must not act.
+
+Unscoped state is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT HOUSESTATE CONTAINS
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState stores beliefs about entities and attributes that matter to Ashby.
+
+Representative categories (non-exhaustive):
+- device attributes (on/off, brightness, temperature setpoint)
+- last known values (in canonical units)
+- belief confidence per attribute
+- timestamps of verification/readback
+- derived context required for safe planning (e.g., last-targeted set)
+
+HouseState may store supporting metadata that helps prevent drift:
+- which module produced an update (for traceability)
+- correlation identifiers for reconstruction
+- whether a value is stale under decay rules
+
+HouseState must not store:
+- secrets
+- credentials
+- vendor identifiers as authoritative reality
+- raw vendor payloads as truth
+
+HouseState is a platform artifact.
+It must remain portable and auditable.
+
+──────────────────────────────────────────────────────────────────────────────
+HOW HOUSESTATE IS UPDATED
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState may only be updated by evidence.
+
+Evidence sources include:
+- ActionResults from executed actions
+- explicit readback results treated as verified evidence
+- sanctioned refresh/sync operations
+
+HouseState must never be updated by:
+- model language
+- assumptions about success
+- transport events (“message delivered”)
+- convenience heuristics (“it usually works”)
+- human-friendly smoothing
+
+If evidence is missing,
+belief must remain uncertain.
+
+──────────────────────────────────────────────────────────────────────────────
+BELIEF MUST REMAIN HONEST UNDER CHANGE
+──────────────────────────────────────────────────────────────────────────────
+
+Belief is not static.
+
+Over time, belief becomes stale.
+
+Ashby must support mechanisms that preserve honesty:
+- confidence levels per attribute
+- time-based staleness decay
+- restart behavior that never upgrades certainty
+- contradiction handling that immediately marks beliefs UNKNOWN
+- explicit refresh operations that attempt to read reality
+
+State authority is not the claim “Ashby is always right.”
+State authority is the discipline:
+“Ashby always knows what it knows.”
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+HouseState must:
+- treat state as belief, not fact
+- store explicit confidence per attribute
+- remain strictly scope-bound
+- be updated only from evidence
+- degrade honesty when uncertainty increases
+
+HouseState must never:
+- exist outside a scope
+- upgrade certainty without new evidence
+- treat command send as verification
+- allow language to exceed belief
+
+State is belief.
+Confidence is honesty.
+Ashby must preserve both.
+
+END OF 12.1

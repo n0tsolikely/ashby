@@ -1,0 +1,228 @@
+ASHBY CODEX — 16.2
+REMOVABILITY GUARANTEES
+
+Ashby is built to grow.
+Growth without removability creates a monolith.
+A monolith eventually becomes unmaintainable, un-migratable, and unrebuildable.
+
+Removability is not “nice.”
+It is a core resurrection constraint.
+
+This section defines what Ashby guarantees when modules or agents are removed,
+and the architecture rules required to make that guarantee true.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITION: WHAT “REMOVABILITY” MEANS
+──────────────────────────────────────────────────────────────────────────────
+
+A component is removable when the platform can:
+- disable it,
+- uninstall it,
+- or omit it from a build/profile,
+without breaking core operation or corrupting core truth/state.
+
+Removability does not mean:
+- deleting history
+- erasing artifacts
+- pretending it never existed
+
+Removability means:
+- the body survives
+- the intent router remains coherent
+- the evidence and state systems remain lawful
+- the system fails cleanly when a removed capability is requested
+
+A removable module may stop existing.
+Ashby must still function.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT MUST REMAIN TRUE AFTER REMOVAL (THE GUARANTEES)
+──────────────────────────────────────────────────────────────────────────────
+
+After removing a module/agent, the platform guarantees:
+
+A) ENGINE INTEGRITY
+- policy outcomes still work
+- Truth Gate still applies
+- HouseState still persists and decays correctly
+- logs and correlation still exist
+
+B) ROUTING INTEGRITY
+- the router will not route to missing modules
+- missing modules are treated as unavailable surfaces, not errors in core
+
+C) TRUTH INTEGRITY
+- the system does not pretend it can execute removed capabilities
+- it does not fabricate explanations
+- it refuses or clarifies honestly
+
+D) STATE INTEGRITY
+- HouseState is not corrupted by removal
+- beliefs remain as beliefs, with staleness
+- any beliefs that relied on removed evidence sources degrade naturally
+
+E) SECURITY INTEGRITY
+- removal does not leak secrets
+- removal does not leave privileged actions enabled accidentally
+
+F) ARTIFACT DURABILITY
+- artifacts previously created remain stored and exportable (subject to retention policy)
+- removal does not destroy history silently
+
+These guarantees prevent “uninstall means amnesia” and “uninstall breaks the platform.”
+
+──────────────────────────────────────────────────────────────────────────────
+3) REMOVAL MODES (HOW REMOVAL HAPPENS)
+──────────────────────────────────────────────────────────────────────────────
+
+There are multiple legal removal modes:
+
+A) DISABLE (SOFT REMOVAL)
+- module is present on disk
+- profile/flags/entitlements mark it unavailable
+- router will not use it
+- artifacts remain readable
+
+B) UNINSTALL (HARD REMOVAL)
+- module code is absent
+- registry entry removed or marked absent
+- router cannot load it
+
+C) BUILD OMIT (DISTRIBUTION REMOVAL)
+- a product profile excludes the module entirely
+- used for product variants or minimal deployments
+
+All modes must produce the same platform guarantee:
+the body remains intact and behavior remains honest.
+
+──────────────────────────────────────────────────────────────────────────────
+4) USER-FACING BEHAVIOR WHEN A REMOVED CAPABILITY IS REQUESTED
+──────────────────────────────────────────────────────────────────────────────
+
+When a user requests something that maps to a removed module:
+
+Ashby must not:
+- attempt execution
+- attempt “partial execution” through unrelated modules
+- claim failure due to device/provider if it never tried
+
+Ashby must choose a lawful outcome:
+
+A) REFUSE (FEATURE NOT AVAILABLE)
+When the user clearly requests the removed capability:
+- “I can’t do that here because that module isn’t enabled.”
+
+B) CLARIFY (ALTERNATIVE PATH EXISTS)
+If the user’s language could refer to a different available capability:
+- “Do you mean X (available) or Y (not available)?”
+
+C) CHAT (EXPLANATION / GUIDANCE)
+Ashby may explain what would be required to enable the capability
+without implying it can self-enable it.
+
+The response must be explicit:
+unavailable means unavailable.
+
+──────────────────────────────────────────────────────────────────────────────
+5) WHAT HAPPENS TO ARTIFACTS AND CONFIG AFTER REMOVAL
+──────────────────────────────────────────────────────────────────────────────
+
+Removal must not silently destroy stored material.
+
+Rules:
+
+A) ARTIFACTS REMAIN, BUT BECOME INERT
+- previously generated reports, transcripts, exports, and logs remain in storage
+- they remain accessible through generic viewers/exports
+- the removed module is not required to read them
+
+B) CONFIGURATION MAY REMAIN, BUT MUST NOT EXECUTE
+- connector configurations, schedules, automation rules, etc.
+  must be disabled or placed into a dormant state
+- the platform must not continue running background execution on behalf of a removed module
+
+C) ORPHANED REFERENCES MUST BE SAFE
+If other components reference a removed module’s artifact:
+- the reference must degrade gracefully (“artifact unavailable”)
+- not crash the system
+- not invent content
+
+D) RETENTION POLICY CONTINUES TO APPLY
+Removal does not bypass retention or privacy rules.
+If artifacts must expire, they expire by policy, not by removal.
+
+This preserves resurrection history without requiring the removed code.
+
+──────────────────────────────────────────────────────────────────────────────
+6) DEPENDENCY RULES THAT MAKE REMOVABILITY POSSIBLE
+──────────────────────────────────────────────────────────────────────────────
+
+Removability is guaranteed only if these rules are enforced:
+
+A) NO MODULE MAY BE REQUIRED BY CORE
+- engine/ must not depend on any module
+- core boot must not require optional organs
+
+B) NO INTER-MODULE HARD DEPENDENCIES
+- modules must not import each other
+- modules must not assume other modules are present
+- cooperation happens through shared contracts and the router
+
+C) EXECUTION IS SWAPPABLE
+- modules do not embed provider logic
+- providers can be removed/replaced without changing module meaning
+
+D) STORAGE IS GENERIC
+- artifacts are stored in common, stable formats
+- artifacts are not stored as “module-private binary blobs” that only that module can read
+
+E) IDENTITY IS PLATFORM-OWNED
+- device_keys and mappings remain valid even if a module disappears
+- removal does not “delete the world model”
+
+If any of these rules are violated, removal becomes a breaking event.
+Breaking removability violates Ashby’s definition.
+
+──────────────────────────────────────────────────────────────────────────────
+7) SAFE UNINSTALL CHECKLIST (WHAT MUST BE VERIFIED)
+──────────────────────────────────────────────────────────────────────────────
+
+Before and after removal, the platform must be able to verify:
+
+- the module is no longer routable
+- no scheduled tasks/triggers created by the module remain active
+- no provider routes remain pointing to removed components
+- no secret handles are left referenced by active execution paths
+- artifacts remain readable/exportable under policy
+- HouseState remains coherent and decays normally
+- logs still reconstruct outcomes correctly
+
+Removal must be observable:
+- a removal event should be logged with correlation_id and scope context
+- without leaking sensitive configuration or secrets
+
+A platform that cannot verify removal cannot guarantee it.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby’s removability guarantees require:
+- core boot and core law to be independent of any specific module
+- strict isolation and no inter-module hard dependencies
+- stable interface contracts and swappable providers
+- generic, durable storage formats for artifacts
+- identity continuity independent of module presence
+- explicit disabling of background execution tied to removed modules
+- honest refusal/clarification when removed capabilities are requested
+
+Ashby forbids:
+- modules becoming “core by accident”
+- removal causing silent loss of history or state corruption
+- orphan schedules continuing to execute after module removal
+- using removal as a way to hide failures or erase traces
+- coupling artifact readability to the presence of the original module code
+
+Removability is the proof that Ashby is a platform, not a pile of features.
+
+END OF 16.2

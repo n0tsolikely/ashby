@@ -1,0 +1,241 @@
+ASHBY CODEX — 33.3
+What Must Never Be Skipped
+
+Rebuilding Ashby fails in predictable ways.
+
+Most failures do not look like crashes.
+They look like “it works” while the system’s promises quietly rot.
+
+This subsection lists the non-skippable elements that preserve Ashby’s identity.
+
+These are not “engineering best practices.”
+They are Ashby’s definition.
+
+──────────────────────────────────────────────────────────────────────────────
+1) WHAT vs HOW SEPARATION (THE PLATFORM’S SPINE)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- modules express meaning (WHAT) only
+- adapters/providers express execution (HOW) only
+- vendors and protocols never enter meaning logic
+- bridges and native integrations remain swappable providers
+
+If skipped:
+- the platform becomes vendor-shaped
+- migrations become impossible
+- every new integration becomes a new fork
+
+This is the most common irreversible failure.
+
+──────────────────────────────────────────────────────────────────────────────
+2) ACTIONRESULT AS REALITY (THE EVIDENCE LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- ActionResult is the authoritative evidence object
+- claims about the world are derived from ActionResult + Truth Gate rules
+- “I did it” is forbidden without evidence
+
+If skipped:
+- the platform becomes fluent rather than truthful
+- success becomes a narrative style, not an observed outcome
+
+Ashby dies the moment it claims reality without evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+3) TRUTH GATE ENFORCEMENT (LANGUAGE MUST BE CONSTRAINED)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- truth classes (VERIFIED / LAST_KNOWN / UNKNOWN / FAILED)
+- forbidden phrase prevention
+- consistent language posture per truth class
+- explicit mixed reality when evidence conflicts
+
+If skipped:
+- outputs become “confident summaries”
+- users are misled even when the system is internally uncertain
+- contradictions are smoothed into lies
+
+Truth Gate is not a module.
+It is a law.
+
+──────────────────────────────────────────────────────────────────────────────
+4) HOUSESTATE AS THE SINGLE STATE AUTHORITY (NO SHADOW REALITIES)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- a single, scoped HouseState belief store
+- confidence and decay
+- restart/persistence behavior
+- explicit representation of partial success and contradictions
+
+If skipped:
+- each module/agent creates its own memory
+- the platform fragments into competing realities
+- long-lived consistency becomes impossible
+
+A multi-agent Ashby without shared state is not Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+5) SCOPES AND IDENTITY (SAFE TARGETING)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- scopes as the world model
+- scope-bound authority checks
+- stable platform-owned identity (device_keys)
+- external id mappings for bridges/vendors/connectors
+
+If skipped:
+- actions are executed against ambiguous targets
+- “the kitchen light” becomes a guess
+- migrations destroy continuity
+
+Identity continuity is resurrection continuity.
+
+──────────────────────────────────────────────────────────────────────────────
+6) SECURITY AND SECRETS HANDLING (NO LEAKS, NO BACKDOORS)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- secrets are handled only by secret systems
+- secrets never appear in logs or artifacts
+- sanitization is mandatory
+- least-privilege integration posture where possible
+
+If skipped:
+- credentials leak
+- the system becomes unsafe to operate
+- rebuild becomes impossible because records cannot be shared safely
+
+A platform that leaks secrets cannot be preserved in print.
+
+──────────────────────────────────────────────────────────────────────────────
+7) LOGGING AND OBSERVABILITY (RECONSTRUCTABILITY)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- correlation_id everywhere
+- structured logs across the pipeline
+- ability to export logs for audit and support
+- explicit provider attribution (which path executed)
+
+If skipped:
+- debugging becomes folklore
+- failures become irreproducible
+- migrations become blind
+- trust cannot be maintained
+
+A system that cannot explain itself cannot be resurrected.
+
+──────────────────────────────────────────────────────────────────────────────
+8) ACCEPTANCE TESTS AND HARNESS (DRIFT PREVENTION)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- a harness that validates:
+  - truth posture
+  - state updates
+  - boundary enforcement
+  - execution evidence integrity
+- regression tests for core flows
+
+If skipped:
+- the platform drifts silently
+- new integrations degrade old ones
+- policy and truth semantics erode over time
+
+Ashby without tests becomes “another assistant” slowly.
+
+──────────────────────────────────────────────────────────────────────────────
+9) MIGRATION DISCIPLINE (LONGEVITY LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- explicit schema versioning
+- migrations for persisted shapes
+- identity-preserving structural realignment
+- reversible changes where possible
+
+If skipped:
+- updates destroy continuity
+- old artifacts become unreadable
+- state becomes unrecoverable after changes
+
+A system without migrations is a disposable toy.
+
+──────────────────────────────────────────────────────────────────────────────
+10) BRIDGES AS TEMPORARY AND REPLACEABLE (NO PLATFORM DELEGATION)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- bridge isolation
+- bridge optionality
+- bridge outputs treated as evidence
+- strangler exit path toward native ownership
+
+If skipped:
+- the bridge becomes the platform
+- Ashby becomes a UI over someone else’s worldview
+- replacement becomes impossible
+
+Shipping via bridges is allowed.
+Delegating identity is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+11) PROFILES OVER FORKS (PRODUCTIZATION WITHOUT FRACTURE)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- declarative profiles
+- flags and entitlements as gates (not hidden behavior rewrites)
+- a single platform law shared by all products
+
+If skipped:
+- each product becomes a different Ashby
+- support becomes impossible
+- upgrades become incompatible
+
+Forks are a slow death, not a dramatic one.
+
+──────────────────────────────────────────────────────────────────────────────
+12) CONTROL SYNC GOVERNANCE (FOUNDATIONAL CHANGE LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+Never skip:
+- the rule that foundational changes require deliberate governance
+- the separation between:
+  - implementation iteration
+  - and constitutional revision
+
+If skipped:
+- panic changes rewrite invariants
+- the Codex becomes untrue
+- the platform loses its anchor
+
+Ashby changes only by Control Sync.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+What must never be skipped are the identity-defining laws:
+- WHAT vs HOW separation
+- ActionResult as evidence
+- Truth Gate enforcement
+- HouseState authority + decay
+- scopes and stable identity
+- secrets handling
+- logs and reconstructability
+- tests and harness
+- migrations
+- bridges as temporary
+- profiles over forks
+- governance by Control Sync
+
+If any of these are missing, the system may still appear functional.
+It will not be Ashby.
+
+END OF 33.3

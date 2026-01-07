@@ -1,0 +1,211 @@
+ASHBY CODEX — 15.1
+AMBIGUOUS TARGETS
+
+Target resolution is the act of mapping a human utterance to concrete internal entities.
+
+Targets include:
+- devices (device_keys)
+- zones (zone identifiers)
+- scopes (scope identifiers)
+- domain entities (non-physical targets, when applicable)
+
+Ambiguity is the condition where target resolution is not uniquely safe.
+
+Ambiguity is not a UX inconvenience.
+Ambiguity is a hard safety boundary.
+
+When targets are ambiguous, Ashby must clarify.
+Ashby must not guess.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT MAKES A TARGET AMBIGUOUS
+──────────────────────────────────────────────────────────────────────────────
+
+A target is ambiguous when any of the following are true:
+
+1) MULTIPLE PLAUSIBLE MATCHES
+The utterance maps to more than one plausible target set.
+
+Examples (representative):
+- multiple lights match the same name token
+- multiple rooms match “bedroom”
+- multiple scopes could contain the referenced category
+
+2) INSUFFICIENT SPECIFICITY
+The utterance lacks the information required to form a bounded target set.
+
+Examples:
+- “turn it off” without an active session or recent target
+- “the lights” without a specified room/zone and without a configured default
+- “the other one” without a defined comparison anchor
+
+3) UNRESOLVED SCOPE
+Even if a device label is unique within a scope, it may not be unique globally.
+If scope is unresolved, targets are ambiguous by default.
+
+4) LOW-CONFIDENCE MATCH
+Fuzzy matching may produce a best guess, but not a safe resolution.
+
+If the system cannot defend why the chosen target is correct under audit,
+the target is ambiguous.
+
+5) UNSAFE BLAST RADIUS WITHOUT CONFIRMATION
+Sometimes the target is “unambiguous” but still unsafe.
+
+Example:
+- “turn off all lights” may be clear but has large impact.
+
+This is not strictly target ambiguity; it is safety gating.
+However, it is treated with similar restraint: confirm or clarify before acting.
+
+Ambiguity is defined by defendability, not by probability.
+
+──────────────────────────────────────────────────────────────────────────────
+TARGET RESOLUTION IS SCOPE-BOUND
+──────────────────────────────────────────────────────────────────────────────
+
+Targets do not exist outside scopes.
+
+Rules:
+- target resolution must occur inside a scope
+- if scope is missing or unclear, scope clarification may be required first
+- no adapter or vendor inventory may define scope boundaries
+
+Scopes are the world model.
+Targets are resolved within that world model.
+
+──────────────────────────────────────────────────────────────────────────────
+CLARIFICATION IS THE ONLY LAWFUL RESPONSE TO TARGET AMBIGUITY
+──────────────────────────────────────────────────────────────────────────────
+
+When target ambiguity exists, policy outcome must be CLARIFY.
+
+Rules:
+- execution is forbidden
+- NO-OP is forbidden
+- “best guess” is forbidden
+
+The system must ask a question that reduces the ambiguity.
+
+Clarification is a safety mechanism.
+It is not optional.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A GOOD CLARIFICATION QUESTION LOOKS LIKE
+──────────────────────────────────────────────────────────────────────────────
+
+A clarification question must be:
+
+1) SPECIFIC
+It must identify the missing dimension:
+- which device?
+- which room/zone?
+- which scope?
+- which group?
+
+2) MINIMAL
+It must ask only what is required to act safely.
+Do not interrogate the user for unrelated data.
+
+3) BOUNDED
+It must present a bounded set of options when possible.
+If the option set is too large, it must ask a higher-level narrowing question first.
+
+4) NON-LEADING
+It must not smuggle a guess inside the question.
+
+Example (bad):
+- “Do you mean the bedroom lights?” (when bedroom is only one of many plausible choices)
+
+Example (good):
+- “Which lights — bedroom, kitchen, or hallway?”
+
+5) CONSISTENT WITH SCOPE LAW
+Options must be drawn from the active scope only.
+Never list targets outside the scope.
+
+Clarification is part of truth discipline.
+
+──────────────────────────────────────────────────────────────────────────────
+SESSIONS MAY REDUCE AMBIGUITY, BUT NEVER ELIMINATE THE NEED TO CLARIFY
+──────────────────────────────────────────────────────────────────────────────
+
+Sessions may provide:
+- a recent target anchor
+- a recent domain context
+- a recent parameter baseline
+
+But sessions are subject to:
+- expiry
+- scope binding
+- selection ambiguity
+
+Rules:
+- if a valid, unexpired session uniquely anchors “it,” it may be used
+- if sessions are expired, targets are ambiguous and must be clarified
+- if multiple sessions could apply, targets are ambiguous and must be clarified
+
+Sessions reduce clarification.
+They do not permit guessing.
+
+──────────────────────────────────────────────────────────────────────────────
+DEFAULTS AND “IN HERE” LOGIC
+──────────────────────────────────────────────────────────────────────────────
+
+Some environments support configured defaults:
+- a user default zone
+- a device grouping declared as “this room”
+- a presence or location signal
+
+Default resolution is permitted only when:
+- it is explicitly configured or evidenced by a lawful signal
+- it is scope-bound
+- it is auditable
+
+Default resolution must never:
+- silently pick a random room
+- invent a “current room” without a configured source
+- bypass clarification when multiple plausible defaults exist
+
+If default logic cannot be defended, clarification is required.
+
+──────────────────────────────────────────────────────────────────────────────
+AMBIGUITY MUST BE STORED EXPLICITLY
+──────────────────────────────────────────────────────────────────────────────
+
+When clarification is required, the platform must preserve the incomplete intent
+as a pending clarification session.
+
+Rules:
+- store the partial normalized intent shape (without invented targets)
+- store the missing fields
+- store candidate sets when they exist
+- store the asked question
+
+This enables merge-and-complete continuation without drift.
+
+Ambiguity is a state.
+The system must record it, not hide it.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Ambiguous target handling must:
+- treat ambiguity as a hard safety boundary
+- force CLARIFY when targets are not uniquely safe
+- generate minimal, bounded clarification questions
+- remain scope-bound
+- preserve pending state explicitly for continuation
+
+Ambiguous target handling must never:
+- guess targets under uncertainty
+- execute with unresolved scope
+- treat low-confidence fuzzy matches as authority
+- silently expand blast radius
+- allow expired sessions to anchor “it”
+
+Ashby does not guess.
+Ambiguity is where that law is tested.
+
+END OF 15.1

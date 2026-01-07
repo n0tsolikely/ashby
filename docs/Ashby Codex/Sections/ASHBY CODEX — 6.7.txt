@@ -1,0 +1,146 @@
+ASHBY CODEX — 6.7
+BRIDGES AS TEMPORARY
+
+Bridges are temporary by design.
+
+They exist to accelerate transition,
+not to define Ashby’s future.
+
+A bridge is an integration layer that connects Ashby
+to an external system whose architecture,
+assumptions, or constraints Ashby does not control.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT A BRIDGE IS
+──────────────────────────────────────────────────────────────────────────────
+
+A bridge is a compatibility layer that:
+- allows Ashby to interoperate with an existing system
+- adapts external behavior into Ashby’s execution model
+- enables incremental migration
+- limits blast radius during transition
+
+Bridges are not core integrations.
+They are not permanent dependencies.
+They are not architectural anchors.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY BRIDGES EXIST
+──────────────────────────────────────────────────────────────────────────────
+
+Real-world systems do not start clean.
+
+Existing environments may already rely on:
+- legacy platforms
+- monolithic controllers
+- opaque automation systems
+- cloud-bound ecosystems
+
+Bridges allow Ashby to enter these environments
+without forcing immediate replacement.
+
+They enable:
+- gradual adoption
+- parallel operation
+- controlled migration
+- early value delivery
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT BRIDGES MUST NEVER DO
+──────────────────────────────────────────────────────────────────────────────
+
+A bridge must never:
+- define truth
+- own state authority
+- bypass the Action Gate
+- leak foreign semantics into the engine
+- introduce implicit dependencies
+- become required for core operation
+
+If a bridge is required for Ashby to function,
+the architecture has failed.
+
+──────────────────────────────────────────────────────────────────────────────
+BRIDGES AND TRUTH
+──────────────────────────────────────────────────────────────────────────────
+
+Bridges may:
+- forward commands
+- relay telemetry
+- translate protocols
+
+Bridges may not:
+- assert success as truth
+- upgrade confidence
+- hide uncertainty
+- redefine outcomes
+
+All bridge-reported results
+are treated as evidence,
+not authority.
+
+They must pass through the same
+ActionResult → Truth Gate → State pipeline
+as any other execution path.
+
+──────────────────────────────────────────────────────────────────────────────
+DEPRECATION AND REMOVAL
+──────────────────────────────────────────────────────────────────────────────
+
+Every bridge must have an exit path.
+
+A bridge is considered successful when:
+- it can be removed
+- without changing Ashby’s behavior
+- without rewriting engine logic
+- without altering truth semantics
+
+If a bridge cannot be removed cleanly,
+it has overstayed its purpose.
+
+Bridges must be:
+- isolated
+- documented
+- replaceable
+- monitored for removal readiness
+
+──────────────────────────────────────────────────────────────────────────────
+BRIDGES VS NATIVE OWNERSHIP
+──────────────────────────────────────────────────────────────────────────────
+
+Bridges are a strategy, not an end state.
+
+Over time, Ashby may:
+- replace bridged functionality
+- introduce native integrations
+- remove legacy dependencies
+
+This transition must be deliberate.
+
+Native ownership is preferred
+when it preserves platform law.
+
+Bridges exist to buy time,
+not to redefine the platform.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSEQUENCES
+──────────────────────────────────────────────────────────────────────────────
+
+If a bridge becomes permanent,
+Ashby becomes coupled to foreign constraints.
+
+If a bridge defines behavior,
+Ashby loses sovereignty.
+
+Therefore:
+
+Bridges are always optional.
+Bridges are always removable.
+Bridges are always temporary.
+
+Ashby remains free
+because bridges are never allowed
+to become foundations.
+
+END OF 6.7

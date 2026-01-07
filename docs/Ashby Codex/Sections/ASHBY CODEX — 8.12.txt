@@ -1,0 +1,126 @@
+ASHBY CODEX — 8.12
+SUPPORT, OBSERVABILITY, AND LONGEVITY
+
+Support and observability exist to ensure Ashby remains
+understandable, debuggable, and trustworthy over time.
+
+Longevity is not accidental.
+It is engineered.
+
+──────────────────────────────────────────────────────────────────────────────
+SUPPORT AS STRUCTURAL CLARITY
+──────────────────────────────────────────────────────────────────────────────
+
+Support in Ashby is not reactive firefighting.
+
+It is enabled by:
+- explicit state
+- recorded history
+- traceable decisions
+- scoped authority
+- explainable failures
+
+A system that cannot explain itself
+cannot be supported safely.
+
+──────────────────────────────────────────────────────────────────────────────
+OBSERVABILITY AS FIRST-CLASS REQUIREMENT
+──────────────────────────────────────────────────────────────────────────────
+
+Observability is mandatory.
+
+Ashby must expose:
+- what actions were attempted
+- what execution paths were used
+- what succeeded or failed
+- what evidence exists
+- what is currently uncertain
+- what confidence has decayed
+
+Logs are not enough.
+Signals must be meaningful.
+
+──────────────────────────────────────────────────────────────────────────────
+OBSERVABILITY WITHOUT LYING
+──────────────────────────────────────────────────────────────────────────────
+
+Observability must reflect truth.
+
+It must never:
+- smooth failure
+- collapse uncertainty
+- infer success
+- reconstruct narrative
+
+Metrics that hide reality
+are worse than no metrics.
+
+──────────────────────────────────────────────────────────────────────────────
+LONGEVITY THROUGH DISCIPLINE
+──────────────────────────────────────────────────────────────────────────────
+
+Longevity emerges from discipline.
+
+Ashby survives time by:
+- resisting convenience
+- enforcing structure
+- preventing silent drift
+- governing change explicitly
+- preserving rebuildability
+
+Support tooling may change.
+Observability tooling may evolve.
+The underlying guarantees must not.
+
+──────────────────────────────────────────────────────────────────────────────
+INCIDENTS AND POST-MORTEMS
+──────────────────────────────────────────────────────────────────────────────
+
+When Ashby fails,
+failure must be analyzable.
+
+Post-mortems must be able to answer:
+- what happened
+- where it happened
+- why it happened
+- what evidence exists
+- what assumptions failed
+
+If these questions cannot be answered,
+the architecture is insufficient.
+
+──────────────────────────────────────────────────────────────────────────────
+EVOLUTION WITHOUT EROSION
+──────────────────────────────────────────────────────────────────────────────
+
+As Ashby evolves:
+- new tooling may be added
+- new diagnostics may appear
+- new interfaces may exist
+
+None may:
+- bypass truth enforcement
+- obscure state authority
+- weaken scope law
+- hide uncertainty
+
+Longevity is preserved
+by refusing erosion.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Support and observability must never:
+- define behavior
+- invent certainty
+- bypass Action-Gated Truth
+- replace explanation with metrics
+
+They exist to reveal Ashby,
+not to reshape it.
+
+This is how Ashby remains operable
+years after its creation.
+
+END OF 8.12

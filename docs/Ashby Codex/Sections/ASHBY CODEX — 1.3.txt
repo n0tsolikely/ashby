@@ -1,0 +1,86 @@
+ASHBY CODEX — 1.3
+THE CORE INSIGHT: TRUTH, STATE, AND AGENCY
+
+The core insight behind Ashby is simple to state and difficult to execute:
+
+An agent cannot be intelligent if it does not own truth.
+An agent cannot own truth if it does not own state.
+An agent cannot own state if it does not control its actions.
+
+Most systems attempt to simulate agency through language.
+Ashby implements agency through structure.
+
+In Ashby, **truth is not a conversational property**.
+Truth is an outcome of execution.
+
+An action is not “done” because it was requested.
+An action is not “done” because it was acknowledged.
+An action is only “done” when execution reports success and verification
+supports that claim.
+
+Anything else is narrative.
+
+State, in Ashby, is not a cache.
+It is not a convenience.
+It is not optional.
+
+State is Ashby’s belief about the world,
+and every belief carries confidence.
+
+Ashby distinguishes between:
+- what it knows
+- what it last knew
+- what it does not know
+
+This distinction is not cosmetic.
+It governs language, behavior, and follow-up actions.
+
+When Ashby says something is VERIFIED,
+it means there is evidence.
+
+When Ashby says something is LAST_KNOWN,
+it means an action was taken but confirmation is incomplete.
+
+When Ashby says something is UNKNOWN,
+it means the system refuses to invent certainty.
+
+Agency emerges when these concepts are enforced mechanically.
+
+Ashby is not allowed to speak past its evidence.
+Ashby is not allowed to smooth over uncertainty.
+Ashby is not allowed to pretend continuity after failure.
+
+This is what makes Ashby safe to operate in real environments.
+
+Agency also requires consequence.
+
+When Ashby acts, it records:
+- what it attempted
+- what succeeded
+- what failed
+- what remains uncertain
+
+Those records influence:
+- future decisions
+- follow-up prompts
+- clarification behavior
+- retry policy
+- user trust
+
+This feedback loop is intentional.
+
+Ashby is not trying to appear intelligent.
+Ashby is trying to be accountable.
+
+By anchoring language to execution,
+execution to state,
+and state to evidence,
+Ashby becomes something most systems are not:
+
+A system that knows when it knows,
+and knows when it does not.
+
+That is the core insight.
+Everything else in this Codex exists to protect it.
+
+END OF 1.3

@@ -1,0 +1,254 @@
+ASHBY CODEX — 8A.10
+setup/
+
+setup/ is Ashby’s provisioning and onboarding layer.
+
+It exists because “a platform that cannot be set up cleanly”
+does not get deployed, does not get maintained, and does not get resurrected.
+
+setup/ is responsible for turning a fresh install into an operational Ashby instance:
+- provisioning network and identity
+- onboarding the environment (home/business)
+- creating initial scopes and authority boundaries
+- pairing devices and adopting entities safely
+- connecting external systems (OAuth, API keys) through connectors
+- generating and storing configuration through canonical schemas
+- providing factory reset and recovery
+
+setup/ is not the engine.
+setup/ is not modules.
+setup/ is not business logic.
+
+setup/ is a controlled path for humans to “bring Ashby to life”
+without introducing hidden state, undocumented assumptions, or security leaks.
+
+──────────────────────────────────────────────────────────────────────────────
+1) PURPOSE OF setup/
+──────────────────────────────────────────────────────────────────────────────
+
+setup/ exists to guarantee:
+
+A) REPRODUCIBLE BOOTSTRAP
+A future builder can provision Ashby the same way every time.
+
+B) SAFE ONBOARDING
+Onboarding does not bypass security, scope, or identity law.
+
+C) CANONICAL CONFIGURATION
+All configuration written by setup/ conforms to schemas
+so it remains migratable and auditable.
+
+D) RECOVERY
+If things break, there is a safe way to:
+- re-provision
+- repair
+- or factory reset
+without corrupting the platform.
+
+setup/ is part of resurrection.
+A system that cannot be reinstalled cleanly cannot be resurrected.
+
+──────────────────────────────────────────────────────────────────────────────
+2) CANONICAL setup/ DIRECTORY LAYOUT (THE TEMPLATE)
+──────────────────────────────────────────────────────────────────────────────
+
+setup/
+├── wizard_server.py                        # local onboarding UI (captive portal / web)
+├── provisioning.py                         # wifi, adoption, initial runtime bootstrap
+├── pairing_flows/                          # device and service pairing flows
+│   ├── ha_adopt_entity.py                  # “found new entity, name it”
+│   ├── tuya_connect.py                     # oauth connect flow
+│   └── (placeholder)_flow.py
+└── factory_reset.py                        # safe wipe + re-provision entry point
+
+setup/ may expand, but the responsibilities must remain stable.
+
+──────────────────────────────────────────────────────────────────────────────
+3) WHAT setup/ OWNS (RESPONSIBILITIES)
+──────────────────────────────────────────────────────────────────────────────
+
+setup/ owns:
+
+A) FIRST-BOOT BOOTSTRAP
+- initialize storage
+- initialize identity/auth base
+- initialize default profiles and feature flags (if applicable)
+- verify core engine is healthy enough to proceed
+
+B) NETWORK PROVISIONING
+- connecting Ashby to network (Wi-Fi, ethernet)
+- captive portal/wizard UI for entering credentials
+- safe storage of network settings (never log credentials)
+
+C) INITIAL SCOPE CREATION
+Setup must create the first scope graph:
+- “home” / “business” root scope
+- initial rooms/areas (optional)
+- alias setup (“living room” == “lounge”)
+This must be explicit and editable later through governed tools.
+
+D) DEVICE ADOPTION / ENTITY DISCOVERY ONBOARDING
+Setup may:
+- discover devices/entities through bridges/native_vendor providers
+- present them to the user for adoption (naming, scope assignment)
+- bind them to platform identity (device_key mapping)
+
+But setup must not:
+- treat discovery output as canonical identity
+- let vendor entity IDs become Ashby’s primary keys
+
+E) CONNECTOR PROVISIONING (EXTERNAL SYSTEMS)
+Setup may run OAuth flows or API-key provisioning for connectors:
+- Gmail, Calendar, Slack, Shopify, QuickBooks, etc.
+
+Rules:
+- secrets must be stored by handle in the secret system
+- setup never retains raw secret material in logs, artifacts, or config dumps
+- the connector’s “connected state” must be verifiable and observable
+
+F) SAFETY DEFAULTS
+Setup must set conservative defaults:
+- modules disabled unless explicitly enabled by profile
+- high-impact actions require confirmation
+- automation triggers are off unless explicitly configured
+
+G) RECOVERY AND FACTORY RESET
+Setup must provide:
+- safe wipe of local storage (with explicit confirmation)
+- revocation of tokens where possible
+- reset of secrets store pointers
+- preservation of optional diagnostic bundles (sanitized) if requested
+
+setup/ is the “bring it to life” layer.
+
+──────────────────────────────────────────────────────────────────────────────
+4) WHAT setup/ MUST NEVER DO (FORBIDDEN)
+──────────────────────────────────────────────────────────────────────────────
+
+setup/ must never:
+
+- implement business logic (“lighting behavior,” “meeting logic,” etc.)
+- decide truth posture (Truth Gate is engine/)
+- write HouseState beliefs directly as “facts” (state is evidence-derived)
+- bypass policy/confirmation rules to “make setup smoother”
+- store secrets in plaintext configs
+- log secrets, OAuth codes, refresh tokens, Wi-Fi passwords
+- create hidden assumptions that are not represented in schemas
+
+setup/ is not allowed to create a “magic working state”
+that nobody can explain later.
+
+If setup/ produces configuration, it must be:
+- explicit
+- schema-validated
+- auditable
+- migratable
+
+──────────────────────────────────────────────────────────────────────────────
+5) PAIRING FLOWS (THE SAFE PATTERN)
+──────────────────────────────────────────────────────────────────────────────
+
+Pairing flows exist because different ecosystems pair differently.
+But Ashby must treat all pairing as the same class of operation:
+
+- a user-authorized process
+- that results in:
+  - capability availability
+  - identity mappings
+  - secret handles
+  - scope assignments
+
+A pairing flow must always produce an explicit artifact:
+- what was connected
+- by what method (bridge/native/vendor)
+- which scope it belongs to
+- which secret handles were created
+- which entities/devices were adopted and mapped
+
+Pairing flows must:
+- be resumable (if interrupted, no half-state that “sort of works”)
+- be idempotent where possible (repeat safely)
+- be observable (logs and correlation_id)
+- fail honestly (do not claim “connected” without verification)
+
+setup/ must not claim success just because a vendor said “ok.”
+
+──────────────────────────────────────────────────────────────────────────────
+6) IDENTITY AND DEVICE_KEY PRESERVATION (SETUP IS NOT ALLOWED TO RESET REALITY)
+──────────────────────────────────────────────────────────────────────────────
+
+Setup is the most common place systems accidentally break continuity.
+
+Rules:
+- device_key is platform-owned and stable
+- vendor IDs are mappings, not identity
+- renames do not create new device identity
+- “re-adopt” flows must attempt to match existing device_key before creating new
+- if identity cannot be resolved, setup must surface ambiguity instead of guessing
+
+The goal:
+no duplicate devices, no identity drift, no “everything changed” syndrome.
+
+──────────────────────────────────────────────────────────────────────────────
+7) SECURITY AND SECRETS HANDLING (SETUP IS A HIGH-RISK SURFACE)
+──────────────────────────────────────────────────────────────────────────────
+
+setup/ touches:
+- Wi-Fi credentials
+- OAuth flows
+- API keys
+- local admin setup
+- device adoption tokens
+
+Therefore setup/ must:
+- sanitize logs aggressively
+- store secrets only via secret handles
+- enforce least-privilege where possible
+- support token revocation and rotation flows
+- require confirmation before destructive actions (factory reset)
+
+If setup leaks secrets, the entire platform becomes unsafe to archive or export.
+
+──────────────────────────────────────────────────────────────────────────────
+8) REQUIRED TEST SURFACES FOR setup/
+──────────────────────────────────────────────────────────────────────────────
+
+setup/ must be protected by tests because it is the highest “new user pressure” zone.
+
+Minimum test categories:
+
+- fresh install bootstrap tests (no missing required config)
+- schema validation tests for all generated configs
+- secrets leak tests (logs/artifacts never contain credentials)
+- pairing flow idempotency tests (repeat safely)
+- identity continuity tests (device_key preserved across re-adopt)
+- failure honesty tests (no “connected” without verification)
+- factory reset tests (wipes correctly, requires confirmation)
+- recovery tests (resume onboarding without corrupting state)
+
+If setup is not test-protected, it becomes a bug factory and a security risk.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+setup/ must:
+- provide reproducible provisioning and onboarding
+- create initial scopes and capability maps explicitly
+- adopt devices/entities with stable device_key continuity
+- connect external systems through connectors using secret handles
+- generate schema-validated, migratable configuration
+- remain conservative by default (no unsafe automations)
+- offer recovery and factory reset safely
+- remain auditable and honest (no fake success)
+
+setup/ must never:
+- bypass core law for smooth onboarding
+- store or log secrets
+- create hidden assumptions outside schemas
+- treat vendor identity as Ashby identity
+- write platform state as “facts” without evidence
+
+setup/ is how Ashby is born safely.
+
+END OF 8A.10

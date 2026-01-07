@@ -1,0 +1,129 @@
+ASHBY CODEX — 10.5
+ADAPTER INVOCATION
+
+Adapter invocation is the moment
+Ashby attempts to affect reality.
+
+It is the boundary where
+planned intent meets execution.
+
+This boundary is strictly controlled.
+
+──────────────────────────────────────────────────────────────────────────────
+WHEN ADAPTER INVOCATION OCCURS
+──────────────────────────────────────────────────────────────────────────────
+
+Adapter invocation occurs only after:
+
+- intent has been normalized
+- policy has resolved to ACT
+- scope has been resolved
+- planning has completed
+- safety constraints are satisfied
+
+If any prerequisite is unmet,
+adapter invocation is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT IS INVOKED
+──────────────────────────────────────────────────────────────────────────────
+
+The router invokes adapters
+using ActionRequests.
+
+An ActionRequest contains:
+- the planned action
+- resolved scope identifiers
+- execution parameters
+- safety constraints
+- correlation identifiers
+
+ActionRequests describe WHAT must be attempted,
+not HOW it is performed.
+
+──────────────────────────────────────────────────────────────────────────────
+HOW ADAPTERS ARE SELECTED
+──────────────────────────────────────────────────────────────────────────────
+
+Adapter selection is capability-based.
+
+The router may select adapters based on:
+- declared capabilities
+- scope compatibility
+- availability
+- execution policy
+
+Selection must be deterministic
+and auditable.
+
+Adapters are never selected
+based on convenience or speed alone.
+
+──────────────────────────────────────────────────────────────────────────────
+INVOCATION SEMANTICS
+──────────────────────────────────────────────────────────────────────────────
+
+Invocation is fire-and-report.
+
+Once invoked:
+- the adapter attempts execution
+- the router waits for a response or timeout
+- retries may occur per policy
+- partial results are preserved
+
+Invocation does not:
+- assume success
+- alter the plan
+- upgrade confidence
+
+──────────────────────────────────────────────────────────────────────────────
+FAILURE HANDLING
+──────────────────────────────────────────────────────────────────────────────
+
+Adapter failure must be explicit.
+
+Failures include:
+- execution errors
+- timeouts
+- partial completion
+- unreachable systems
+
+The router must:
+- surface failures accurately
+- avoid masking errors
+- return all evidence
+
+Failure is evidence,
+not interpretation.
+
+──────────────────────────────────────────────────────────────────────────────
+CONCURRENCY AND SAFETY
+──────────────────────────────────────────────────────────────────────────────
+
+Multiple adapters may be invoked concurrently
+only when explicitly planned.
+
+Concurrency must:
+- respect scope boundaries
+- avoid race conditions
+- preserve evidence integrity
+
+Unplanned concurrency is forbidden.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Adapter invocation must never:
+- bypass the router
+- execute without a plan
+- modify intent
+- update state directly
+- generate user-facing language
+
+Invocation is mechanical.
+
+Meaning is assigned later,
+by the engine.
+
+END OF 10.5

@@ -1,0 +1,74 @@
+ASHBY CODEX — 6.1
+PLATFORM OVER PRODUCT
+
+Ashby is a platform, not a product.
+
+This principle is the foundation of Ashby’s long-term survivability.
+
+A product is a single expression of value:
+a bounded set of features for a bounded audience.
+
+A platform is a stable core that supports many expressions over time.
+
+Ashby is designed as a platform from the beginning.
+
+This means:
+- no single use case defines Ashby
+- no single module defines Ashby
+- no single agent defines Ashby
+- no single vendor defines Ashby
+- no single product profile defines Ashby
+
+Smart home control is a product profile.
+Meetings capture is a product profile.
+Inventory operations is a product profile.
+Creator workflows are product profiles.
+
+These are examples, not limits.
+
+The platform remains the same beneath them:
+- the engine
+- the world model
+- truth enforcement
+- state authority
+- scope governance
+- execution boundaries
+- observability and security
+
+This principle exists because product-first design
+creates irreversible coupling.
+
+When a system is designed around one product:
+- edge cases become architecture
+- exceptions harden into law
+- short-term hacks become permanent
+- future domains become expensive to integrate
+
+Ashby refuses that path.
+
+Platform-over-product design enforces:
+- modularity
+- removability
+- configuration-driven behavior
+- profile-based shipping
+- stable interfaces
+- consistent truth semantics
+
+A change that benefits one product
+but weakens the platform
+is rejected.
+
+A change that strengthens the platform
+may benefit many products,
+including ones that do not exist yet.
+
+This is how Ashby grows without forking.
+
+Ashby is not “the smart home system.”
+Ashby is not “the meetings system.”
+Ashby is not “the inventory system.”
+
+Ashby is the platform that makes those systems possible
+without redefining itself.
+
+END OF 6.1

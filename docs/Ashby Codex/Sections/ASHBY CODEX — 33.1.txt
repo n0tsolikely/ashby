@@ -1,0 +1,380 @@
+ASHBY CODEX — 33.1
+Required Build Order
+
+Rebuilding Ashby is not a feature checklist.
+It is the re-establishment of invariants in the correct dependency order.
+
+Ashby must be rebuilt as a platform body first.
+Only after the body is correct may modules, agents, bridges, and products be added.
+
+The build order below is required because later layers assume the correctness of earlier layers.
+Skipping the order creates a system that may appear functional while violating truth, state, and safety law.
+
+──────────────────────────────────────────────────────────────────────────────
+FOUNDATIONAL PRINCIPLE: BUILD THE BODY BEFORE THE ORGANS
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby’s “body” is the shared substrate:
+- engine and policy
+- router and execution orchestration
+- Truth Gate enforcement
+- HouseState authority and staleness/decay
+- scopes and identity
+- security and secrets handling
+- logging and observability
+- acceptance tests and migration discipline
+
+Modules and agents are organs:
+- they add capability surfaces (WHAT)
+- they consume the body’s execution and truth pipeline (HOW)
+- they are removable
+
+The build order therefore proceeds:
+BODY → INTERFACES → EXECUTION → MODULES → BRIDGES/NATIVE → PRODUCTS.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 0 — CANONICAL MATERIAL INTEGRITY (READ BEFORE CODE)
+──────────────────────────────────────────────────────────────────────────────
+
+Before implementing anything, establish the reconstruction corpus:
+
+0.1 Canonical structure
+- the Table of Contents (numbering, titles, ordering, part boundaries)
+
+0.2 Canonical invariants
+- preservation packs (mechanical rules)
+- architecture tree vision (folder boundaries and growth rules)
+
+0.3 Canonical law
+- platform principles
+- truth law and state law
+
+Required outcome of Phase 0:
+- the builder understands that “working code” is not sufficient;
+  only invariant-compliant code is Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 1 — REPO SKELETON AND BOUNDARY ENFORCEMENT (ARCHITECTURE FIRST)
+──────────────────────────────────────────────────────────────────────────────
+
+Create the directory skeleton and enforce dependency direction before implementing logic.
+
+Required actions:
+1.1 Instantiate the architecture tree (folders and boundaries)
+- engine/
+- scopes/
+- domain/
+- modules/
+- adapters/
+- bridges/
+- native_vendor/
+- connectors/
+- io/
+- storage/
+- packaging/
+- support/
+- tests/
+
+1.2 Enforce import boundaries early
+- engine/ must not import bridges/ or native_vendor/
+- modules/ must not import bridges/ or native_vendor/
+- domain/ must not import adapters/ or bridges/ or vendors
+- adapters/ may depend on provider implementations, but providers must be swappable
+
+1.3 Create “boundary tests”
+- automated checks that fail if forbidden dependencies appear
+  (static analysis, build rules, or explicit import allowlists)
+
+Why this phase must be first:
+- the easiest way to accidentally fork Ashby is to let execution and vendor logic
+  leak upward into meaning and policy.
+- boundary violations become harder to remove after features ship.
+
+Required outcome of Phase 1:
+- a repo that is structurally incapable of collapsing WHAT into HOW by accident.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 2 — MECHANICAL PRIMITIVES (SCHEMAS + DATA MODELS + VALIDATION)
+──────────────────────────────────────────────────────────────────────────────
+
+Implement the mechanical primitives that all later layers depend on.
+
+2.1 Config schemas
+- implement the config schema system and strict validation
+- define canonical configuration shapes for:
+  - profiles
+  - connectors
+  - provider credentials references (not secrets)
+  - routing preferences
+  - logging levels
+  - retention/redaction policies
+
+2.2 Canonical data models
+- implement canonical structures and validators for:
+  - Intent
+  - ActionRequest
+  - ActionResult
+  - verification semantics
+  - failure taxonomy
+
+2.3 Serialization and persistence shapes
+- define stable JSON representations for these models
+- ensure they are forward-compatible under migration discipline
+
+Why this phase must be early:
+- without strict schemas and data models, later behavior becomes “whatever the code happened to do.”
+- Ashby must be rebuildable from text alone; the data shapes are part of that text.
+
+Required outcome of Phase 2:
+- the system cannot accept malformed intents or produce unstructured, unverifiable execution outcomes.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 3 — OBSERVABILITY AND SECURITY (BASELINE SAFETY INFRASTRUCTURE)
+──────────────────────────────────────────────────────────────────────────────
+
+Implement the infrastructure that makes later debugging and safety possible.
+
+3.1 Logging and observability
+- correlation_id generation and propagation must exist
+- structured logs must exist for:
+  - intent normalization outcome
+  - policy outcome
+  - plan generation
+  - execution attempts
+  - evidence returned
+  - Truth Gate classification
+  - HouseState update decisions
+- log export must exist as a support capability
+
+3.2 Security and secrets handling
+- secrets must be storable and retrievable via a secret system
+- secrets must never appear in logs or artifacts
+- connectors/providers must reference secret handles, not embed credentials
+- sanitization rules must exist for errors and traces
+
+Why this phase must be early:
+- if security and logs are added later, early integrations will bake in leaks and invisible failures.
+- resurrection depends on auditability.
+
+Required outcome of Phase 3:
+- every action can be traced, and nothing sensitive leaks through the trace.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 4 — SCOPES AND IDENTITY (WORLD MODEL FOUNDATION)
+──────────────────────────────────────────────────────────────────────────────
+
+Implement the world model before device control.
+
+4.1 Scopes
+- define scope types and containment rules
+- implement scope-bound authority evaluation
+- implement scope-aware registry lookup for targets
+
+4.2 Identity
+- implement stable identity keys:
+  - device_key and/or entity_key (platform-owned)
+  - external id mappings (bridge ids, vendor ids, connector ids)
+- implement name/label handling as human aliases, not canonical identity
+
+Why this phase must precede execution:
+- execution without scope and identity becomes “commands against unknown targets.”
+- migrations become impossible if identity is not stable from the start.
+
+Required outcome of Phase 4:
+- Ashby can name what exists and bound authority to a scope without relying on any vendor’s naming.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 5 — TRUTH GATE + HOUSESTATE (REALITY AND MEMORY LAW)
+──────────────────────────────────────────────────────────────────────────────
+
+Truth and state must exist before you allow behavior to present certainty.
+
+5.1 Truth Gate enforcement
+- implement truth classes and language constraints
+- implement the rule: ActionResult is reality evidence, not narrative
+- implement forbidden phrase prevention and posture enforcement
+
+5.2 HouseState
+- implement belief storage with:
+  - confidence
+  - staleness/decay
+  - mixed reality support (partial success, contradictions)
+  - persistence and restart behavior
+
+5.3 Sync and staleness discipline
+- implement how evidence sources update HouseState
+- implement decay when evidence streams go silent
+- implement explicit UNKNOWN when reality is not currently observable
+
+Why this phase must precede product UI:
+- a UI can make lies look polished.
+- Ashby’s core promise is truth integrity, even when inconvenient.
+
+Required outcome of Phase 5:
+- the system can only speak with the certainty the evidence supports,
+  and it can persist that posture across restarts.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 6 — THE CANONICAL CONTROL PIPELINE (ENGINE + ROUTER SHAPE)
+──────────────────────────────────────────────────────────────────────────────
+
+Now implement the core operating loop.
+
+6.1 Input normalization and intent extraction
+- transport-neutral input ingestion
+- normalized Intent production
+
+6.2 Policy
+- policy must choose outcomes (ACT / CLARIFY / CONFIRM / REFUSE / CHAT)
+- policy must be consistent and auditable
+- policy must not be overridden by modules
+
+6.3 Planning
+- convert intent + context into ActionRequests
+- enforce WHAT vs HOW separation
+- enforce that plans do not contain vendor-specific execution logic
+
+6.4 Routing and adapter invocation
+- router selects adapters by capability and availability
+- adapters execute through providers and return ActionResults
+
+6.5 Truth and response construction
+- Truth Gate evaluates ActionResults and HouseState updates
+- response is constructed with correct language posture
+
+Why this phase must occur after truth/state:
+- an engine without truth/state becomes a chatbot.
+- an engine with truth/state becomes Ashby.
+
+Required outcome of Phase 6:
+- a complete closed loop where:
+  input → policy → plan → execute → evidence → truth/state → response
+  is consistent and auditable.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 7 — INTERFACE CONTRACTS AND ADAPTER SYSTEM (HOW DISCIPLINE)
+──────────────────────────────────────────────────────────────────────────────
+
+Before writing many features, lock the HOW layer discipline.
+
+7.1 Interface contracts
+- define capability contracts
+- define ActionRequest and ActionResult fields for execution attempts
+- define verification responsibility expectations
+
+7.2 Adapter system
+- implement capability-based adapter grouping
+- enforce “adapters never reason, never store memory, never decide”
+- implement offline-first preference and cloud-allowed fallback under policy
+- implement idempotency handling where required
+
+7.3 Provider isolation
+- ensure providers (bridge-backed or native) can be swapped without module changes
+- ensure providers cannot inject meaning or truth upgrades
+
+Required outcome of Phase 7:
+- execution pathways are disciplined, replaceable, and verifiable.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 8 — MINIMUM MODULE SET (PROVE THE PLATFORM)
+──────────────────────────────────────────────────────────────────────────────
+
+Now add a minimal set of modules to prove the platform loop.
+
+8.1 Choose representative modules (examples only)
+- a simple reactive module (lights-like)
+- a time-bound control module (irrigation-like)
+- a sensor-driven module (optional)
+The specific modules do not matter.
+The module pattern does.
+
+8.2 Ensure module behavior is strictly WHAT
+- modules output ActionRequests
+- modules do not call vendors
+- modules do not write HouseState directly
+
+8.3 Implement sessions where required
+- session primitives exist so modules can maintain safe multi-turn flows
+
+Required outcome of Phase 8:
+- at least one end-to-end capability works without violating invariants.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 9 — BRIDGES AND NATIVE VENDOR OWNERSHIP (SHIP WITHOUT DELEGATING MEANING)
+──────────────────────────────────────────────────────────────────────────────
+
+Only after the platform loop is correct should bridges be added.
+
+9.1 Bridge-first integration (optional early, never permanent)
+- add bridge providers (e.g., Home Assistant) behind adapter interfaces
+- maintain identity independence and evidence posture
+
+9.2 Protocol bridges
+- Zigbee and Matter (direct or via bridge) remain execution sources
+- preserve device_key stability across coordinators/fabrics
+
+9.3 Native vendor expansion
+- add native providers for high-value vendors
+- migrate gradually using the strangler strategy
+- preserve identity and behavior parity
+
+Required outcome of Phase 9:
+- breadth can be shipped without allowing bridges to become the platform.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 10 — PRODUCTS: PROFILES, FLAGS, ENTITLEMENTS (SHIP WITHOUT FORKS)
+──────────────────────────────────────────────────────────────────────────────
+
+Once the platform is proven, productization can occur.
+
+10.1 Profiles
+- declarative manifests that select modules/adapters/providers
+- must not alter truth/state law
+
+10.2 Feature flags
+- controlled rollouts and kill switches
+- must not become hidden forks
+
+10.3 Licensing and entitlements
+- gate availability at defined points
+- must never alter truth posture or safety policy categories
+
+Required outcome of Phase 10:
+- Ashby can ship as many products without becoming many Ashbys.
+
+──────────────────────────────────────────────────────────────────────────────
+PHASE 11 — ACCEPTANCE TESTS, MIGRATION, AND GOVERNANCE (KEEP IT ALIVE)
+──────────────────────────────────────────────────────────────────────────────
+
+Finally, lock longevity.
+
+11.1 Acceptance tests and harness
+- implement the harness that verifies invariants, evidence posture, and behavior parity
+- ensure every major execution surface has regression coverage
+
+11.2 Migration discipline
+- implement schema migrations and structural realignment playbooks
+- migrations must be explicit, versioned, and reversible where possible
+
+11.3 Governance hooks
+- implement Control Sync triggers and enforcement boundaries
+- prevent foundational changes from occurring as “implementation panic”
+
+Required outcome of Phase 11:
+- the platform can evolve without collapse.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+This build order must be followed because:
+- truth and state must exist before claims are made
+- identity and scopes must exist before execution can be safe
+- observability and secrets must exist before integrations scale
+- interfaces and adapter law must exist before vendor breadth is added
+- profiles must exist instead of forks if shipping is to survive
+
+A system that violates the build order may “work.”
+It will not be Ashby.
+
+END OF 33.1

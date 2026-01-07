@@ -1,0 +1,130 @@
+ASHBY CODEX — 8.1
+PURPOSE OF THE ARCHITECTURE TREE
+
+The Architecture Tree defines the physical shape of Ashby.
+
+It is not an example layout.
+It is not a suggestion.
+It is not an implementation snapshot.
+
+It is a zoning diagram that enforces
+where responsibilities may live
+and where they must never live.
+
+──────────────────────────────────────────────────────────────────────────────
+WHY THE ARCHITECTURE TREE EXISTS
+──────────────────────────────────────────────────────────────────────────────
+
+As systems grow, files accumulate.
+
+Without a strict structural model:
+- logic drifts toward convenience
+- responsibilities blur
+- core files swell
+- refactors become dangerous
+- understanding decays
+
+The Architecture Tree exists to prevent this.
+
+It defines:
+- ownership boundaries
+- dependency direction
+- allowed interactions
+- forbidden couplings
+
+If something cannot be placed cleanly
+within the Architecture Tree,
+the design is incomplete.
+
+──────────────────────────────────────────────────────────────────────────────
+THE TREE AS LAW, NOT ORGANIZATION
+──────────────────────────────────────────────────────────────────────────────
+
+The Architecture Tree is law.
+
+It enforces WHAT vs HOW separation,
+engine sanctity,
+module removability,
+and scope integrity
+through physical placement.
+
+This is intentional.
+
+By forcing structure at the filesystem level,
+Ashby makes violations visible early.
+
+A misplaced file is not cosmetic.
+It is a signal.
+
+──────────────────────────────────────────────────────────────────────────────
+THE TREE AND REBUILDABILITY
+──────────────────────────────────────────────────────────────────────────────
+
+The Architecture Tree allows Ashby
+to be rebuilt from text alone.
+
+A builder who understands the tree
+can:
+- recreate directory structure
+- infer responsibility boundaries
+- place new logic safely
+- avoid polluting the engine
+
+The tree encodes architectural intent
+in a form that survives:
+- time
+- personnel change
+- refactors
+- platform migration
+
+──────────────────────────────────────────────────────────────────────────────
+THE TREE AND GROWTH
+──────────────────────────────────────────────────────────────────────────────
+
+Growth without a tree
+creates entropy.
+
+Growth with a tree
+creates structure.
+
+As Ashby grows:
+- new domains are added
+- new modules appear
+- new execution paths emerge
+
+The tree absorbs this growth
+without changing its shape.
+
+If growth requires changing the tree,
+a Control Sync is required.
+
+──────────────────────────────────────────────────────────────────────────────
+WHAT THE ARCHITECTURE TREE IS NOT
+──────────────────────────────────────────────────────────────────────────────
+
+The Architecture Tree is not:
+- a complete inventory of files
+- a guarantee of current implementation
+- a prescription for naming conventions
+- a restriction on internal complexity
+
+It defines zones of responsibility,
+not file counts.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+No component may:
+- live outside the tree
+- violate dependency direction
+- bypass its assigned layer
+- redefine ownership by placement
+
+The Architecture Tree is how Ashby
+remains legible,
+auditable,
+and rebuildable
+as it scales.
+
+END OF 8.1

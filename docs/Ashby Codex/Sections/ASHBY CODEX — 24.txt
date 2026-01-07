@@ -1,0 +1,223 @@
+ASHBY CODEX — 24
+Preservation Pack #6 — Security & Secrets Handling
+
+This subsection embeds the corresponding Preservation Pack as a mechanical invariant.
+It is reproduced in full below to support rebuild, audit, and long-horizon continuity.
+Unless amended via Control Sync, the rules herein are treated as canonical.
+
+BEGIN PRESERVATION PACK #6
+
+ASHBY PRESERVATION PACK #6 — SECURITY, SECRETS, & SENSITIVE DATA HANDLING
+Version: 1.0
+Date: 2025-12-22
+Goal: Define strict, non-negotiable rules for how Ashby handles secrets, credentials,
+tokens, and sensitive data so the system can be safely rebuilt, deployed, and audited
+without accidental leaks or unsafe practices.
+
+This pack exists to PREVENT irreversible mistakes.
+
+──────────────────────────────────────────────────────────────────────────────
+1) CORE SECURITY PRINCIPLE
+──────────────────────────────────────────────────────────────────────────────
+Ashby must treat secrets as radioactive.
+
+Rules:
+  - Secrets are NEVER committed
+  - Secrets are NEVER printed
+  - Secrets are NEVER echoed into chat
+  - Secrets are NEVER stored in memory/state/logs
+  - Secrets are NEVER embedded in code or configs
+
+If a secret appears in a repo, the repo is considered compromised.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT COUNTS AS A SECRET
+──────────────────────────────────────────────────────────────────────────────
+The following are secrets (non-exhaustive list):
+
+- API keys
+- OAuth client secrets
+- OAuth refresh tokens
+- Device passwords
+- Vendor access keys
+- Telegram bot tokens
+- Camera credentials
+- Session cookies
+- JWTs
+- Private certificates
+- Any string that grants access or authority
+
+If it authenticates or authorizes → it is a secret.
+
+──────────────────────────────────────────────────────────────────────────────
+3) APPROVED SECRET STORAGE LOCATIONS
+──────────────────────────────────────────────────────────────────────────────
+ONLY the following are allowed:
+
+A) Environment variables
+   - Provided via OS, Docker, systemd, or shell
+   - Example: TUYA_ACCESS_KEY, TELEGRAM_BOT_TOKEN
+
+B) secrets/.env (NOT committed)
+   - Loaded at runtime
+   - Listed in .gitignore
+   - Permissions restricted (chmod 600)
+
+C) OS-level secret stores (future)
+   - system keyring
+   - vault services
+
+NOT ALLOWED:
+  - configs/*.json
+  - source code
+  - chat transcripts
+  - logs
+  - screenshots
+  - comments
+
+──────────────────────────────────────────────────────────────────────────────
+4) LOADING SECRETS (SAFE PATTERN)
+──────────────────────────────────────────────────────────────────────────────
+Recommended pattern:
+
+- At startup:
+    load env vars
+    validate presence (but not values)
+    fail fast if missing
+
+Example (pseudo):
+
+if not os.getenv("TUYA_ACCESS_KEY"):
+    raise StartupError("Missing TUYA_ACCESS_KEY")
+
+Never print the value.
+Never log the value.
+Never include it in exceptions.
+
+──────────────────────────────────────────────────────────────────────────────
+5) SECRETS IN ADAPTERS (HARD RULE)
+──────────────────────────────────────────────────────────────────────────────
+Adapters (tuya, nest, reolink) may:
+  - READ secrets at initialization
+  - HOLD secrets in memory only
+
+Adapters MUST NOT:
+  - expose secrets via return values
+  - attach secrets to ActionResult
+  - log secrets even at debug level
+
+All adapter logs must redact sensitive fields.
+
+──────────────────────────────────────────────────────────────────────────────
+6) LOGGING & REDACTION RULES
+──────────────────────────────────────────────────────────────────────────────
+All logging must assume logs may be shared.
+
+Rules:
+  - Never log full request/response payloads from vendors
+  - Never log headers containing auth
+  - Never log raw exceptions that include secrets
+
+If logging vendor errors:
+  - log error codes
+  - log failure stage
+  - log sanitized messages only
+
+Example:
+  GOOD: "Tuya command failed: timeout"
+  BAD:  "Tuya response: {access_key: ...}"
+
+──────────────────────────────────────────────────────────────────────────────
+7) CHAT & LLM SAFETY RULES
+──────────────────────────────────────────────────────────────────────────────
+Ashby must NEVER:
+  - repeat secrets back to the user
+  - summarize secrets
+  - paraphrase credentials
+  - store secrets in memory
+
+If user pastes a secret into chat:
+  - Treat it as ephemeral
+  - Do NOT acknowledge the value
+  - Respond with guidance, not repetition
+
+Example:
+  User: "My token is ABC123..."
+  Ashby: "I can’t handle secrets directly. Please store that in your env file."
+
+──────────────────────────────────────────────────────────────────────────────
+8) MEMORY & STATE SAFETY
+──────────────────────────────────────────────────────────────────────────────
+HouseState, memory stores, and snapshots MUST NOT include:
+  - secrets
+  - credentials
+  - tokens
+  - passwords
+
+Allowed:
+  - device keys (logical)
+  - last known state
+  - preferences (non-sensitive)
+
+If a secret is detected in memory/state:
+  - purge immediately
+  - rotate the compromised secret
+
+──────────────────────────────────────────────────────────────────────────────
+9) SOURCE CONTROL RULES
+──────────────────────────────────────────────────────────────────────────────
+Mandatory:
+  - .gitignore includes:
+      secrets/
+      *.env
+      runtime/
+      __pycache__/
+  - Pre-commit hooks (recommended) to scan for secrets
+
+If a secret is committed:
+  - Assume compromise
+  - Rotate immediately
+  - Rewrite history if necessary
+
+──────────────────────────────────────────────────────────────────────────────
+10) DEPLOYMENT SAFETY
+──────────────────────────────────────────────────────────────────────────────
+When deploying to new machines:
+  - Secrets are provisioned manually or via secure automation
+  - Never copied via rsync with code
+  - Never emailed or pasted into chat tools
+
+Secrets should be the LAST thing provisioned.
+
+──────────────────────────────────────────────────────────────────────────────
+11) INCIDENT RESPONSE (WHEN THINGS GO WRONG)
+──────────────────────────────────────────────────────────────────────────────
+If a secret leak is suspected:
+
+1) STOP the system
+2) Rotate the secret immediately
+3) Revoke old credentials if possible
+4) Audit logs for exposure
+5) Update secrets store
+6) Resume operation
+
+Do NOT attempt to “patch around” a leaked secret.
+
+──────────────────────────────────────────────────────────────────────────────
+12) WHY THIS PACK MATTERS
+──────────────────────────────────────────────────────────────────────────────
+Security mistakes are permanent.
+
+This pack ensures:
+  - Ashby can be open-sourced or shared safely
+  - Contributors don’t accidentally leak credentials
+  - You never have to wonder “did this get logged?”
+
+Security is not optional.
+It is structural.
+
+END OF PACK #6
+
+END PRESERVATION PACK #6
+
+END OF 24

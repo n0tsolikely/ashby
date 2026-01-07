@@ -1,0 +1,287 @@
+ASHBY CODEX — 35.3
+FUTURE-PROOF COMPLETION
+
+Future-proof completion is the definition of “done” that survives time.
+
+A system is not complete if it works only at its current size.
+Ashby is designed to expand:
+- more modules
+- more agents
+- more vendors and protocols
+- more non-physical connectors
+- more products and profiles
+- more scopes and environments
+
+Future-proof completion is achieved when growth does not require rewriting the soul.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITION: WHAT “FUTURE-PROOF” MEANS IN ASHBY
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof does not mean:
+- predicting every future feature
+- pre-building every integration
+- writing a perfect architecture that never changes
+
+Future-proof means:
+- the platform contains change
+- changes happen at permitted seams
+- the invariants remain enforceable under pressure
+- the platform can be migrated without losing continuity
+- the system stays truthful as complexity increases
+
+Future-proof completion is completeness of *constraints and seams*.
+
+──────────────────────────────────────────────────────────────────────────────
+2) THE REQUIRED SEAMS (WHERE CHANGE IS ALLOWED TO HAPPEN)
+──────────────────────────────────────────────────────────────────────────────
+
+Ashby’s future-proofing depends on stable seams.
+
+A) MODULE SEAM (WHAT EXPANDS)
+- adding/removing modules must be routine and non-destructive
+- modules remain removable
+- modules do not define truth or state
+
+B) ADAPTER / PROVIDER SEAM (HOW EXPANDS)
+- new execution paths are introduced as adapters/providers
+- providers are replaceable (bridge-backed or native)
+- routing policy selects providers; modules do not
+
+C) CONNECTOR SEAM (NON-PHYSICAL DOMAINS)
+- business domains expand via connectors, not by contaminating core
+- connector credentials remain secrets
+- connector outputs remain evidence, not truth
+
+D) PROFILE SEAM (PRODUCTIZATION)
+- new products are created by profiles
+- not by rewriting engine law
+- not by diverging truth posture
+
+E) GOVERNANCE SEAM (CONSTITUTIONAL CHANGE)
+- foundational changes route through Control Sync
+- non-foundational changes do not pretend to be constitutional
+- the Codex remains the authority for what is foundational
+
+A platform without seams becomes a god-system.
+A platform with seams remains sane.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE THREE GROWTH PRESSURES THAT DESTROY SYSTEMS
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof completion requires defenses against the three pressures that
+collapse ambitious platforms.
+
+A) VENDOR PRESSURE
+- “just let the vendor define state”
+- “just treat their API response as truth”
+- “just embed their model in our domain”
+Defense:
+- bridge outputs are evidence
+- vendor models are normalized into capabilities
+- identity is platform-owned
+
+B) PRODUCT PRESSURE
+- “just make this tier behave differently”
+- “just add a special case for enterprise”
+- “just ship a fork”
+Defense:
+- profiles over forks
+- flags as controlled rollout, not hidden divergence
+- entitlements as explicit gates, not behavioral rewrites
+
+C) SPEED PRESSURE
+- “just put it here for now”
+- “we’ll refactor later”
+- “it works”
+Defense:
+- boundary tests
+- acceptance harness
+- migration discipline
+- Truth Gate law that cannot be bypassed
+
+Future-proof completion exists only when these pressures are structurally resisted,
+not merely discouraged.
+
+──────────────────────────────────────────────────────────────────────────────
+4) MIGRATION COMPLETENESS (TIME’S INEVITABLE TAX)
+──────────────────────────────────────────────────────────────────────────────
+
+Nothing long-lived avoids migration.
+
+Future-proof completion requires:
+
+A) SCHEMA VERSIONING
+- persisted shapes must be versioned
+- version changes require explicit migrations
+
+B) IDENTITY PRESERVATION
+- device_key continuity must survive:
+  - vendor swaps
+  - bridge replacement
+  - coordinator/fabric changes
+  - renames and reorganizations
+- identity must not be “recreated” casually
+
+C) ARTIFACT LONGEVITY
+- artifacts must remain interpretable
+- retention and redaction rules must be explicit
+- exports must remain possible without leaking secrets
+
+D) STRUCTURAL REALIGNMENT PLAYBOOKS
+- the system must be able to realign state and mappings when architecture evolves
+- realignment must be auditable
+
+A future-proof platform assumes migration and is built to survive it.
+
+──────────────────────────────────────────────────────────────────────────────
+5) TEST AND HARNESS COMPLETENESS (DRIFT IS GUARANTEED OTHERWISE)
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof completion requires a harness that grows with the platform.
+
+Minimum required harness capabilities:
+- boundary enforcement tests (prevent WHAT/HOW collapse)
+- Truth Gate posture tests (prevent certainty inflation)
+- HouseState tests (decay, mixed reality, restart behavior)
+- adapter/provider conformance tests (execution evidence integrity)
+- migration tests (version transitions)
+- profile/flag/entitlement tests (no hidden forks)
+
+The harness is not “nice.”
+It is the mechanical immune system.
+
+A system without an immune system will drift until it is unrecognizable.
+
+──────────────────────────────────────────────────────────────────────────────
+6) OBSERVABILITY COMPLETENESS (FUTURE DEBUGGING)
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof completion requires the platform to explain itself under stress.
+
+Requirements:
+- correlation_id everywhere
+- provider attribution everywhere
+- policy outcomes logged
+- evidence logged (sanitized)
+- truth class decision logged
+- state update decisions logged
+- explicit staleness visibility
+
+If the system cannot explain why it acted, future maintainers will guess.
+Guessing is how invariants are accidentally rewritten.
+
+Observability prevents rewrite-by-confusion.
+
+──────────────────────────────────────────────────────────────────────────────
+7) OFFLINE COMPLETENESS (DEPENDENCY RESILIENCE)
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof completion includes offline survivability.
+
+Meaning:
+- the platform is operable without cloud dependency
+- cloud assistance is optional and policy-governed
+- offline mode does not permit lying (“unknown” is permitted, fabrication is not)
+- entitlement checks and policy must have safe offline posture
+
+Offline capability is not a feature.
+It is a resilience contract.
+
+A platform that cannot operate offline is a platform that can be held hostage.
+
+──────────────────────────────────────────────────────────────────────────────
+8) SECURITY COMPLETENESS (THE FUTURE IS ADVERSARIAL)
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof completion requires security posture that survives growth:
+
+- secrets handling is central and strict
+- logs and artifacts remain sanitized
+- least privilege is pursued where possible
+- rotation and revocation are supported
+- integrations cannot leak credentials via error surfaces
+
+Security is not separate from resurrection.
+A platform that leaks cannot be preserved as text safely.
+
+Future-proof means safe enough to archive.
+
+──────────────────────────────────────────────────────────────────────────────
+9) GOVERNANCE COMPLETENESS (KEEPING THE SOUL LOCKED)
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof completion requires governance that works under panic.
+
+Meaning:
+- Control Sync exists, is defined, and is respected
+- “panic edits” are recognized as constitutional risk
+- the Codex remains the final authority for invariants
+- change proposals can be classified:
+  - implementation change
+  - migration
+  - productization (profile/flag/entitlement)
+  - constitutional revision (Control Sync)
+
+A future-proof platform is one that knows when it is about to break itself.
+
+Governance is the last defense against slow death.
+
+──────────────────────────────────────────────────────────────────────────────
+10) THE FUTURE-PROOF COMPLETION CHECKLIST
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof completion exists only if the following are true:
+
+A) ADDING MODULES DOES NOT ALTER CORE LAW
+A new module can be added without:
+- modifying Truth Gate semantics
+- modifying HouseState semantics
+- adding vendor dependencies to modules or engine
+
+B) ADDING PROVIDERS DOES NOT ALTER MODULE MEANING
+A new provider can be added (native or bridge) without:
+- changing the intent language
+- changing module planning logic
+- changing scope or identity semantics
+
+C) MIGRATION IS EXPECTED AND SAFE
+- schema migrations are versioned and rehearsed
+- identity mapping survives migrations
+- rollback paths exist when possible
+
+D) PRODUCTIZATION DOES NOT FRACTURE THE PLATFORM
+- new products can be shipped as profiles
+- flags and entitlements are visible and audited
+- no hidden tier-specific behavior inside core
+
+E) SYSTEM BEHAVIOR IS AUDITABLE
+- support can reconstruct why something happened
+- the system can explain failures without inventing reasons
+
+If any of these cannot be proven, the system is not future-proof complete.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Future-proof completion requires:
+- stable seams for extension (modules, adapters/providers, connectors, profiles)
+- migration discipline and identity preservation
+- a growing test harness that enforces invariants
+- observability sufficient for future debugging and audit
+- offline survivability and policy-governed cloud optionality
+- strict security and secrets handling
+- governance capable of resisting panic and product pressure
+
+Future-proof completion forbids:
+- expanding by contaminating core meaning with execution details
+- allowing bridges/vendors to define identity or truth
+- shipping product forks disguised as configuration
+- relying on undocumented tribal knowledge
+- trading truth posture for perceived smoothness
+
+Ashby is complete only when it can grow without collapse.
+
+END OF 35.3

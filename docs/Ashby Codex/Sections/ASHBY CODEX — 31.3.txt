@@ -1,0 +1,328 @@
+ASHBY CODEX — 31.3
+Protocol Bridges (Zigbee, Matter)
+
+Protocol bridges are bridges.
+
+They provide device connectivity and execution through standardized protocols,
+but they are still execution infrastructure (HOW), not domain meaning (WHAT).
+
+In Ashby, Zigbee and Matter are treated as replaceable protocol execution layers.
+They may be accessed via a general bridge (such as Home Assistant) or directly
+through protocol-specific bridge providers.
+
+The defining rule remains:
+- modules do not know protocols
+- protocols do not define reality
+- protocol outputs are evidence evaluated by the Truth Gate
+
+──────────────────────────────────────────────────────────────────────────────
+1) WHY PROTOCOL BRIDGES EXIST
+──────────────────────────────────────────────────────────────────────────────
+
+Zigbee and Matter are not brands.
+They are ecosystems of devices and capabilities.
+
+Protocol bridges exist to:
+- connect to diverse devices without vendor SDK sprawl
+- provide local, offline-capable execution
+- normalize basic device control pathways
+- offer discovery and pairing flows
+- provide event-driven state changes
+
+Protocol bridges accelerate device coverage without hardcoding vendors into Ashby.
+
+──────────────────────────────────────────────────────────────────────────────
+2) PROTOCOL ≠ DOMAIN MODEL (THE BOUNDARY)
+──────────────────────────────────────────────────────────────────────────────
+
+Protocols express:
+- clusters, endpoints, attributes (Matter)
+- clusters, endpoints, commands, reports (Zigbee)
+- node ids, ieee addresses, network addresses
+- device types and descriptors
+
+Ashby domain expresses:
+- devices
+- capabilities
+- targets
+- scopes
+- state beliefs with staleness
+- policy outcomes
+
+Rule:
+- protocol-specific structures are confined to provider implementations and
+  normalization logic under bridges/.
+- no protocol data structures may leak into module meaning or engine policy.
+
+If a module starts “thinking in clusters,” architecture has failed.
+
+──────────────────────────────────────────────────────────────────────────────
+3) IDENTITY: STABLE DEVICE_KEYS OVER NETWORK IDENTIFIERS
+──────────────────────────────────────────────────────────────────────────────
+
+Protocols provide identifiers that are stable within protocol contexts,
+but not necessarily stable across fabrics/coordinators/resets.
+
+ZIGBEE IDENTIFIERS (REPRESENTATIVE):
+- IEEE address (globally unique for the radio)
+- network address (changes)
+- endpoints (per device)
+- clusters (capability surface)
+
+MATTER IDENTIFIERS (REPRESENTATIVE):
+- node id (fabric-scoped)
+- fabric id / fabric index
+- endpoints
+- clusters and attributes
+- commissioning identifiers (setup code / discriminator)
+
+Ashby identity rule:
+- Ashby device_key is the canonical identity.
+- protocol identifiers are stored as external mappings under that device_key.
+
+Additional identity rules:
+
+A) MULTI-ENTITY DEVICES
+A single device may expose multiple endpoints and clusters.
+Ashby models one device_key with multiple capabilities.
+
+B) FABRIC/COORDINATOR MIGRATION
+If a device is re-commissioned into a new Matter fabric or moved between Zigbee
+coordinators, protocol identifiers may change.
+Ashby must preserve device_key and update external mappings through explicit
+migration flows, not silent replacement.
+
+C) DEVICE FACTORY RESET
+Factory reset is an identity hazard.
+Ashby must treat it as potential identity discontinuity and require explicit
+re-binding when ambiguity exists.
+
+Identity continuity is essential for long-lived HouseState.
+
+──────────────────────────────────────────────────────────────────────────────
+4) DISCOVERY AND PAIRING (ONBOARDING AS A GOVERNED FLOW)
+──────────────────────────────────────────────────────────────────────────────
+
+Protocol onboarding is not “automatic magic.”
+It is a privileged operation that changes what exists in a scope.
+
+Rules:
+- pairing/commissioning requires explicit user confirmation
+- pairing must bind devices into a scope
+- pairing artifacts (QR codes, setup codes, network keys) are secrets and must
+  never be logged or stored in artifacts in plaintext
+- onboarding must produce auditable records:
+  - what was added
+  - when
+  - by whom
+  - under what scope
+
+Zigbee pairing (representative):
+- coordinator enters permit-join mode
+- device joins
+- endpoints/clusters discovered
+- device_key assigned
+- capability mapping produced
+
+Matter commissioning (representative):
+- controller commissions device into fabric
+- node id assigned
+- endpoints/clusters enumerated
+- device_key assigned
+- capability mapping produced
+
+Onboarding must be safe enough for product shipping, not hobby scripting.
+
+──────────────────────────────────────────────────────────────────────────────
+5) EXECUTION SEMANTICS (COMMANDS, ACKS, READBACKS)
+──────────────────────────────────────────────────────────────────────────────
+
+Protocol bridges execute actions by sending protocol commands.
+
+Critical rule:
+- a command being sent is not proof the device state changed.
+
+Canonical execution evidence sources include:
+- command acknowledgement (if available)
+- attribute readback after execution
+- event/report stream confirming state change
+- device online/offline signals
+
+ZIGBEE EXECUTION CHARACTERISTICS:
+- some commands may not be acknowledged
+- some devices report state changes asynchronously
+- routing and mesh health affect latency and reliability
+
+MATTER EXECUTION CHARACTERISTICS:
+- more consistent acknowledgement model
+- attribute subscriptions are common
+- device reachability and fabric health still matter
+
+Verification law:
+- adapters request verification posture
+- providers supply evidence
+- Truth Gate determines whether VERIFIED, LAST_KNOWN, UNKNOWN, FAILED applies
+
+Readback is preferred when feasible.
+When readback is unavailable or unreliable, posture must degrade.
+
+──────────────────────────────────────────────────────────────────────────────
+6) STATE UPDATES (REPORTS AND SUBSCRIPTIONS AS EVIDENCE)
+──────────────────────────────────────────────────────────────────────────────
+
+Protocols provide state updates:
+
+Zigbee:
+- attribute reporting (periodic or change-driven)
+- coordinator event signals
+- device availability and LQI/mesh indicators
+
+Matter:
+- attribute subscriptions
+- events
+- reachability signals
+
+Ashby consumption rules:
+
+A) EVENT-DRIVEN IS PREFERRED
+Subscriptions/reports are preferred to polling for responsiveness and energy.
+
+B) STALENESS IS TRACKED
+If subscriptions stop:
+- beliefs decay
+- VERIFIED → LAST_KNOWN over time
+- LAST_KNOWN → UNKNOWN if stale enough
+
+C) SOURCE IS RECORDED
+HouseState beliefs should record source attribution (protocol bridge) and timestamp.
+
+D) CONTRADICTIONS ARE PRESERVED
+If two evidence sources conflict (e.g., readback says OFF, report stream says ON):
+- preserve mixed reality
+- request clarification or trigger re-read
+- do not “smooth” the conflict with confident language
+
+Protocols are fast, not infallible.
+
+──────────────────────────────────────────────────────────────────────────────
+7) CAPABILITY NORMALIZATION (FROM CLUSTERS TO CAPABILITIES)
+──────────────────────────────────────────────────────────────────────────────
+
+Capability normalization is the translation layer that prevents protocol leakage.
+
+Normalization responsibilities include:
+- mapping device types and clusters into Ashby capability labels
+- mapping control surfaces into interface contract methods
+- preserving protocol-specific feature flags as metadata
+  (without requiring modules to understand them)
+
+Examples (illustrative only):
+- Zigbee OnOff cluster → capability: switchable
+- Zigbee LevelControl → capability: dimmable
+- Matter On/Off cluster → capability: switchable
+- Matter Thermostat cluster → capability: thermostat_control
+
+Normalization must be:
+- deterministic
+- auditable
+- stable over time unless revised via Control Sync
+
+Changing normalization is a behavior change.
+It must be handled carefully.
+
+──────────────────────────────────────────────────────────────────────────────
+8) COEXISTENCE WITH HOME ASSISTANT
+──────────────────────────────────────────────────────────────────────────────
+
+Home Assistant may itself operate Zigbee and Matter stacks.
+
+Ashby supports both strategies:
+
+A) HA-INDIRECT (BRIDGE-ON-BRIDGE)
+- Ashby talks to HA
+- HA talks to Zigbee/Matter
+- faster to ship, lower ownership
+- less direct control over protocol semantics
+
+B) DIRECT PROTOCOL BRIDGE (ASHBY-OWNED EXECUTION)
+- Ashby talks to Zigbee coordinator or Matter controller directly
+- better verification fidelity and routing control possible
+- higher maintenance burden
+- preferred when it provides leverage and stability
+
+Routing policy decides which provider path is used for a given device_key.
+
+The architecture must allow switching without changing module logic.
+
+──────────────────────────────────────────────────────────────────────────────
+9) SECURITY (PROTOCOL KEYS ARE CRITICAL)
+──────────────────────────────────────────────────────────────────────────────
+
+Protocol security is not optional.
+
+ZIGBEE:
+- network keys and coordinator credentials are secrets
+- joining permissions must be gated
+- coordinator access must be restricted
+
+MATTER:
+- fabric keys/certificates are secrets
+- commissioning codes are secrets
+- controller state is sensitive and must be protected
+- device attestation results may be stored only as non-secret evidence artifacts
+
+Rules:
+- secrets are stored only in secrets handling systems
+- secrets never appear in logs
+- secrets never appear in artifacts
+- backups must protect secrets and support restoration safely
+
+A protocol bridge that leaks keys compromises the entire environment.
+
+──────────────────────────────────────────────────────────────────────────────
+10) FAILURE MODES (REALITY OF PROTOCOL NETWORKS)
+──────────────────────────────────────────────────────────────────────────────
+
+Common Zigbee failures:
+- devices fall off the mesh
+- coordinator resets
+- routing instability causes delays
+- inconsistent reporting behavior across vendors
+
+Common Matter failures:
+- fabric instability during commissioning
+- device reachability changes (Wi‑Fi thread issues)
+- subscription dropouts
+- API/library drift in the Matter controller stack
+
+Canonical Ashby behaviors:
+- never claim success without evidence
+- degrade truth posture under uncertainty
+- make disconnects visible in state and language
+- keep execution attempts bounded (timeouts/retries)
+- preserve removability (protocol bridges can be disabled)
+
+Protocol reliability is managed, not assumed.
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Protocol bridges must:
+- remain in execution layers (HOW) under bridges/
+- be replaceable and isolated
+- preserve Ashby device_keys as canonical identity
+- treat protocol outputs as evidence evaluated by the Truth Gate
+- support explicit onboarding flows with permission and scope binding
+- normalize protocol structures into Ashby capabilities without leakage
+- track staleness and preserve mixed reality under contradictions
+- maintain strict secret hygiene for protocol keys and commissioning data
+
+Protocol bridges must never:
+- be referenced by modules or engine as dependencies
+- define Ashby scopes or domain meaning
+- treat acknowledgements as verified truth by default
+- leak keys, setup codes, or controller secrets through logs/artifacts
+- collapse conflicts into confident narratives
+
+END OF 31.3

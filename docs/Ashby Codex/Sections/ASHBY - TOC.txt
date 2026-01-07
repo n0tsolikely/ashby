@@ -1,0 +1,295 @@
+ASHBY CODEX
+FOUNDATIONAL SYSTEM CHARTER, VISION, AND REBUILD SPEC
+(PRINT / OFFLINE / FUTURE-PROOF EDITION)
+
+TABLE OF CONTENTS — REVISED FRAMING (FOR APPROVAL)
+
+NOTE TO READER (LOCKED):
+This Codex defines Ashby as a PLATFORM, not a snapshot in time.
+Any modules, agents, vendors, or integrations mentioned herein are
+REPRESENTATIVE EXAMPLES, NOT an exhaustive or fixed list.
+Adding new modules does NOT invalidate this Codex unless a Control Sync
+explicitly revises core law.
+
+..............................................................
+FRONT MATTER — HUMAN-READABLE (NON-TECHNICAL)
+..............................................................
+
+0. Preface & Reading Guide
+0.1 Why This Codex Exists  
+0.2 Who This Codex Is For  
+0.3 How to Use This Codex to Rebuild Ashby  
+0.4 What This Codex Is  
+0.5 What This Codex Is Not  
+0.6 Permanence, Authority, and Control Sync  
+
+..............................................................
+PART I — MANIFESTO, IDENTITY, AND STORY
+(HUMAN LAYER — NO CODE REQUIRED)
+..............................................................
+
+1. The Ashby Manifesto
+1.1 The Problem Ashby Exists to Solve  
+1.2 Why Existing Assistants Fail  
+1.3 The Core Insight: Truth, State, and Agency  
+1.4 Why Ashby Is Not “Another Assistant”  
+
+2. What Ashby Is / What Ashby Is Not
+2.1 What Ashby Is  
+2.2 What Ashby Is Not  
+2.3 Ashby as a Platform, Not a Product  
+2.4 Ashby as a Long-Lived System  
+2.5 Why Ashby Refuses to Lie
+
+3. The Story of Ashby
+3.1 Early Attempts and Failure Modes  
+3.2 The Moment “Assistant Thinking” Collapsed  
+3.3 The Birth of Action-Gated Truth  
+3.4 From Smart Home to Agentic Platform
+3.5 The End State Vision  
+
+4. The Future Ashby Is Designed To Reach
+4.1 Why This Codex Is Not “v1 Documentation”  
+4.2 Designing for Growth Without Collapse  
+4.3 Multi-Agent Futures  
+4.4 What Would Break Ashby (and Why We Prevent It)  
+4.5 The End-State Vision  
+
+5. The Twelve Ashby Commandments
+5.1 Commandments Overview  
+5.2 Commandment I — Ashby Does Not Lie  
+5.3 Commandment II — Ashby Does Not Guess  
+5.4 Commandment III — Ashby Owns Truth, Not Vendors  
+5.5 Commandment IV — Ashby Separates WHAT from HOW  
+5.6 Commandment V — Ashby Remains Removable  
+5.7 Commandment VI — Ashby Remembers  
+5.8 Commandment VII — Ashby Explains Itself  
+5.9 Commandment VIII — Ashby Survives Growth  
+5.10 Commandment IX — Ashby Is Offline-Capable  
+5.11 Commandment X — Ashby Treats Humans Safely  
+5.12 Commandment XI — Ashby Changes Only by Control Sync  
+5.13 Commandment XII — Ashby Is a Platform First  
+
+..............................................................
+PART II — CONSTITUTIONAL LAW
+(UNIVERSAL, NON-NEGOTIABLE)
+..............................................................
+
+6. Ashby Platform Principles (Constitution)
+6.1 Platform Over Product  
+6.2 The Sacred Engine  
+6.3 WHAT vs HOW (Absolute Law)  
+6.4 Scopes as the World Model  
+6.5 Action-Gated Truth  
+6.6 Removable Modules  
+6.7 Bridges as Temporary  
+6.8 Native Ownership as Strategy  
+6.9 Profiles Over Forks  
+6.10 Understandability as a Requirement  
+6.11 Control Sync Governance  
+
+..............................................................
+PART III — WORLD MODEL & REALITY LAW
+..............................................................
+
+7. Ashby World Model & Scope Law
+7.1 What a Scope Is  
+7.2 Types of Scopes (Physical, Logical, Organizational)  
+7.3 Zones as a Specialization of Scope  
+7.4 Rooms as Human Labels  
+7.5 Scope Hierarchies and Containment  
+7.6 Scope-Bound Authority and State  
+7.7 Why Adapters May Never Define Reality  
+
+..............................................................
+PART IV — ARCHITECTURE & SYSTEM SHAPE
+(STRUCTURAL LAW)
+..............................................................
+
+8. Ashby Architecture Tree Vision (COMPLETE)
+8.1 Purpose of the Architecture Tree  
+8.2 Engine (Sacred Core)  
+8.3 Cognition Subsystems  
+8.4 Truth, State, and Memory  
+8.5 Scopes and Domain Modeling  
+8.6 Modules (WHAT)  
+8.7 Adapters, Bridges, Native Vendors (HOW)  
+8.8 Connectors (Non-Physical Domains)  
+8.9 Packaging, Profiles, and Products  
+8.10 Plugins and Extension Ecosystem  
+8.11 Setup, Provisioning, and Onboarding  
+8.12 Support, Observability, and Longevity  
+
+8A. Architecture Tree — FULL DIRECTORY LAYOUT
+8A.1 engine/  
+8A.2 scopes/  
+8A.3 domain/  
+8A.4 modules/  
+8A.5 adapters/  
+8A.6 bridges/  
+8A.7 native_vendor/  
+8A.8 connectors/  
+8A.9 plugins/  
+8A.10 setup/  
+8A.11 io/  
+8A.12 storage/  
+8A.13 packaging/  
+8A.14 support/  
+8A.15 tests/  
+
+..............................................................
+PART V — CORE OPERATING LAW
+(REBUILD-FROM-SCRATCH)
+..............................................................
+
+9. Engine vs Router (Clarified)
+9.1 What the Engine Is  
+9.2 What the Router Is  
+9.3 What the Router Must Never Become  
+
+10. The Canonical Ashby Control Pipeline
+10.1 Input and Transport Neutrality  
+10.2 Intent Extraction and Normalization  
+10.3 Policy: Act vs Clarify vs Chat  
+10.4 Planning vs Execution  
+10.5 Adapter Invocation  
+10.6 ActionResult as Reality  
+10.7 Truth Gate Enforcement  
+10.8 Response Construction  
+
+..............................................................
+PART VI — DATA, STATE, AND TRUTH
+..............................................................
+
+11. Canonical Data Models
+11.1 Intent  
+11.2 ActionRequest  
+11.3 ActionResult  
+11.4 Verification Semantics  
+11.5 Failure Taxonomy  
+
+12. HouseState (State Authority)
+12.1 State as Belief  
+12.2 Confidence Levels  
+12.3 Partial Success and Mixed Reality  
+12.4 Restart and Persistence  
+12.5 User Contradiction Handling  
+12.6 Staleness and Decay  
+
+13. Action-Gated Truth Law
+13.1 VERIFIED Language  
+13.2 LAST_KNOWN Language  
+13.3 UNKNOWN Language  
+13.4 FAILED Language  
+13.5 NO-OP Handling  
+13.6 Forbidden Phrases  
+
+..............................................................
+PART VII — HUMAN INTERACTION SYSTEMS
+..............................................................
+
+14. Sessions and Continuity
+14.1 Why Sessions Exist  
+14.2 Lights-Style Sessions (Example Archetype)  
+14.3 Time-Bound Sessions (Irrigation Archetype)  
+14.4 Comfort Sessions  
+14.5 Pending Clarification Sessions  
+14.6 Session Expiry and Safety  
+
+15. Ambiguity, Clarification, and Natural Language
+15.1 Ambiguous Targets  
+15.2 Contextual Phrases  
+15.3 Merge-and-Complete Flow  
+15.4 Commands vs Vibe Statements  
+
+..............................................................
+PART VIII — MODULE SYSTEM (WHAT)
+(NON-EXHAUSTIVE, EXAMPLE-DRIVEN)
+..............................................................
+
+16. What a Module Is
+16.1 Definition and Responsibilities  
+16.2 Removability Guarantees  
+16.3 Module Lifecycle  
+
+17. Module Archetypes (Representative Examples)
+17.1 Simple Reactive Modules (Lights-Like)  
+17.2 Time-Bound Control Modules (Irrigation-Like)  
+17.3 Sensor-Driven Modules  
+17.4 Heavy Compute Modules (Meetings-Like)  
+17.5 Business Domain Modules (Inventory-Like)  
+
+..............................................................
+PART IX — EXECUTION SYSTEM (HOW)
+..............................................................
+
+18. Adapter System Law
+18.1 Capability-Based Adapters  
+18.2 Interface Contracts  
+18.3 Offline-First Preference  
+18.4 Cloud-Allowed Fallback  
+18.5 Verification Responsibility  
+18.6 What Adapters Must Never Do  
+
+..............................................................
+PART X — PRESERVATION PACKS (MECHANICAL INVARIANTS)
+..............................................................
+
+19. Preservation Pack #1 — Config Schemas  
+20. Preservation Pack #2 — Canonical Data Models  
+21. Preservation Pack #3 — Truth Gate & Response Constraints  
+22. Preservation Pack #4 — Acceptance Tests & Harness  
+23. Preservation Pack #5 — Migration & Structural Realignment  
+24. Preservation Pack #6 — Security & Secrets Handling  
+25. Preservation Pack #7 — Logging & Observability  
+26. Preservation Pack #8 — Interface & Execution Contracts  
+27. Preservation Pack #9 — HouseState Sync & Staleness  
+28. Preservation Pack #10 — Multi-Agent & Agent Integration  
+
+..............................................................
+PART XI — AGENTS, BRIDGES, AND PRODUCTIZATION
+..............................................................
+
+29. Multi-Agent Coexistence
+29.1 Ashby as the Body  
+29.2 Agents as Organs  
+29.3 Shared Truth and State  
+
+30. Representative Agents (Examples)
+30.1 Meetings-Style Agent (Stuart-Like)  
+30.2 Inventory-Style Agent (Tori-Like)  
+
+31. Bridges and Native Ownership
+31.1 Bridge-First Strategy  
+31.2 Home Assistant as Strangler Layer  
+31.3 Protocol Bridges (Zigbee, Matter)  
+31.4 Native Vendor Expansion  
+
+32. Profiles, Products, and Shipping
+32.1 Profiles vs Forks  
+32.2 Feature Flags  
+32.3 Licensing and Entitlements  
+
+..............................................................
+PART XII — REBUILD, GOVERNANCE, AND COMPLETION
+..............................................................
+
+33. Rebuilding Ashby from Scratch
+33.1 Required Build Order  
+33.2 What Must Exist First  
+33.3 What Must Never Be Skipped  
+
+34. Control Sync and Governance
+34.1 When Control Sync Is Required  
+34.2 When It Is Forbidden  
+
+35. Definition of Completion
+35.1 Technical Completion  
+35.2 Conceptual Completion  
+35.3 Future-Proof Completion  
+
+36. Final Statement
+36.1 The Promise of Ashby  
+36.2 What Ashby Refuses to Become  
+
+END OF TABLE OF CONTENTS

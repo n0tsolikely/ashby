@@ -1,0 +1,274 @@
+ASHBY CODEX — 35.2
+CONCEPTUAL COMPLETION
+
+Technical completion means the platform works as code.
+Conceptual completion means the platform survives as understanding.
+
+A system can be technically complete and still be non-resurrectable:
+- if core terms are vague
+- if critical assumptions exist only in a founder’s head
+- if “how to reason about changes” is tribal knowledge
+- if the same word means different things in different places
+- if core constraints are felt but not stated
+
+Conceptual completion is achieved when Ashby can be rebuilt and extended correctly
+by people who did not invent it, because the *meaning* is fully preserved.
+
+──────────────────────────────────────────────────────────────────────────────
+1) DEFINITION: WHAT “CONCEPTUAL COMPLETION” IS
+──────────────────────────────────────────────────────────────────────────────
+
+Conceptual completion exists when the following are true:
+
+A) THE PLATFORM HAS A STABLE INTERNAL LANGUAGE
+- terms are defined
+- terms are used consistently
+- terms do not shift meaning across sections or implementations
+
+B) THE PLATFORM HAS A STABLE MENTAL MODEL
+A competent reader can answer, without guessing:
+- what Ashby is
+- what Ashby is not
+- where truth comes from
+- where state lives
+- how action is gated
+- how uncertainty is represented
+- how removability works
+- how growth is permitted without collapse
+
+C) THE PLATFORM’S CRITICAL JUDGMENTS ARE EXTERNALIZED
+Meaning:
+- the “why” behind laws is explicit
+- the failure modes that created each law are explicit
+- the decision rules for change are explicit
+
+D) THE PLATFORM DOES NOT REQUIRE TRIBAL KNOWLEDGE
+If correct operation depends on:
+- “the right kind of engineer”
+- “the original author being around”
+- “remembering how we did it last time”
+then the platform is not conceptually complete.
+
+Conceptual completion is not additional features.
+It is *the removal of hidden assumptions*.
+
+──────────────────────────────────────────────────────────────────────────────
+2) WHAT MUST BE CONCEPTUALLY UNAMBIGUOUS (NON-NEGOTIABLE TERMS)
+──────────────────────────────────────────────────────────────────────────────
+
+The following primitives must be defined so clearly that different builders
+would produce the same architecture when implementing them.
+
+A) WHAT vs HOW
+- WHAT: meaning, goals, and decisions expressed as ActionRequests
+- HOW: execution, translation, and evidence production through adapters/providers
+- the separation must be definitional, not stylistic
+
+B) EVIDENCE
+- what constitutes evidence
+- what does not
+- how evidence is represented (ActionResult)
+- how evidence is stored and referenced
+
+C) TRUTH CLASSES
+- VERIFIED / LAST_KNOWN / UNKNOWN / FAILED
+- what each means
+- what language each permits
+- what language each forbids
+
+D) HOUSESTATE
+- what it stores (belief, not raw reality)
+- how it decays
+- how it handles mixed reality
+- what it must never store (large artifacts, transcripts, raw logs)
+
+E) SCOPES
+- what a scope is
+- containment rules
+- scope-bound authority
+- why scope is required for meaning and safety
+
+F) MODULES, AGENTS, CONNECTORS
+- modules are removable “organs” of capability meaning
+- agents are specialized modules with deeper workflows and artifacts
+- connectors integrate non-physical domains
+- none of these may alter core truth or state law
+
+G) POLICY OUTCOMES
+- ACT / CLARIFY / CONFIRM / REFUSE / CHAT
+- how each is chosen
+- what each implies about execution permission and language posture
+
+If any of these are “hand-wavy,” resurrection becomes interpretation.
+
+Conceptual completion means no interpretation is required.
+
+──────────────────────────────────────────────────────────────────────────────
+3) THE TWO CORE QUESTIONS EVERY BUILDER MUST BE ABLE TO ANSWER
+──────────────────────────────────────────────────────────────────────────────
+
+A) “WHERE DOES TRUTH COME FROM?”
+Correct answer shape:
+- from ActionResult evidence, evaluated by the Truth Gate,
+  optionally cross-checked by readbacks and state observations
+- never from conversational fluency
+- never from a vendor claim
+- never from a bridge’s optimistic acknowledgement
+
+B) “WHERE DOES STATE LIVE?”
+Correct answer shape:
+- in HouseState, as a scoped belief store
+- never in module-internal caches as authority
+- never in agent memory as competing truth
+- never in bridge registries as canonical identity
+
+If a builder cannot answer these two questions precisely,
+the platform is not conceptually complete.
+
+──────────────────────────────────────────────────────────────────────────────
+4) CONCEPTUAL COMPLETION REQUIRES “LAW / MECHANISM / EXAMPLE”
+──────────────────────────────────────────────────────────────────────────────
+
+Every major concept must be represented in three layers:
+
+A) LAW (INVARIANT)
+- what must always be true
+- what must never be allowed
+- what constitutes violation
+
+B) MECHANISM (HOW IT IS ENFORCED)
+- architecture boundaries
+- schemas
+- Truth Gate constraints
+- test harness rules
+- migration discipline
+- logging and observability hooks
+
+C) EXAMPLE (REPRESENTATIVE ONLY)
+- a worked example showing correct usage
+- clearly framed as illustrative and replaceable
+- never treated as authoritative inventory
+
+A platform without law is vague.
+A platform without mechanism is aspirational.
+A platform without examples is easy to misread.
+
+Conceptual completion requires all three.
+
+──────────────────────────────────────────────────────────────────────────────
+5) “NO SILENT CONVENTIONS” (A REQUIREMENT)
+──────────────────────────────────────────────────────────────────────────────
+
+Anything the system depends on must be one of:
+
+- a schema rule
+- a boundary rule
+- a test
+- an explicit written law
+
+If a rule exists only as habit, it will die under pressure.
+
+Examples of silent conventions that must be made explicit:
+- “adapters shouldn’t do that”
+- “we usually prefer offline”
+- “don’t store that in state”
+- “don’t mention that as verified”
+- “avoid vendor coupling”
+
+Ashby treats silent conventions as incomplete design.
+Conceptual completion eliminates them.
+
+──────────────────────────────────────────────────────────────────────────────
+6) MISINTERPRETATION MINIMIZATION (PRINT-EDITION STANDARD)
+──────────────────────────────────────────────────────────────────────────────
+
+The Codex must be readable as a printed artifact by someone outside the original team.
+
+That requires:
+- explicit definitions
+- explicit dependency direction
+- explicit lists of forbidden moves
+- explicit failure mode descriptions
+- explicit boundaries between:
+  - invariants vs examples
+  - platform shape vs instance inventory
+  - permission vs reality
+  - evidence vs narrative
+
+This is not stylistic.
+It is the difference between “rebuild” and “reinvent.”
+
+──────────────────────────────────────────────────────────────────────────────
+7) THE “COMPLETION QUESTIONS” CHECKLIST
+──────────────────────────────────────────────────────────────────────────────
+
+Conceptual completion exists only if a reader can answer yes to all of the following.
+
+A) LANGUAGE AND DEFINITIONS
+- Do core terms have one meaning everywhere?
+- Are synonyms avoided in favor of stable vocabulary?
+- Are contradictory phrases eliminated?
+
+B) CONTROL LOOP UNDERSTANDING
+- Can a reader describe the full pipeline:
+  input → intent → policy → plan → execute → evidence → truth/state → response?
+- Can a reader tell where each responsibility lives?
+
+C) FAILURE POSTURE UNDERSTANDING
+- Can a reader predict system behavior under:
+  - offline conditions
+  - stale evidence streams
+  - partial execution
+  - contradictory readbacks
+  - provider outages
+- Can a reader predict how the system speaks under each truth class?
+
+D) EXTENSION UNDERSTANDING
+- Can a reader add a new module without touching engine law?
+- Can a reader add a new provider without touching module meaning?
+- Can a reader add a new profile without altering truth/state semantics?
+
+E) CHANGE GOVERNANCE UNDERSTANDING
+- Can a reader tell what requires Control Sync?
+- Can a reader tell what is forbidden to route through Control Sync?
+- Can a reader identify “constitutional vs implementation” changes?
+
+If any answer is no, the platform may still be code-complete,
+but it is not conceptually complete.
+
+──────────────────────────────────────────────────────────────────────────────
+8) THE TRUE OUTPUT OF CONCEPTUAL COMPLETION
+──────────────────────────────────────────────────────────────────────────────
+
+The final output is not a document bundle.
+It is a *shared invariant mindset* that can be reconstructed from text.
+
+When conceptually complete:
+- the system’s meaning survives staff turnover
+- the platform can be re-implemented independently and converge
+- drift is detectable because the definition is clear
+- panic changes are recognized as constitutional violations
+- product pressure becomes profiles instead of forks
+
+Conceptual completion is the death of “only the founder knows.”
+
+──────────────────────────────────────────────────────────────────────────────
+ABSOLUTE CONSTRAINTS
+──────────────────────────────────────────────────────────────────────────────
+
+Conceptual completion requires:
+- explicit definitions of core terms (truth, state, scope, WHAT/HOW)
+- consistent language across the Codex
+- explicit failure mode descriptions
+- explicit mechanisms of enforcement
+- representative examples framed as replaceable
+- elimination of tribal knowledge dependencies
+
+Conceptual completion forbids:
+- relying on “implied meaning”
+- permitting multiple definitions of the same primitive
+- silent conventions that are not enforceable
+- allowing vendor/bridge worldview to become conceptual truth
+- allowing “it works” to stand in for “it is understood”
+
+END OF 35.2
