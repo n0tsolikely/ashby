@@ -1,0 +1,266 @@
+./
+├── archive/
+├── ashby/
+│   ├── brain/
+│   │   ├── memory/
+│   │   │   ├── __init__.py
+│   │   │   └── memory.py
+│   │   ├── nlu/
+│   │   │   ├── examples/
+│   │   │   │   └── nlu_lights_comfort_eg.txt
+│   │   │   ├── __init__.py
+│   │   │   ├── gpt_nlu.py
+│   │   │   ├── intent_schema.py
+│   │   │   ├── local_nlu.py
+│   │   │   └── nlu_manager.py
+│   │   ├── sessions/
+│   │   │   ├── __init__.py
+│   │   │   ├── comfort.py
+│   │   │   └── lighting.py
+│   │   ├── __init__.py
+│   │   └── ash_core.py
+│   ├── capabilities/
+│   │   ├── comfort/
+│   │   │   ├── __init__.py
+│   │   │   └── handler.py
+│   │   ├── lights/
+│   │   │   ├── __init__.py
+│   │   │   └── handler.py
+│   │   └── __init__.py
+│   ├── control/
+│   │   ├── __init__.py
+│   │   ├── device_control.py
+│   │   └── lights_tuya.py
+│   ├── core/
+│   │   ├── truth/
+│   │   │   ├── __init__.py
+│   │   │   ├── evidence.py
+│   │   │   ├── judge.py
+│   │   │   └── policy.py
+│   │   ├── __init__.py
+│   │   ├── context_snapshot.py
+│   │   ├── module_registry.py
+│   │   ├── normalize.py
+│   │   ├── profile.py
+│   │   ├── results.py
+│   │   ├── router.py
+│   │   ├── safe_chat.py
+│   │   └── truth_gate.py
+│   ├── devices/
+│   │   ├── __init__.py
+│   │   ├── ashby_devices.py
+│   │   └── device_manager.py
+│   ├── interfaces/
+│   │   ├── __init__.py
+│   │   └── storage.py
+│   ├── storage/
+│   │   ├── __init__.py
+│   │   ├── local_fs.py
+│   │   └── paths.py
+│   └── __init__.py
+├── configs/
+│   └── .gitkeep
+├── docs/
+│   └── Ashby Codex/
+│       ├── Sections/
+│       │   ├── ASHBY - TOC.txt
+│       │   ├── ASHBY CODEX — 0.1.txt
+│       │   ├── ASHBY CODEX — 0.2.txt
+│       │   ├── ASHBY CODEX — 0.3.txt
+│       │   ├── ASHBY CODEX — 0.4.txt
+│       │   ├── ASHBY CODEX — 0.5.txt
+│       │   ├── ASHBY CODEX — 0.6.txt
+│       │   ├── ASHBY CODEX — 1.1.txt
+│       │   ├── ASHBY CODEX — 1.2.txt
+│       │   ├── ASHBY CODEX — 1.3.txt
+│       │   ├── ASHBY CODEX — 1.4.txt
+│       │   ├── ASHBY CODEX — 10.1.txt
+│       │   ├── ASHBY CODEX — 10.2.txt
+│       │   ├── ASHBY CODEX — 10.3.txt
+│       │   ├── ASHBY CODEX — 10.4.txt
+│       │   ├── ASHBY CODEX — 10.5.txt
+│       │   ├── ASHBY CODEX — 10.6.txt
+│       │   ├── ASHBY CODEX — 10.7.txt
+│       │   ├── ASHBY CODEX — 10.8.txt
+│       │   ├── ASHBY CODEX — 11.1.txt
+│       │   ├── ASHBY CODEX — 11.2.txt
+│       │   ├── ASHBY CODEX — 11.3.txt
+│       │   ├── ASHBY CODEX — 11.4.txt
+│       │   ├── ASHBY CODEX — 11.5.txt
+│       │   ├── ASHBY CODEX — 12.1.txt
+│       │   ├── ASHBY CODEX — 12.4.txt
+│       │   ├── ASHBY CODEX — 12.5.txt
+│       │   ├── ASHBY CODEX — 12.6.txt
+│       │   ├── ASHBY CODEX — 13.1.txt
+│       │   ├── ASHBY CODEX — 13.2.txt
+│       │   ├── ASHBY CODEX — 13.3.txt
+│       │   ├── ASHBY CODEX — 13.4.txt
+│       │   ├── ASHBY CODEX — 13.5.txt
+│       │   ├── ASHBY CODEX — 13.6.txt
+│       │   ├── ASHBY CODEX — 14.1.txt
+│       │   ├── ASHBY CODEX — 14.2.txt
+│       │   ├── ASHBY CODEX — 14.3.txt
+│       │   ├── ASHBY CODEX — 14.4.txt
+│       │   ├── ASHBY CODEX — 14.5.txt
+│       │   ├── ASHBY CODEX — 14.6.txt
+│       │   ├── ASHBY CODEX — 15.1.txt
+│       │   ├── ASHBY CODEX — 15.2.txt
+│       │   ├── ASHBY CODEX — 15.3.txt
+│       │   ├── ASHBY CODEX — 15.4.txt
+│       │   ├── ASHBY CODEX — 16.1.txt
+│       │   ├── ASHBY CODEX — 16.2.txt
+│       │   ├── ASHBY CODEX — 16.3.txt
+│       │   ├── ASHBY CODEX — 17.1.txt
+│       │   ├── ASHBY CODEX — 17.2.txt
+│       │   ├── ASHBY CODEX — 17.3.txt
+│       │   ├── ASHBY CODEX — 17.4.txt
+│       │   ├── ASHBY CODEX — 17.5.txt
+│       │   ├── ASHBY CODEX — 18.1.txt
+│       │   ├── ASHBY CODEX — 18.2.txt
+│       │   ├── ASHBY CODEX — 18.3.txt
+│       │   ├── ASHBY CODEX — 18.4.txt
+│       │   ├── ASHBY CODEX — 18.5.txt
+│       │   ├── ASHBY CODEX — 18.6.txt
+│       │   ├── ASHBY CODEX — 19.txt
+│       │   ├── ASHBY CODEX — 2.1.txt
+│       │   ├── ASHBY CODEX — 2.2.txt
+│       │   ├── ASHBY CODEX — 2.3.txt
+│       │   ├── ASHBY CODEX — 2.4.txt
+│       │   ├── ASHBY CODEX — 2.5.txt
+│       │   ├── ASHBY CODEX — 20.txt
+│       │   ├── ASHBY CODEX — 21.txt
+│       │   ├── ASHBY CODEX — 22.txt
+│       │   ├── ASHBY CODEX — 23.txt
+│       │   ├── ASHBY CODEX — 24.txt
+│       │   ├── ASHBY CODEX — 25.txt
+│       │   ├── ASHBY CODEX — 26.txt
+│       │   ├── ASHBY CODEX — 27.txt
+│       │   ├── ASHBY CODEX — 28.txt
+│       │   ├── ASHBY CODEX — 29.1.txt
+│       │   ├── ASHBY CODEX — 29.2.txt
+│       │   ├── ASHBY CODEX — 29.3.txt
+│       │   ├── ASHBY CODEX — 3.1.txt
+│       │   ├── ASHBY CODEX — 3.2.txt
+│       │   ├── ASHBY CODEX — 3.3.txt
+│       │   ├── ASHBY CODEX — 3.4.txt
+│       │   ├── ASHBY CODEX — 3.5.txt
+│       │   ├── ASHBY CODEX — 30.1.txt
+│       │   ├── ASHBY CODEX — 30.2.txt
+│       │   ├── ASHBY CODEX — 31.1.txt
+│       │   ├── ASHBY CODEX — 31.2.txt
+│       │   ├── ASHBY CODEX — 31.3.txt
+│       │   ├── ASHBY CODEX — 31.4.txt
+│       │   ├── ASHBY CODEX — 32.1.txt
+│       │   ├── ASHBY CODEX — 32.2.txt
+│       │   ├── ASHBY CODEX — 32.3.txt
+│       │   ├── ASHBY CODEX — 33.1.txt
+│       │   ├── ASHBY CODEX — 33.2.txt
+│       │   ├── ASHBY CODEX — 33.3.txt
+│       │   ├── ASHBY CODEX — 34.1.txt
+│       │   ├── ASHBY CODEX — 34.2.txt
+│       │   ├── ASHBY CODEX — 35.1.txt
+│       │   ├── ASHBY CODEX — 35.2.txt
+│       │   ├── ASHBY CODEX — 35.3.txt
+│       │   ├── ASHBY CODEX — 36.1.txt
+│       │   ├── ASHBY CODEX — 36.2.txt
+│       │   ├── ASHBY CODEX — 4.1.txt
+│       │   ├── ASHBY CODEX — 4.2.txt
+│       │   ├── ASHBY CODEX — 4.3.txt
+│       │   ├── ASHBY CODEX — 4.4.txt
+│       │   ├── ASHBY CODEX — 4.5.txt
+│       │   ├── ASHBY CODEX — 5.1.txt
+│       │   ├── ASHBY CODEX — 5.10.txt
+│       │   ├── ASHBY CODEX — 5.11.txt
+│       │   ├── ASHBY CODEX — 5.12.txt
+│       │   ├── ASHBY CODEX — 5.13.txt
+│       │   ├── ASHBY CODEX — 5.2.txt
+│       │   ├── ASHBY CODEX — 5.3.txt
+│       │   ├── ASHBY CODEX — 5.4.txt
+│       │   ├── ASHBY CODEX — 5.5.txt
+│       │   ├── ASHBY CODEX — 5.6.txt
+│       │   ├── ASHBY CODEX — 5.7.txt
+│       │   ├── ASHBY CODEX — 5.8.txt
+│       │   ├── ASHBY CODEX — 5.9.txt
+│       │   ├── ASHBY CODEX — 6.1.txt
+│       │   ├── ASHBY CODEX — 6.10.txt
+│       │   ├── ASHBY CODEX — 6.11.txt
+│       │   ├── ASHBY CODEX — 6.2.txt
+│       │   ├── ASHBY CODEX — 6.3.txt
+│       │   ├── ASHBY CODEX — 6.4.txt
+│       │   ├── ASHBY CODEX — 6.5.txt
+│       │   ├── ASHBY CODEX — 6.6.txt
+│       │   ├── ASHBY CODEX — 6.7.txt
+│       │   ├── ASHBY CODEX — 6.8.txt
+│       │   ├── ASHBY CODEX — 6.9.txt
+│       │   ├── ASHBY CODEX — 7.1.txt
+│       │   ├── ASHBY CODEX — 7.2.txt
+│       │   ├── ASHBY CODEX — 7.3.txt
+│       │   ├── ASHBY CODEX — 7.4.txt
+│       │   ├── ASHBY CODEX — 7.5.txt
+│       │   ├── ASHBY CODEX — 7.6.txt
+│       │   ├── ASHBY CODEX — 7.7.txt
+│       │   ├── ASHBY CODEX — 8.1.txt
+│       │   ├── ASHBY CODEX — 8.10.txt
+│       │   ├── ASHBY CODEX — 8.11.txt
+│       │   ├── ASHBY CODEX — 8.12.txt
+│       │   ├── ASHBY CODEX — 8.2.txt
+│       │   ├── ASHBY CODEX — 8.3.txt
+│       │   ├── ASHBY CODEX — 8.4.txt
+│       │   ├── ASHBY CODEX — 8.5.txt
+│       │   ├── ASHBY CODEX — 8.6.txt
+│       │   ├── ASHBY CODEX — 8.7.txt
+│       │   ├── ASHBY CODEX — 8.8.txt
+│       │   ├── ASHBY CODEX — 8.9.txt
+│       │   ├── ASHBY CODEX — 8A.1.txt
+│       │   ├── ASHBY CODEX — 8A.10.txt
+│       │   ├── ASHBY CODEX — 8A.11.txt
+│       │   ├── ASHBY CODEX — 8A.12.txt
+│       │   ├── ASHBY CODEX — 8A.13.txt
+│       │   ├── ASHBY CODEX — 8A.14.txt
+│       │   ├── ASHBY CODEX — 8A.15.txt
+│       │   ├── ASHBY CODEX — 8A.2.txt
+│       │   ├── ASHBY CODEX — 8A.3.txt
+│       │   ├── ASHBY CODEX — 8A.4.txt
+│       │   ├── ASHBY CODEX — 8A.5.txt
+│       │   ├── ASHBY CODEX — 8A.6.txt
+│       │   ├── ASHBY CODEX — 8A.7.txt
+│       │   ├── ASHBY CODEX — 8A.8.txt
+│       │   ├── ASHBY CODEX — 8A.9.txt
+│       │   ├── ASHBY CODEX — 9.1.txt
+│       │   ├── ASHBY CODEX — 9.2.txt
+│       │   └── ASHBY CODEX — 9.3.txt
+│       └── ASHBY CODEX FULL.txt
+├── io/
+│   ├── cli/
+│   │   └── ashby_interactive.py
+│   └── telegram/
+│       └── ashby_telegram_control.py
+├── memory/
+│   └── users/
+│       ├── .gitkeep
+│       ├── 8218562397.json
+│       └── local_terminal.json
+├── runtime/
+│   ├── cache/
+│   │   └── .gitkeep
+│   ├── logs/
+│   │   └── .gitkeep
+│   └── memory/
+│       └── users/
+│           ├── .gitkeep
+│           ├── 8218562397.json
+│           └── local_terminal.json
+├── scripts/
+│   ├── ashby_cast.py
+│   ├── ashby_nest_set.py
+│   └── ashby_tuya_test.py
+├── tests/
+│   ├── test_module_registry_smoke.py
+│   ├── test_profile_gate_smoke.py
+│   ├── test_results_smoke.py
+│   ├── test_storage_adapter_smoke.py
+│   └── test_truth_gate_spine_smoke.py
+├── .gitignore
+└── ASHBY_REPO_TREE.txt
+
+33 directories, 231 files
