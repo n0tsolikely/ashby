@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Stuart</title>
+<link rel="stylesheet" href="/static/css/app.css"/>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+<div class="sidebar-header">History</div>
+<ul class="thread-list">
+<li class="active">Session 1</li>
+<li>Session 0</li>
+</ul>
+</aside>
+<main class="main">
+<header class="topbar">
+<select><option>Meeting</option><option>Journal</option></select>
+<select><option>Default</option></select>
+</header>
+<section class="chat">
+<div class="bubble user">Hey Stuart, summarize this meeting.</div>
+<div class="bubble assistant">Sure. Upload the audio when ready.</div>
+</section>
+<footer class="inputbar">
+<label class="attach">+<input id="file-input" type="file" hidden/></label>
+<input class="prompt" placeholder="Type a message…"/>
+<button class="send">➤</button>
+</footer>
+</main>
+</div>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

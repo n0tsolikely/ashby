@@ -14,15 +14,18 @@ archive/venvs/
 /memory/
 *.log
 
-# Secrets: ignore real, allow redacted placeholders
-secrets/*.env
-secrets/env.py
-!secrets/*REDACTED*.env
-!secrets/*REDACTED*.py
-
 !/runtime/**/.gitkeep
 !/memory/**/.gitkeep
 
 # OS/editor junk
 .DS_Store
 Thumbs.db
+
+# Windows NTFS ADS junk from Explorer copies
+*:Zone.Identifier
+Zone.Identifier
+
+# Stuart runtime artifacts (NEVER COMMIT)
+StuartRuntime/
+**/*.m4a
+**/*.jsonl

@@ -1,0 +1,10 @@
+ACCESS_ID = "REDACTED"
+ACCESS_KEY = "REDACTED"
+
+USERNAME = "REDACTED"
+PASSWORD = "REDACTED"
+
+
+ENDPOINT = "https://openapi.tuyaus.com"  # Western America
+
+TELEGRAM_TOKEN = "REDACTED"
