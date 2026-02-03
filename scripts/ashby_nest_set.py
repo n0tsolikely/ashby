@@ -4,7 +4,7 @@ import sys
 
 # Load env from file
 env = {}
-with open("secrets/ashby_nest.env") as f:
+with open("secrets_store/ashby_nest.env") as f:
     for line in f:
         line = line.strip()
         if not line or line.startswith("#"):

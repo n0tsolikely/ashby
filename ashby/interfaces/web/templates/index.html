@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Stuart — Web Door</title>
+  <link rel="stylesheet" href="/static/app.css"/>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">Stuart</div>
+      <div class="sessions" id="sessions"></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <select id="modeSelect">
+            <option value="" selected disabled>Mode</option>
+          </select>
+
+          <select id="templateSelect" disabled>
+            <option value="" selected disabled>Template</option>
+          </select>
+        </div>
+      </header>
+
+      <section class="chat" id="chat"></section>
+
+      <footer class="composer">
+        <button class="icon-btn" id="attachBtn" title="Attach file (later)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+
+        <input id="msgInput" type="text" placeholder="Message Stuart..." autocomplete="off"/>
+
+        <button class="icon-btn primary" id="sendBtn" title="Send">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l18-8-8 18-2-7-8-3z" fill="currentColor"/></svg>
+        </button>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

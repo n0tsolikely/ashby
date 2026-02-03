@@ -2,7 +2,7 @@ import logging
 from typing import List, Union
 
 from tuya_iot import TuyaOpenAPI, TUYA_LOGGER
-from secrets.env import ENDPOINT, ACCESS_ID, ACCESS_KEY, USERNAME, PASSWORD
+from secrets_store.env import ENDPOINT, ACCESS_ID, ACCESS_KEY, USERNAME, PASSWORD
 from ashby.devices.ashby_devices import DEVICES
 
 # ---------- Logging ----------
