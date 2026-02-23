@@ -57,10 +57,75 @@ body{
   border-bottom:1px solid var(--border);
   display:flex;
   align-items:center;
+  justify-content:space-between;
   padding:0 14px;
 }
 
+/* SIDE-QUEST_079: status strip (session/file/run) */
+.statusbar{
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  padding:8px 14px;
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.statusslot{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:rgba(255,255,255,0.04);
+  max-width:100%;
+}
+
+.statusk{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.statusv{
+  color:var(--text);
+  font-size:12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  max-width:520px;
+}
+
+.statusv.ok{color:rgba(125, 211, 252, 1)}
+.statusv.warn{color:rgba(253, 224, 71, 1)}
+.statusv.bad{color:rgba(252, 165, 165, 1)}
+
+.banner{
+  margin:10px 0;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(252, 165, 165, 0.12);
+  color:rgba(252, 165, 165, 1);
+  font-size:13px;
+  line-height:1.35;
+}
+
 .topbar-left{display:flex; gap:10px; align-items:center}
+
+.topbar-right{display:flex; gap:10px; align-items:center}
+
+#searchInput{
+  width:280px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius:12px;
+  outline:none;
+}
 
 select{
   background:rgba(255,255,255,0.06);
@@ -186,3 +251,29 @@ select:disabled{opacity:0.55}
 }
 .run-btn:hover{filter:brightness(1.05)}
 .run-btn:active{transform:translateY(1px)}
+
+/* QUEST_064: minimal library + search UI styling */
+.search-row,.lib-row{
+  margin-top:10px;
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:rgba(255,255,255,0.03);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.search-meta,.lib-meta{color:var(--muted); font-size:12px}
+.search-snippet{font-size:13px; line-height:1.35}
+.search-actions,.lib-actions{display:flex; gap:8px; flex-wrap:wrap}
+
+
+/* QUEST_069: speaker mapping UI */
+.speaker-map{display:flex; flex-direction:column; gap:8px; margin-top:10px}
+.speaker-row{display:flex; align-items:center; gap:10px}
+.speaker-label{min-width:120px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; color:var(--muted)}
+.speaker-input{flex:1; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:12px; outline:none}
+
+/* QUEST_071: re-formalize controls (template + retention) */
+.reformalize-controls{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; align-items:center}
+.reformalize-select{min-width:200px}

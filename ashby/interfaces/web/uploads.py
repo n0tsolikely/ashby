@@ -58,3 +58,46 @@ async def store_upload(session_id: str, file: UploadFile) -> Tuple[str, Attachme
     )
 
     return contribution_id, meta
+
+
+async def store_upload_bytes(
+    session_id: str,
+    filename: str,
+    data: bytes,
+    mime_type: Optional[str] = None,
+) -> Tuple[str, AttachmentMeta]:
+    """Persist upload bytes as a contribution and return (contribution_id, attachment_meta).
+
+    This exists so the web door can accept uploads in environments where
+    `python-multipart` is not installed (i.e., no multipart/form-data parsing).
+
+    NOTE: This reads the entire body in-memory. For large files, prefer `store_upload()`
+    with a real multipart upload.
+    """
+
+    lay = init_stuart_root()
+
+    tmp_dir = lay.root / "tmp" / "web_uploads"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    safe_name = (filename or "upload.bin").strip() or "upload.bin"
+    tmp_path = tmp_dir / safe_name
+
+    sha = hashlib.sha256()
+    sha.update(data or b"")
+    tmp_path.write_bytes(data or b"")
+
+    kind = _infer_kind(mime_type or "", safe_name)
+    contribution_id = add_contribution(session_id=session_id, source_path=tmp_path, source_kind=kind)
+
+    man_path = lay.contributions / contribution_id / "contribution.json"
+    m = load_manifest(man_path)
+
+    meta = AttachmentMeta(
+        filename=str(m.get("source_filename") or safe_name),
+        mime_type=mime_type,
+        size_bytes=len(data) if data is not None else None,
+        sha256=str(m.get("source_sha256") or sha.hexdigest()),
+    )
+
+    return contribution_id, meta

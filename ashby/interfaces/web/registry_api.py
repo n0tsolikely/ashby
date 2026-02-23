@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from ashby.modules.meetings.mode_registry import allowed_modes, default_speakers_for_mode
+from ashby.modules.meetings.retention_registry import allowed_retentions, default_retention
 from ashby.modules.meetings.template_registry import allowed_templates
 
 
@@ -19,5 +20,7 @@ def registry_payload() -> Dict[str, Any]:
     return {
         "modes": modes,
         "templates_by_mode": templates_by_mode,
+        "retentions": allowed_retentions(),
+        "default_retention": default_retention(),
         "defaults_by_mode": defaults,
     }

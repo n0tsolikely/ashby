@@ -1,25 +1,55 @@
 from __future__ import annotations
 
+import json
+import shutil
+import time
+import hashlib
+import threading
+
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import BackgroundTasks, FastAPI, File, Request, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import BackgroundTasks, FastAPI, Request
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ashby.interfaces.web.registry_api import registry_payload
 from ashby.interfaces.web.sessions import list_sessions, create_session
-from ashby.interfaces.web.uploads import store_upload
-from ashby.interfaces.web.runs import list_run_artifacts, artifact_response
+from ashby.interfaces.web.uploads import store_upload, store_upload_bytes
+from ashby.interfaces.web.runs import list_run_artifacts, artifact_response, primary_downloads
+from ashby.interfaces.web.http_envelope import ok, fail
+from ashby.interfaces.web.transcripts import (
+    normalize_segment,
+    read_json,
+    run_id_from_transcript_version_id,
+)
 
 from ashby.modules.meetings.clarify_or_preview import clarify_or_preview
-from ashby.modules.meetings.pipeline.job_runner import run_job
+from ashby.modules.meetings.init_root import init_stuart_root
+from ashby.modules.meetings.manifests import load_manifest
+from ashby.modules.meetings.mode_registry import validate_mode
+from ashby.modules.meetings.pipeline.job_runner import run_job, poll_progress
+from ashby.modules.meetings.router.router import build_intent_and_plan
 from ashby.modules.meetings.store import create_run, get_run_state
-from ashby.modules.meetings.schemas.plan import UIState, SessionContext, AttachmentMeta
+from ashby.modules.meetings.overlays import create_speaker_map_overlay
+from ashby.modules.meetings.session_state import (
+    load_session_state,
+    set_active_speaker_overlay,
+    set_active_transcript_version,
+)
+from ashby.modules.meetings.schemas.plan import SessionContext, AttachmentMeta
+from ashby.modules.meetings.schemas.run_request import RunRequest
+from ashby.modules.meetings.transcript_versions import (
+    ensure_legacy_transcript_versions,
+    list_transcript_versions,
+    load_transcript_version,
+    resolve_transcript_version,
+)
 
 from ashby.modules.meetings.index import sqlite_fts
+from ashby.modules.meetings.export.bundle import export_session_bundle
 
 
 def create_app() -> FastAPI:
@@ -30,33 +60,911 @@ def create_app() -> FastAPI:
     app.mount("/static", StaticFiles(directory=str(base_dir / "static")), name="static")
 
     @app.get("/", response_class=HTMLResponse)
-    def index(request: Request) -> Any:
+    async def index(request: Request) -> Any:
         return templates.TemplateResponse("index.html", {"request": request})
 
     @app.get("/api/registry")
-    def api_registry() -> Dict[str, Any]:
-        return registry_payload()
+    async def api_registry() -> Dict[str, Any]:
+        return ok(registry_payload())
 
     @app.get("/api/sessions")
-    def api_sessions(limit: int = 50) -> Dict[str, Any]:
-        return {"sessions": list_sessions(limit=limit)}
+    async def api_sessions(
+        limit: int = 50, offset: int = 0, q: Optional[str] = None, mode: Optional[str] = None
+    ) -> Dict[str, Any]:
+        sessions_all = list_sessions(limit=100000)
+        query = (q or "").strip().lower()
+        mode_filter = (mode or "").strip().lower()
+
+        rows: list[Dict[str, Any]] = []
+        for s in sessions_all:
+            sid = str(s.get("session_id") or "")
+            if not sid:
+                continue
+            smode = str(s.get("mode") or "").strip().lower()
+            title = s.get("title")
+            title_l = str(title or "").lower()
+            contrib_count = _session_contribution_count(sid)
+            has_audio = contrib_count > 0
+
+            if mode_filter and smode != mode_filter:
+                continue
+            if query and query not in sid.lower() and query not in title_l:
+                continue
+
+            runs = _runs_for_session(sid, limit=200)
+            latest = runs[0] if runs else None
+            has_transcript = any(
+                any((a.get("name") in {"transcript.json", "aligned_transcript.json"}) for a in (r.get("artifacts") or []))
+                for r in runs
+            )
+            has_formalization = any(
+                bool(((r.get("downloads") or {}).get("primary") or {}).get("md"))
+                or bool(((r.get("downloads") or {}).get("primary") or {}).get("json"))
+                or bool(((r.get("downloads") or {}).get("primary") or {}).get("pdf"))
+                for r in runs
+            )
+
+            rows.append(
+                {
+                    "session_id": sid,
+                    "created_ts": s.get("created_ts"),
+                    "mode": s.get("mode"),
+                    "title": title,
+                    "runs": s.get("runs", []),
+                    "contributions": s.get("contributions", []),
+                    "contributions_count": contrib_count,
+                    "has_audio": has_audio,
+                    "latest_run": {
+                        "run_id": latest.get("run_id"),
+                        "status": latest.get("status"),
+                        "stage": latest.get("stage"),
+                        "progress": latest.get("progress"),
+                        "created_ts": latest.get("created_ts"),
+                    }
+                    if latest
+                    else None,
+                    "has_transcript": has_transcript,
+                    "has_formalization": has_formalization,
+                }
+            )
+
+        rows.sort(key=lambda s: (float(s.get("created_ts") or 0.0), str(s.get("session_id") or "")), reverse=True)
+        start = max(int(offset), 0)
+        end = start + max(int(limit), 1)
+        page_rows = rows[start:end]
+        return ok(
+            {
+                "sessions": page_rows,
+                "page": {"limit": int(limit), "offset": int(offset), "returned": len(page_rows), "total": len(rows)},
+            }
+        )
+
+    def _runs_for_session(session_id: str, limit: int = 200) -> list[Dict[str, Any]]:
+        lay = init_stuart_root()
+        rows: list[Dict[str, Any]] = []
+        if not lay.runs.exists():
+            return rows
+
+        for run_dir in lay.runs.iterdir():
+            if not run_dir.is_dir():
+                continue
+            run_json = run_dir / "run.json"
+            if not run_json.exists():
+                continue
+            try:
+                state = load_manifest(run_json)
+            except Exception:
+                continue
+            if str(state.get("session_id") or "") != session_id:
+                continue
+
+            run_id = str(state.get("run_id") or run_dir.name)
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "status": state.get("status"),
+                    "stage": state.get("stage"),
+                    "progress": state.get("progress"),
+                    "created_ts": state.get("created_ts"),
+                    "started_ts": state.get("started_ts"),
+                    "ended_ts": state.get("ended_ts"),
+                    "plan": state.get("plan") or {},
+                    "primary_outputs": state.get("primary_outputs") or {},
+                    "downloads": primary_downloads(run_id, state=state),
+                    "artifacts": list_run_artifacts(run_id),
+                }
+            )
+
+        rows.sort(key=lambda r: float(r.get("created_ts") or 0.0), reverse=True)
+        return rows[: max(int(limit), 1)]
+
+    def _read_text(path: Path) -> Optional[str]:
+        try:
+            return path.read_text(encoding="utf-8")
+        except Exception:
+            return None
+
+    def _artifact_path_for_primary(run_id: str, primary_outputs: Dict[str, Any], key: str) -> Optional[Path]:
+        ptr = primary_outputs.get(key) if isinstance(primary_outputs, dict) else None
+        if not isinstance(ptr, dict):
+            return None
+        rel = ptr.get("path")
+        if not isinstance(rel, str) or not rel.strip():
+            return None
+        lay = init_stuart_root()
+        run_dir = lay.runs / run_id
+        candidate = (run_dir / rel).resolve()
+        try:
+            candidate.relative_to(run_dir.resolve())
+        except Exception:
+            return None
+        return candidate if candidate.exists() else None
+
+    def _first_existing_artifact(run_id: str, names: list[str]) -> Optional[Path]:
+        lay = init_stuart_root()
+        artifacts_dir = lay.runs / run_id / "artifacts"
+        for name in names:
+            p = artifacts_dir / name
+            if p.exists():
+                return p
+        return None
+
+    def _spawn_run_job(run_id: str) -> None:
+        # Fire-and-forget execution so API calls return immediately and the UI can poll.
+        t = threading.Thread(target=run_job, args=(run_id,), daemon=True)
+        t.start()
+
+    def _session_contribution_count(session_id: str) -> int:
+        lay = init_stuart_root()
+        if not lay.contributions.exists():
+            return 0
+        count = 0
+        for con_dir in lay.contributions.iterdir():
+            if not con_dir.is_dir():
+                continue
+            cpath = con_dir / "contribution.json"
+            if not cpath.exists():
+                continue
+            try:
+                cm = load_manifest(cpath)
+            except Exception:
+                continue
+            if str(cm.get("session_id") or "") == session_id:
+                count += 1
+        return count
+
+    @app.get("/api/sessions/{session_id}/runs")
+    async def api_session_runs(
+        session_id: str,
+        limit: int = 50,
+        offset: int = 0,
+        status: Optional[str] = None,
+        include_artifacts: bool = False,
+    ) -> Dict[str, Any]:
+        rows = _runs_for_session(session_id, limit=100000)
+        if status:
+            rows = [r for r in rows if str(r.get("status") or "").strip().lower() == str(status).strip().lower()]
+        if not include_artifacts:
+            rows = [{k: v for k, v in r.items() if k != "artifacts"} for r in rows]
+        start = max(int(offset), 0)
+        end = start + max(int(limit), 1)
+        page_rows = rows[start:end]
+        return ok(
+            {
+                "session_id": session_id,
+                "runs": page_rows,
+                "page": {"limit": int(limit), "offset": int(offset), "returned": len(page_rows), "total": len(rows)},
+            }
+        )
+
+    @app.get("/api/sessions/{session_id}/transcripts")
+    async def api_session_transcripts(session_id: str, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
+        # QUEST_126: lazily backfill transcript versions for legacy sessions on access.
+        ensure_legacy_transcript_versions(session_id)
+        rows = list_transcript_versions(session_id)
+        st = load_session_state(session_id)
+        active_id = st.get("active_transcript_version_id")
+        active_id = active_id.strip() if isinstance(active_id, str) and active_id.strip() else None
+
+        out: list[Dict[str, Any]] = []
+        for row in rows:
+            trv_id = str(row.get("transcript_version_id") or "")
+            if not trv_id:
+                continue
+            out.append(
+                {
+                    "id": trv_id,
+                    "transcript_version_id": trv_id,
+                    "run_id": str(row.get("run_id") or ""),
+                    "session_id": str(row.get("session_id") or session_id),
+                    "created_ts": row.get("created_ts"),
+                    "diarization_enabled": bool(row.get("diarization_enabled")),
+                    "asr_engine": str(row.get("asr_engine") or "default"),
+                    "segments_count": int(row.get("segments_count") or 0),
+                    "active": bool(active_id is not None and trv_id == active_id),
+                }
+            )
+        out.sort(key=lambda r: (float(r.get("created_ts") or 0.0), str(r.get("transcript_version_id") or "")), reverse=True)
+        start = max(int(offset), 0)
+        end = start + max(int(limit), 1)
+        page_rows = out[start:end]
+
+        return ok(
+            {
+                "session_id": session_id,
+                "transcripts": page_rows,
+                "page": {"limit": int(limit), "offset": int(offset), "returned": len(page_rows), "total": len(out)},
+            }
+        )
+
+    @app.get("/api/transcripts/{transcript_version_id}")
+    async def api_transcript_get(transcript_version_id: str) -> Dict[str, Any]:
+        # Back-compat: support legacy tv__run_id links.
+        legacy_run_id = run_id_from_transcript_version_id(transcript_version_id)
+        if legacy_run_id is not None:
+            lay = init_stuart_root()
+            run_json = lay.runs / legacy_run_id / "run.json"
+            if not run_json.exists():
+                return fail("NOT_FOUND", "transcript version not found", status=404)
+            state = load_manifest(run_json)
+            session_id = str(state.get("session_id") or "")
+            if not session_id:
+                return fail("NOT_FOUND", "transcript version not found", status=404)
+            ensure_legacy_transcript_versions(session_id)
+            versions = list_transcript_versions(session_id)
+            matched = next((v for v in versions if str(v.get("run_id") or "") == legacy_run_id), None)
+            if matched is None:
+                return fail("NOT_FOUND", "transcript version not found", status=404)
+            transcript_version_id = str(matched.get("transcript_version_id") or transcript_version_id)
+
+        resolved = resolve_transcript_version(transcript_version_id)
+        if not resolved:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        session_id = str(resolved.get("session_id") or "")
+        if not session_id:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        try:
+            payload = load_transcript_version(session_id, transcript_version_id)
+        except FileNotFoundError:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        except Exception:
+            return fail("INTERNAL_ERROR", "failed to load transcript version", status=500)
+
+        segs = payload.get("segments")
+        if not isinstance(segs, list):
+            return fail("INTERNAL_ERROR", "invalid transcript schema", status=500)
+        run_id = str(payload.get("run_id") or "")
+        segments = [normalize_segment(seg, idx=i, run_id=run_id) for i, seg in enumerate(segs) if isinstance(seg, dict)]
+        return ok(
+            {
+                "transcript": {
+                    "transcript_version_id": str(payload.get("transcript_version_id") or transcript_version_id),
+                    "run_id": run_id,
+                    "session_id": session_id,
+                    "created_ts": payload.get("created_ts"),
+                    "diarization_enabled": bool(payload.get("diarization_enabled")),
+                    "asr_engine": str(payload.get("asr_engine") or "default"),
+                    "audio_ref": payload.get("audio_ref") if isinstance(payload.get("audio_ref"), dict) else {},
+                    "segments": segments,
+                    "speaker_map": {},
+                }
+            }
+        )
+
+    @app.patch("/api/sessions/{session_id}/transcripts/active")
+    async def api_set_active_transcript(session_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        transcript_version_id = payload.get("transcript_version_id")
+        if not isinstance(transcript_version_id, str) or not transcript_version_id.strip():
+            return fail("INVALID_REQUEST", "transcript_version_id is required", status=400)
+        transcript_version_id = transcript_version_id.strip()
+
+        resolved = resolve_transcript_version(transcript_version_id)
+        if not resolved:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        if str(resolved.get("session_id") or "") != session_id:
+            return fail("INVALID_REQUEST", "transcript_version_id does not belong to session", status=400)
+
+        try:
+            load_transcript_version(session_id, transcript_version_id)
+        except FileNotFoundError:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        except Exception:
+            return fail("INTERNAL_ERROR", "failed to load transcript version", status=500)
+
+        st = set_active_transcript_version(session_id, transcript_version_id)
+        return ok({"session_id": session_id, "session_state": st})
+
+    @app.get("/api/sessions/{session_id}/formalizations")
+    async def api_session_formalizations(session_id: str, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
+        rows = _runs_for_session(session_id, limit=max(int(limit), 1) * 4)
+        out: list[Dict[str, Any]] = []
+
+        for row in rows:
+            downloads = (row.get("downloads") or {}).get("primary") or {}
+            has_primary = any(downloads.get(k) for k in ("md", "json", "pdf", "evidence_map"))
+            if not has_primary:
+                continue
+
+            plan = row.get("plan") if isinstance(row.get("plan"), dict) else {}
+            steps = plan.get("steps") if isinstance(plan.get("steps"), list) else []
+            formalize_params: Dict[str, Any] = {}
+            for st in steps:
+                if not isinstance(st, dict):
+                    continue
+                kind = (st.get("kind") or "").strip().lower()
+                if kind == "formalize":
+                    formalize_params = st.get("params") if isinstance(st.get("params"), dict) else {}
+                    break
+
+            mode = str(formalize_params.get("mode") or "meeting")
+            template_id = str(formalize_params.get("template_id") or "default")
+            retention = str(formalize_params.get("retention") or "MED")
+            run_id = str(row.get("run_id"))
+            consumed_tv = None
+            if isinstance(row.get("primary_outputs"), dict):
+                consumed_tv = row["primary_outputs"].get("consumed_transcript_version_id")
+            if not consumed_tv:
+                consumed_tv = formalize_params.get("transcript_version_id")
+
+            primary_outputs = row.get("primary_outputs") if isinstance(row.get("primary_outputs"), dict) else {}
+            md_src = (
+                _artifact_path_for_primary(run_id, primary_outputs, "md")
+                or _first_existing_artifact(run_id, ["minutes.md", "journal.md"])
+            )
+            json_src = (
+                _artifact_path_for_primary(run_id, primary_outputs, "json")
+                or _first_existing_artifact(run_id, ["minutes.json", "journal.json"])
+            )
+            evidence_src = (
+                _artifact_path_for_primary(run_id, primary_outputs, "evidence_map")
+                or _first_existing_artifact(run_id, ["evidence_map.json"])
+            )
+
+            output_markdown = _read_text(md_src) if md_src else None
+            output_json = read_json(json_src) if json_src else None
+            evidence_map = read_json(evidence_src) if evidence_src else None
+
+            out.append(
+                {
+                    "id": run_id,
+                    "formalization_id": run_id,
+                    "run_id": run_id,
+                    "session_id": session_id,
+                    "status": row.get("status"),
+                    "mode": mode,
+                    "template_id": template_id,
+                    "template": template_id,
+                    "retention": retention,
+                    "retention_level": retention,
+                    "created_ts": row.get("created_ts"),
+                    "downloads": row.get("downloads"),
+                    "transcript_version_id": consumed_tv,
+                    "output_markdown": output_markdown or "",
+                    "output_json": output_json
+                    if output_json is not None
+                    else {
+                        "run_id": run_id,
+                        "status": row.get("status"),
+                        "stage": row.get("stage"),
+                        "progress": row.get("progress"),
+                        "downloads": row.get("downloads"),
+                        "artifacts": row.get("artifacts"),
+                    },
+                    "evidence_map": evidence_map if evidence_map is not None else [],
+                    "pdf_url": downloads.get("pdf", {}).get("url") if isinstance(downloads.get("pdf"), dict) else None,
+                }
+            )
+        out.sort(key=lambda r: (float(r.get("created_ts") or 0.0), str(r.get("run_id") or "")), reverse=True)
+        start = max(int(offset), 0)
+        end = start + max(int(limit), 1)
+        page_rows = out[start:end]
+        return ok(
+            {
+                "session_id": session_id,
+                "formalizations": page_rows,
+                "page": {"limit": int(limit), "offset": int(offset), "returned": len(page_rows), "total": len(out)},
+            }
+        )
+
+    @app.get("/api/library")
+    async def api_library(limit: int = 50, mode: Optional[str] = None) -> Dict[str, Any]:
+        """Return sessions suitable for a library view.
+
+        Source of truth:
+        - Uses SQLite index (QUEST_059) so doors can list sessions + latest runs
+          without scanning the filesystem.
+
+        Notes:
+        - If the index is empty, returns an empty list.
+        - Does not create sessions or runs.
+        """
+
+        db_path = sqlite_fts.get_db_path()
+        conn = sqlite_fts.connect(db_path)
+        try:
+            sqlite_fts.ensure_schema(conn)
+            sessions = sqlite_fts.list_sessions(conn, limit=int(limit), mode=(mode or None))
+            return {"ok": True, "sessions": [asdict(s) for s in sessions]}
+        finally:
+            conn.close()
 
     @app.post("/api/sessions")
     async def api_create_session(payload: Dict[str, Any]) -> Dict[str, Any]:
         mode = (payload.get("mode") or "").strip().lower()
         title = payload.get("title") or None
         if not mode:
-            return JSONResponse(status_code=400, content={"error": "mode is required"})
+            return fail("INVALID_REQUEST", "mode is required", status=400)
         sid = create_session(mode=mode, title=title)
-        return {"session_id": sid}
+        return ok({"session_id": sid})
+
+    @app.get("/api/sessions/{session_id}")
+    async def api_session_detail(session_id: str) -> Dict[str, Any]:
+        lay = init_stuart_root()
+        mpath = lay.sessions / session_id / "session.json"
+        if not mpath.exists():
+            return fail("NOT_FOUND", "session not found", status=404)
+
+        sm = load_manifest(mpath)
+        state = load_session_state(session_id)
+        title_override = state.get("title_override") if isinstance(state, dict) else None
+        title_source = "state_override" if isinstance(title_override, str) and title_override.strip() else "session_manifest"
+        effective_title = title_override if title_source == "state_override" else sm.get("title")
+
+        runs = _runs_for_session(session_id, limit=200)
+        run_rows = [
+            {
+                "run_id": r.get("run_id"),
+                "status": r.get("status"),
+                "stage": r.get("stage"),
+                "progress": r.get("progress"),
+                "created_ts": r.get("created_ts"),
+            }
+            for r in runs
+        ]
+
+        contributions: list[Dict[str, Any]] = []
+        if lay.contributions.exists():
+            for con_dir in lay.contributions.iterdir():
+                if not con_dir.is_dir():
+                    continue
+                cpath = con_dir / "contribution.json"
+                if not cpath.exists():
+                    continue
+                try:
+                    cm = load_manifest(cpath)
+                except Exception:
+                    continue
+                if str(cm.get("session_id") or "") != session_id:
+                    continue
+                contributions.append(
+                    {
+                        "contribution_id": cm.get("contribution_id") or con_dir.name,
+                        "created_ts": cm.get("created_ts"),
+                        "mime_type": cm.get("mime_type"),
+                        "filename": cm.get("filename"),
+                        "size_bytes": cm.get("size_bytes"),
+                    }
+                )
+        contributions.sort(key=lambda c: (float(c.get("created_ts") or 0.0), str(c.get("contribution_id") or "")), reverse=True)
+
+        transcripts_count = 0
+        formalizations_count = 0
+        for r in runs:
+            arts = r.get("artifacts") or []
+            if any((a.get("name") in {"transcript.json", "aligned_transcript.json"}) for a in arts):
+                transcripts_count += 1
+            primary = ((r.get("downloads") or {}).get("primary") or {})
+            if primary.get("md") or primary.get("json") or primary.get("pdf"):
+                formalizations_count += 1
+
+        return ok(
+            {
+                "session": {
+                    "session_id": session_id,
+                    "created_ts": sm.get("created_ts"),
+                    "mode": sm.get("mode"),
+                    "title": effective_title,
+                    "title_source": title_source,
+                    "state": state,
+                    "contributions": contributions,
+                    "runs": run_rows,
+                    "counts": {
+                        "contributions": len(contributions),
+                        "runs": len(runs),
+                        "transcripts": transcripts_count,
+                        "formalizations": formalizations_count,
+                    },
+                }
+            }
+        )
+
+    @app.patch("/api/sessions/{session_id}")
+    async def api_session_patch(session_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        lay = init_stuart_root()
+        mpath = lay.sessions / session_id / "session.json"
+        if not mpath.exists():
+            return fail("NOT_FOUND", "session not found", status=404)
+
+        title_raw = payload.get("title")
+        if not isinstance(title_raw, str):
+            return fail("INVALID_REQUEST", "title must be a string", status=400)
+        title = title_raw.strip()
+        if not title:
+            return fail("INVALID_REQUEST", "title cannot be empty", status=400)
+
+        state = load_session_state(session_id)
+        state["title_override"] = title
+        state["updated_ts"] = time.time()
+        state_path = lay.sessions / session_id / "session_state.json"
+        state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+        return ok({"session_id": session_id, "title": title, "title_source": "state_override"})
+
+    @app.delete("/api/sessions/{session_id}")
+    async def api_delete_session(session_id: str) -> Dict[str, Any]:
+        lay = init_stuart_root()
+        # Resolve by either directory name OR manifest session_id.
+        # This handles legacy drift where folder name and manifest id differ.
+        matched_dirs: list[Path] = []
+        identity_keys: set[str] = {session_id}
+
+        if lay.sessions.exists():
+            for sdir in lay.sessions.iterdir():
+                if not sdir.is_dir():
+                    continue
+                manifest_id = ""
+                mpath = sdir / "session.json"
+                if mpath.exists():
+                    try:
+                        sm = load_manifest(mpath)
+                        manifest_id = str(sm.get("session_id") or "")
+                    except Exception:
+                        manifest_id = ""
+                if sdir.name == session_id or manifest_id == session_id:
+                    matched_dirs.append(sdir)
+                    identity_keys.add(sdir.name)
+                    if manifest_id:
+                        identity_keys.add(manifest_id)
+
+        if not matched_dirs:
+            return JSONResponse(status_code=404, content={"ok": False, "error": "session not found", "session_id": session_id})
+
+        deleted = {
+            "session": 0,
+            "runs": 0,
+            "contributions": 0,
+            "overlays": 0,
+        }
+
+        # Delete matched session folders first.
+        for sdir in matched_dirs:
+            shutil.rmtree(sdir, ignore_errors=False)
+            deleted["session"] += 1
+
+        # Delete linked runs by scanning run manifests.
+        if lay.runs.exists():
+            for run_dir in list(lay.runs.iterdir()):
+                if not run_dir.is_dir():
+                    continue
+                run_json = run_dir / "run.json"
+                if not run_json.exists():
+                    continue
+                try:
+                    r = load_manifest(run_json)
+                except Exception:
+                    continue
+                if str(r.get("session_id") or "") not in identity_keys:
+                    continue
+                shutil.rmtree(run_dir, ignore_errors=False)
+                deleted["runs"] += 1
+
+        # Delete linked contributions by scanning contribution manifests.
+        if lay.contributions.exists():
+            for con_dir in list(lay.contributions.iterdir()):
+                if not con_dir.is_dir():
+                    continue
+                con_json = con_dir / "contribution.json"
+                if not con_json.exists():
+                    continue
+                try:
+                    c = load_manifest(con_json)
+                except Exception:
+                    continue
+                if str(c.get("session_id") or "") not in identity_keys:
+                    continue
+                shutil.rmtree(con_dir, ignore_errors=False)
+                deleted["contributions"] += 1
+
+        # Delete overlay subtrees for every known identity key.
+        for sid in identity_keys:
+            overlay_dir = lay.overlays / sid
+            if overlay_dir.exists():
+                shutil.rmtree(overlay_dir, ignore_errors=False)
+                deleted["overlays"] += 1
+
+        return {"ok": True, "session_id": session_id, "resolved_keys": sorted(identity_keys), "deleted": deleted}
 
     @app.post("/api/upload")
-    async def api_upload(session_id: str, file: UploadFile = File(...)) -> Dict[str, Any]:
-        """Upload media -> store as contribution. Returns attachment meta for planning."""
+    async def api_upload(
+        request: Request,
+        session_id: Optional[str] = None,
+        mode: Optional[str] = None,
+        title: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Upload media -> store as contribution (UPLOAD ≠ PROCESS).
+
+        QUEST_062 policy rail:
+          - Upload stores a contribution and (if needed) creates a session.
+          - Upload does NOT start a run / transcribe / diarize / formalize.
+          - Upload returns a deterministic plan preview using defaults:
+              template=default, retention=MED, speakers=mode-default.
+
+        We support two upload paths:
+          1) Raw bytes body (no extra deps): send bytes in body + set headers:
+             - Content-Type: audio/wav (or video/mp4, etc)
+             - X-Filename: test.wav
+
+          2) Multipart form-data (requires python-multipart): field name `file`.
+
+        This keeps tests green in minimal environments while still supporting
+        the browser upload UX where available.
+        """
+
+        # If caller didn't provide a session_id, create a fresh one (append-only).
         if not session_id:
-            return JSONResponse(status_code=400, content={"error": "session_id is required"})
-        con_id, meta = await store_upload(session_id=session_id, file=file)
-        return {"ok": True, "contribution_id": con_id, "attachment": asdict(meta)}
+            eff_mode = (mode or "meeting").strip().lower()
+            mv = validate_mode(eff_mode)
+            if not mv.ok or mv.canonical is None:
+                return fail("INVALID_REQUEST", mv.message or "invalid mode", status=400)
+            session_id = create_session(mode=mv.canonical, title=title or None)
+
+        ct = (request.headers.get("content-type") or "").lower()
+
+        con_id: Optional[str] = None
+        meta: Optional[AttachmentMeta] = None
+
+        # Multipart path (best UX), but may be unavailable in minimal envs.
+        if ct.startswith("multipart/form-data"):
+            try:
+                form = await request.form()
+            except RuntimeError as e:
+                return fail(
+                    "INVALID_REQUEST",
+                    "multipart uploads not supported in this environment",
+                    status=400,
+                    details={"details": str(e), "hint": "Send raw bytes body + X-Filename header instead."},
+                )
+
+            file = form.get("file")
+            if file is None:
+                return fail("INVALID_REQUEST", "missing form field: file", status=400)
+
+            try:
+                con_id, meta = await store_upload(session_id=session_id, file=file)
+            except Exception as e:
+                return fail("INVALID_REQUEST", f"upload failed: {type(e).__name__}: {e}", status=400)
+
+        else:
+            # Raw bytes path (no python-multipart dependency)
+            filename = request.headers.get("x-filename") or "upload.bin"
+            data = await request.body()
+            if not data:
+                return fail("INVALID_REQUEST", "empty body", status=400)
+
+            try:
+                con_id, meta = await store_upload_bytes(
+                    session_id=session_id,
+                    filename=filename,
+                    data=data,
+                    mime_type=ct or None,
+                )
+            except Exception as e:
+                return fail("INVALID_REQUEST", f"upload failed: {type(e).__name__}: {e}", status=400)
+
+        if con_id is None or meta is None:
+            return fail("INTERNAL_ERROR", "internal error: upload missing contribution/meta", status=500)
+
+        # Determine effective mode for preview (prefer session manifest truth).
+        sess_mode = (mode or "meeting").strip().lower() or "meeting"
+        try:
+            lay = init_stuart_root()
+            sm = load_manifest(lay.sessions / session_id / "session.json")
+            smode = sm.get("mode")
+            if isinstance(smode, str) and smode.strip():
+                sess_mode = smode.strip().lower()
+        except Exception:
+            pass
+
+        # Plan preview (no run created).
+        rr = RunRequest(mode=sess_mode)
+        session_ctx = SessionContext(active_session_id=session_id, last_run_id=None)
+        preview_out = clarify_or_preview(
+            text="formalize",
+            attachments=[meta],
+            run_request=rr,
+            session=session_ctx,
+            door="web",
+        )
+
+        return ok({
+            "session_id": session_id,
+            "contribution_id": con_id,
+            "attachment": asdict(meta),
+            "plan_preview": asdict(preview_out.preview) if preview_out.preview else None,
+            "needs_clarification": bool(preview_out.needs_clarification),
+            "clarify": asdict(preview_out.clarify) if preview_out.clarify else None,
+        })
+
+    @app.post("/api/chat")
+    async def api_chat(payload: Dict[str, Any]) -> Dict[str, Any]:
+        text = (payload.get("text") or payload.get("message") or "").strip()
+        session_id = payload.get("session_id")
+        ui_raw = payload.get("ui") or {}
+        attachments_raw = payload.get("attachments") or []
+
+        rr = RunRequest.from_dict(ui_raw) if isinstance(ui_raw, dict) else RunRequest()
+
+        attachments: Optional[list[AttachmentMeta]] = None
+        if isinstance(attachments_raw, list) and attachments_raw:
+            tmp = []
+            for a in attachments_raw:
+                if isinstance(a, dict):
+                    tmp.append(
+                        AttachmentMeta(
+                            filename=str(a.get("filename") or ""),
+                            mime_type=a.get("mime_type"),
+                            size_bytes=a.get("size_bytes"),
+                            sha256=a.get("sha256"),
+                        )
+                    )
+            attachments = tmp
+
+        # QUEST_125: transcript control commands handled pre-planner.
+        if isinstance(session_id, str) and session_id and text:
+            cmd = text.strip()
+            if cmd.lower() in ("/transcripts", "transcripts"):
+                ensure_legacy_transcript_versions(session_id)
+                st = load_session_state(session_id)
+                active_id = st.get("active_transcript_version_id")
+                active_id = active_id.strip() if isinstance(active_id, str) and active_id.strip() else None
+                rows = list_transcript_versions(session_id)
+                if not rows:
+                    reply_text = "No transcript versions found for this session."
+                else:
+                    lines = ["Transcript versions:"]
+                    for r in rows:
+                        trv_id = str(r.get("transcript_version_id") or "")
+                        if not trv_id:
+                            continue
+                        ts = r.get("created_ts")
+                        short_ts = "unknown"
+                        try:
+                            short_ts = time.strftime("%Y-%m-%d %H:%M", time.localtime(float(ts)))
+                        except Exception:
+                            pass
+                        marker = " *ACTIVE*" if active_id and trv_id == active_id else ""
+                        lines.append(
+                            f"- {trv_id}{marker} | {short_ts} | diarization={bool(r.get('diarization_enabled'))} | "
+                            f"asr={str(r.get('asr_engine') or 'default')} | segments={int(r.get('segments_count') or 0)}"
+                        )
+                    reply_text = "\n".join(lines)
+                return ok(
+                    {
+                        "session_id": session_id,
+                        "scope": "session",
+                        "reply": {"text": reply_text, "kind": "system", "citations": [], "actions": []},
+                        "planner": None,
+                    }
+                )
+
+            use_cmd = cmd.split(maxsplit=1)
+            if use_cmd and use_cmd[0].lower() in ("/use", "use"):
+                if len(use_cmd) < 2 or not use_cmd[1].strip():
+                    return ok(
+                        {
+                            "session_id": session_id,
+                            "scope": "session",
+                            "reply": {
+                                "text": "Usage: /use <transcript_version_id>",
+                                "kind": "system",
+                                "citations": [],
+                                "actions": [],
+                            },
+                            "planner": None,
+                        }
+                    )
+                trv_id = use_cmd[1].strip()
+                resolved = resolve_transcript_version(trv_id)
+                if not resolved:
+                    return ok(
+                        {
+                            "session_id": session_id,
+                            "scope": "session",
+                            "reply": {
+                                "text": f"Transcript version not found: {trv_id}",
+                                "kind": "system",
+                                "citations": [],
+                                "actions": [],
+                            },
+                            "planner": None,
+                        }
+                    )
+                if str(resolved.get("session_id") or "") != session_id:
+                    return ok(
+                        {
+                            "session_id": session_id,
+                            "scope": "session",
+                            "reply": {
+                                "text": f"Transcript version {trv_id} does not belong to this session.",
+                                "kind": "system",
+                                "citations": [],
+                                "actions": [],
+                            },
+                            "planner": None,
+                        }
+                    )
+                set_active_transcript_version(session_id, trv_id)
+                return ok(
+                    {
+                        "session_id": session_id,
+                        "scope": "session",
+                        "reply": {
+                            "text": f"Active transcript version set to {trv_id}.",
+                            "kind": "system",
+                            "citations": [],
+                            "actions": [],
+                        },
+                        "planner": None,
+                    }
+                )
+
+        session = SessionContext(active_session_id=session_id, last_run_id=None)
+        out = clarify_or_preview(
+            text=text,
+            attachments=attachments,
+            run_request=rr,
+            session=session,
+            door="web",
+        )
+
+        planner = asdict(out)
+        if out.needs_clarification and out.clarify:
+            reply_text = out.clarify.question or "I need clarification before preparing a run."
+        elif out.preview:
+            reply_text = out.preview.summary or "Plan preview ready."
+        else:
+            reply_text = "Request accepted."
+
+        return ok(
+            {
+                "session_id": session_id,
+                "scope": "session",
+                "reply": {
+                    "text": reply_text,
+                    "kind": "planner",
+                    "citations": [],
+                    "actions": [],
+                },
+                "planner": planner,
+            }
+        )
+
+    @app.post("/api/chat/global")
+    async def api_chat_global(payload: Dict[str, Any]) -> Dict[str, Any]:
+        text = (payload.get("text") or "").strip()
+        return ok(
+            {
+                "session_id": None,
+                "scope": "global",
+                "reply": {
+                    "text": f'Global chat scaffold only (not implemented yet). Received: "{text}"' if text else "Global chat scaffold only (not implemented yet).",
+                    "kind": "not_implemented",
+                    "citations": [],
+                    "actions": [],
+                },
+                "planner": None,
+            }
+        )
 
     @app.post("/api/message")
     async def api_message(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -65,11 +973,7 @@ def create_app() -> FastAPI:
         ui_raw = payload.get("ui") or {}
         attachments_raw = payload.get("attachments") or []
 
-        ui = UIState(
-            mode=ui_raw.get("mode"),
-            template=ui_raw.get("template"),
-            speakers=ui_raw.get("speakers"),
-        )
+        rr = RunRequest.from_dict(ui_raw) if isinstance(ui_raw, dict) else RunRequest()
 
         attachments: Optional[list[AttachmentMeta]] = None
         if isinstance(attachments_raw, list) and attachments_raw:
@@ -91,11 +995,11 @@ def create_app() -> FastAPI:
         out = clarify_or_preview(
             text=text,
             attachments=attachments,
-            ui=ui,
+            run_request=rr,
             session=session,
             door="web",
         )
-        return {"result": asdict(out)}
+        return ok({"result": asdict(out)})
 
     @app.post("/api/run")
     async def api_run(payload: Dict[str, Any], background: BackgroundTasks) -> Dict[str, Any]:
@@ -103,35 +1007,415 @@ def create_app() -> FastAPI:
         session_id = payload.get("session_id")
         ui_raw = payload.get("ui") or {}
         if not isinstance(session_id, str) or not session_id:
-            return JSONResponse(status_code=400, content={"error": "session_id is required"})
+            return fail("INVALID_REQUEST", "session_id is required", status=400)
+        if _session_contribution_count(session_id) <= 0:
+            return fail("NO_AUDIO", "No audio uploaded for this session", status=400)
 
-        mode = (ui_raw.get("mode") or "").strip().lower()
-        template = (ui_raw.get("template") or "default").strip().lower() or "default"
-        speakers = ui_raw.get("speakers")
+        rr_payload = dict(ui_raw) if isinstance(ui_raw, dict) else {}
+        # Back-compat: allow transcript_version_id at top-level payload.
+        if "transcript_version_id" not in rr_payload and isinstance(payload.get("transcript_version_id"), str):
+            rr_payload["transcript_version_id"] = payload.get("transcript_version_id")
+        rr = RunRequest.from_dict(rr_payload)
+        if not rr.mode:
+            return fail("INVALID_REQUEST", "mode is required to run", status=400)
 
-        if not mode:
-            return JSONResponse(status_code=400, content={"error": "mode is required to run"})
+        session = SessionContext(active_session_id=session_id, last_run_id=None)
+        out = build_intent_and_plan(text="run", run_request=rr, session=session)
 
-        plan = {"steps": [{"kind": "formalize", "params": {"mode": mode, "template": template, "speakers": speakers}}]}
+        # If the router flagged invalid selections, fail early with details.
+        if not out.plan.validation.ok:
+            return fail(
+                "INVALID_REQUEST",
+                "invalid run request",
+                status=400,
+                details={"issues": [asdict(i) for i in out.plan.validation.issues]},
+            )
+
+        plan = {"steps": [{"kind": s.kind.value, "params": dict(s.params)} for s in out.plan.steps]}
         run_id = create_run(session_id=session_id, plan=plan)
 
         # Run in background so the UI can poll progress.
-        background.add_task(run_job, run_id)
+        _spawn_run_job(run_id)
 
         state = get_run_state(run_id)
-        return {"ok": True, "run_id": run_id, "state": state}
+        return ok({"run_id": run_id, "state": state})
+
+    @app.post("/api/transcribe")
+    async def api_transcribe(payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a transcribe-only run and execute asynchronously."""
+        session_id = payload.get("session_id")
+        if not isinstance(session_id, str) or not session_id:
+            return fail("INVALID_REQUEST", "session_id is required", status=400)
+        if _session_contribution_count(session_id) <= 0:
+            return fail("NO_AUDIO", "No audio uploaded for this session", status=400)
+
+        ui_raw = payload.get("ui") if isinstance(payload.get("ui"), dict) else payload
+        mode = str(ui_raw.get("mode") or "meeting").strip().lower()
+        if mode not in {"meeting", "journal"}:
+            return fail("INVALID_REQUEST", "mode must be meeting or journal", status=400)
+        diarization_enabled = ui_raw.get("diarization_enabled", ui_raw.get("diarize", True))
+        if not isinstance(diarization_enabled, bool):
+            diarization_enabled = True
+
+        plan = {
+            "steps": [
+                {"kind": "validate", "params": {}},
+                {
+                    "kind": "transcribe",
+                    "params": {
+                        "mode": mode,
+                        "session_id": session_id,
+                        "diarization_enabled": diarization_enabled,
+                    },
+                },
+            ]
+        }
+        run_id = create_run(session_id=session_id, plan=plan)
+        _spawn_run_job(run_id)
+        state = get_run_state(run_id)
+        return ok({"run_id": run_id, "state": state})
 
     @app.get("/api/runs/{run_id}")
-    def api_run_status(run_id: str) -> Dict[str, Any]:
+    async def api_run_status(run_id: str) -> Dict[str, Any]:
         state = get_run_state(run_id)
-        return {"run_id": run_id, "state": state, "artifacts": list_run_artifacts(run_id)}
+        return ok({
+            "run_id": run_id,
+            "state": state,
+            # Explicit progress payload for UI polling (QUEST_063)
+            "progress": poll_progress(run_id),
+            # Deterministic downloads derived from run.json['primary_outputs'] (QUEST_063)
+            "downloads": primary_downloads(run_id, state=state),
+            # Full artifact listing (debug / secondary)
+            "artifacts": list_run_artifacts(run_id),
+        })
+
+    @app.post("/api/runs/{run_id}/cancel")
+    async def api_run_cancel(run_id: str) -> Dict[str, Any]:
+        state = get_run_state(run_id)
+        status = str(state.get("status") or "").strip().lower()
+        if status in {"succeeded", "failed", "cancelled"}:
+            return ok({"run_id": run_id, "status": status, "cancelled": False})
+
+        lay = init_stuart_root()
+        run_dir = lay.runs / run_id
+        run_json = run_dir / "run.json"
+        if not run_json.exists():
+            return fail("NOT_FOUND", "run not found", status=404)
+
+        cancel_path = run_dir / "inputs" / "cancel.json"
+        cancel_path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "version": 1,
+            "run_id": run_id,
+            "requested_ts": time.time(),
+            "requested_by": "web_api",
+        }
+        if not cancel_path.exists():
+            cancel_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        return ok({"run_id": run_id, "cancelled": True, "cancel_receipt": str(cancel_path)})
+
+
+
+    @app.get("/api/runs/{run_id}/speakers")
+    async def api_run_speakers(run_id: str) -> Dict[str, Any]:
+        """List distinct speaker labels observed for a run.
+
+        Prefers aligned_transcript.json when available.
+        """
+        lay = init_stuart_root()
+        run_dir = lay.runs / run_id
+        artifacts_dir = run_dir / "artifacts"
+
+        src = artifacts_dir / "aligned_transcript.json"
+        if not src.exists():
+            src = artifacts_dir / "transcript.json"
+
+        if not src.exists():
+            return JSONResponse(
+                status_code=404,
+                content={"ok": False, "run_id": run_id, "error": "transcript json missing"},
+            )
+
+        try:
+            payload = json.loads(src.read_text(encoding="utf-8"))
+        except Exception:
+            return JSONResponse(
+                status_code=500,
+                content={"ok": False, "run_id": run_id, "error": "failed to parse transcript json"},
+            )
+
+        segs = payload.get("segments") if isinstance(payload, dict) else []
+        speakers_set = set()
+        if isinstance(segs, list):
+            for s in segs:
+                if not isinstance(s, dict):
+                    continue
+                spk = s.get("speaker") or s.get("speaker_label")
+                if isinstance(spk, str) and spk.strip():
+                    speakers_set.add(spk.strip().upper())
+
+        speakers = sorted(speakers_set)
+        return {"ok": True, "run_id": run_id, "speakers": speakers, "source": src.name}
+
+
+    @app.post("/api/runs/{run_id}/speaker_map")
+    async def api_run_set_speaker_map(run_id: str, payload: Dict[str, Any], background: BackgroundTasks) -> Dict[str, Any]:
+        """Persist a speaker->name mapping overlay for the session and optionally rerender.
+
+        Payload:
+          {
+            "mapping": {"SPEAKER_00": "Greg", ...},
+            "rerender": true|false (default true)
+          }
+        """
+        mapping_raw = payload.get("mapping") or {}
+        if not isinstance(mapping_raw, dict) or not mapping_raw:
+            return JSONResponse(status_code=400, content={"ok": False, "error": "mapping (dict) is required"})
+
+        mapping: Dict[str, str] = {}
+        for k, v in mapping_raw.items():
+            if not isinstance(k, str) or not isinstance(v, str):
+                continue
+            kk = k.strip().upper()
+            vv = v.strip()
+            if kk and vv:
+                mapping[kk] = vv
+
+        if not mapping:
+            return JSONResponse(
+                status_code=400,
+                content={"ok": False, "error": "mapping must contain at least one non-empty entry"},
+            )
+
+        state = get_run_state(run_id)
+        session_id = state.get("session_id")
+        if not isinstance(session_id, str) or not session_id:
+            return JSONResponse(status_code=404, content={"ok": False, "error": "run not found", "run_id": run_id})
+
+        author_raw = payload.get("author")
+        author = author_raw.strip() if isinstance(author_raw, str) and author_raw.strip() else "web"
+
+        overlay = create_speaker_map_overlay(session_id=session_id, mapping=mapping, author=author)
+        session_state = set_active_speaker_overlay(session_id=session_id, overlay_id=overlay.get("overlay_id"))
+
+        rerender_flag = payload.get("rerender")
+        do_rerender = True if rerender_flag is None else bool(rerender_flag)
+
+        rerender_run_id = None
+        if do_rerender:
+            lay = init_stuart_root()
+            run_dir = lay.runs / run_id
+
+            # Reuse the original run's formalize params when possible.
+            formalize_params: Dict[str, Any] = {}
+            plan0 = state.get("plan") if isinstance(state, dict) else {}
+            steps0 = plan0.get("steps") if isinstance(plan0, dict) else []
+            if isinstance(steps0, list):
+                for st in steps0:
+                    if not isinstance(st, dict):
+                        continue
+                    kind = st.get("kind")
+                    if isinstance(kind, str) and kind.strip().lower() == "formalize":
+                        p0 = st.get("params") if isinstance(st.get("params"), dict) else {}
+                        formalize_params = dict(p0)
+                        break
+
+            if not formalize_params:
+                formalize_params = {"mode": "meeting", "template_id": "default", "retention": "MED"}
+
+            # Pin contribution_id from the prior run's resolved_input receipt (QUEST_031).
+            try:
+                rp = run_dir / "inputs" / "resolved_input.json"
+                if rp.exists():
+                    rp_json = json.loads(rp.read_text(encoding="utf-8"))
+                    cid = rp_json.get("contribution_id")
+                    if isinstance(cid, str) and cid.strip():
+                        formalize_params["contribution_id"] = cid.strip()
+            except Exception:
+                pass
+
+            # QUEST_071: This rerender is a formalize-only rerun.
+            # Reuse transcript artifacts from the base run so we don't re-ingest audio.
+            formalize_params["reuse_run_id"] = run_id
+
+            # Ensure session_id is explicit for downstream tooling.
+            formalize_params["session_id"] = session_id
+
+            plan = {
+                "steps": [
+                    {"kind": "validate", "params": {}},
+                    {"kind": "formalize", "params": formalize_params},
+                ]
+            }
+            rerender_run_id = create_run(session_id=session_id, plan=plan)
+            background.add_task(run_job, rerender_run_id)
+
+        return {
+            "ok": True,
+            "run_id": run_id,
+            "session_id": session_id,
+            "overlay": overlay,
+            "session_state": session_state,
+            "rerender_run_id": rerender_run_id,
+        }
+
+    @app.post("/api/runs/{run_id}/reformalize")
+    async def api_run_reformalize(run_id: str, payload: Dict[str, Any], background: BackgroundTasks) -> Dict[str, Any]:
+        """Create a formalize-only rerun for an existing run.
+
+        Allows changing template/retention without re-uploading or retranscribing.
+
+        Payload:
+          {
+            "template_id": "default",
+            "retention": "MED"
+          }
+        """
+
+        state = get_run_state(run_id)
+        session_id = state.get("session_id")
+        if not isinstance(session_id, str) or not session_id:
+            return JSONResponse(status_code=404, content={"ok": False, "error": "run not found", "run_id": run_id})
+
+        # Extract the base run's formalize params as defaults.
+        base_params: Dict[str, Any] = {}
+        plan0 = state.get("plan") if isinstance(state, dict) else {}
+        steps0 = plan0.get("steps") if isinstance(plan0, dict) else []
+        if isinstance(steps0, list):
+            for st in steps0:
+                if not isinstance(st, dict):
+                    continue
+                kind = st.get("kind")
+                if isinstance(kind, str) and kind.strip().lower() == "formalize":
+                    p0 = st.get("params") if isinstance(st.get("params"), dict) else {}
+                    base_params = dict(p0)
+                    break
+
+        base_mode = (base_params.get("mode") or "meeting")
+        base_template = (base_params.get("template_id") or base_params.get("template") or "default")
+        base_retention = (base_params.get("retention") or "MED")
+
+        # Apply overrides from payload.
+        template_raw = payload.get("template_id")
+        if template_raw is None:
+            template_raw = payload.get("template")
+        template_id = (str(template_raw).strip().lower() if template_raw is not None else str(base_template).strip().lower()) or "default"
+
+        retention_raw = payload.get("retention")
+        retention = (str(retention_raw).strip().upper() if retention_raw is not None else str(base_retention).strip().upper()) or "MED"
+
+        # Pin contribution_id from the base run's resolved_input receipt (QUEST_031)
+        # so reruns stay attached to the same uploaded media.
+        contribution_id = None
+        try:
+            lay = init_stuart_root()
+            rp = lay.runs / run_id / "inputs" / "resolved_input.json"
+            if rp.exists():
+                rp_json = json.loads(rp.read_text(encoding="utf-8"))
+                cid = rp_json.get("contribution_id")
+                if isinstance(cid, str) and cid.strip():
+                    contribution_id = cid.strip()
+        except Exception:
+            contribution_id = None
+
+        formalize_params: Dict[str, Any] = {
+            "mode": str(base_mode).strip().lower() or "meeting",
+            "template_id": template_id,
+            "retention": retention,
+            "session_id": session_id,
+            # QUEST_070/071: reuse transcript substrate to avoid re-ingest.
+            "reuse_run_id": run_id,
+        }
+        if contribution_id is not None:
+            formalize_params["contribution_id"] = contribution_id
+
+        plan = {
+            "steps": [
+                {"kind": "validate", "params": {}},
+                {"kind": "formalize", "params": formalize_params},
+            ]
+        }
+
+        try:
+            rerun_run_id = create_run(session_id=session_id, plan=plan)
+        except Exception as e:
+            return JSONResponse(status_code=400, content={"ok": False, "error": f"failed to create rerun: {type(e).__name__}: {e}"})
+
+        _spawn_run_job(rerun_run_id)
+        return {
+            "ok": True,
+            "base_run_id": run_id,
+            "rerun_run_id": rerun_run_id,
+            "session_id": session_id,
+            "params": dict(formalize_params),
+        }
+    @app.get("/api/runs/{run_id}/progress")
+    async def api_run_progress(run_id: str) -> Dict[str, Any]:
+        return poll_progress(run_id)
+
+    @app.get("/api/sessions/{session_id}/export")
+    async def api_session_export(session_id: str, export_type: str = "full_bundle", format: Optional[str] = None) -> Any:
+        lay = init_stuart_root()
+        if not (lay.sessions / session_id / "session.json").exists():
+            return fail("NOT_FOUND", "session not found", status=404)
+
+        et = (export_type or "full_bundle").strip().lower()
+        if et not in {"full_bundle", "transcript_only", "formalization_only"}:
+            return fail("INVALID_REQUEST", "invalid export_type", status=400)
+
+        try:
+            res = export_session_bundle(session_id, export_type=et)
+            zip_path = Path(res.zip_path)
+        except FileExistsError:
+            candidates = sorted(lay.exports.glob(f"{session_id}__export_{et}__*.zip"))
+            if not candidates:
+                return fail("INTERNAL_ERROR", "export already exists but could not be resolved", status=500)
+            zip_path = candidates[-1]
+        except Exception as e:
+            return fail("INTERNAL_ERROR", f"export failed: {type(e).__name__}: {e}", status=500)
+
+        if not zip_path.exists():
+            return fail("INTERNAL_ERROR", "export zip missing after creation", status=500)
+
+        # Backward-compat for existing frontend behavior expecting blob bytes.
+        if (format or "").strip().lower() == "zip":
+            return FileResponse(path=str(zip_path), filename=zip_path.name)
+
+        h = hashlib.sha256()
+        with zip_path.open("rb") as f:
+            for chunk in iter(lambda: f.read(65536), b""):
+                h.update(chunk)
+
+        return ok(
+            {
+                "session_id": session_id,
+                "export_type": et,
+                "zip": {
+                    "name": zip_path.name,
+                    "path": str(zip_path),
+                    "sha256": h.hexdigest(),
+                    "size_bytes": zip_path.stat().st_size,
+                    "download_url": f"/api/exports/{zip_path.name}",
+                },
+            }
+        )
+
+    @app.get("/api/exports/{filename}")
+    async def api_export_download(filename: str) -> Any:
+        if "/" in filename or "\\" in filename or ".." in filename:
+            return fail("INVALID_REQUEST", "invalid filename", status=400)
+        lay = init_stuart_root()
+        p = lay.exports / filename
+        if not p.exists() or not p.is_file():
+            return fail("NOT_FOUND", "export file not found", status=404)
+        return FileResponse(path=str(p), filename=filename)
 
     @app.get("/download/{run_id}/{filename}")
-    def download_artifact(run_id: str, filename: str) -> Any:
+    async def download_artifact(run_id: str, filename: str) -> Any:
         return artifact_response(run_id, filename)
 
     @app.get("/api/search")
-    def api_search(q: str, session_id: Optional[str] = None, limit: int = 10) -> Dict[str, Any]:
+    async def api_search(q: str, session_id: Optional[str] = None, limit: int = 10) -> Dict[str, Any]:
         db_path = sqlite_fts.get_db_path()
         conn = sqlite_fts.connect(db_path)
         try:

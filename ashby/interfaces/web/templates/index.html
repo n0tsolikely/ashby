@@ -24,12 +24,33 @@
             <option value="" selected disabled>Template</option>
           </select>
         </div>
+
+        <div class="topbar-right">
+          <input id="searchInput" type="text" placeholder="Search library..." autocomplete="off"/>
+          <button class="pill" id="searchBtn" type="button">Search</button>
+          <button class="pill" id="libraryBtn" type="button">Library</button>
+        </div>
       </header>
+
+      <div class="statusbar" id="statusbar">
+        <div class="statusslot">
+          <span class="statusk">Session</span>
+          <span class="statusv" id="sessionLabel">none</span>
+        </div>
+        <div class="statusslot">
+          <span class="statusk">File</span>
+          <span class="statusv" id="fileLabel">none</span>
+        </div>
+        <div class="statusslot">
+          <span class="statusk">Run</span>
+          <span class="statusv" id="runLabel">idle</span>
+        </div>
+      </div>
 
       <section class="chat" id="chat"></section>
 
       <footer class="composer">
-        <button class="icon-btn" id="attachBtn" title="Attach file (later)">
+        <button class="icon-btn" id="attachBtn" title="Attach file">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
 

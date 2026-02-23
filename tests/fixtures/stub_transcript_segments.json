@@ -1,0 +1,6 @@
+[
+  {"segment_id": 0, "speaker": "SPEAKER_00", "start_ms": 0, "end_ms": 0, "text": "Hello, this is a sample speaker line."},
+  {"segment_id": 1, "speaker": "SPEAKER_01", "start_ms": 0, "end_ms": 0, "text": "And this is another speaker line."},
+  {"segment_id": 2, "speaker": "SPEAKER_01", "start_ms": 0, "end_ms": 0, "text": "I made kimchi yesterday and it was spicy."},
+  {"segment_id": 3, "speaker": "SPEAKER_00", "start_ms": 0, "end_ms": 0, "text": "Second line from speaker 00 for extraction tests."}
+]

@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!text) return;
     addBubble("user", text);
     prompt.value = "";
-    addBubble("assistant", "Got it. (Chat is scaffold-only; uploads run Stuart and return a PDF link.)");
+    addBubble("assistant", "Got it. (Chat scaffold; uploads store only and return a plan preview.)");
   }
 
   sendBtn?.addEventListener("click", (e) => {
@@ -69,12 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
     addBubble("user", `Uploading: ${file.name} ...`);
     try {
       const out = await uploadFile(file);
-      addBubble("assistant", `Uploaded: ${out.filename}`);
-      if (out.pdf_url) {
-        addBubble("assistant", "PDF ready:");
-        addDownloadLink(out.pdf_url);
+      const fname = (out.attachment && out.attachment.filename) || out.filename || file.name;
+      addBubble("assistant", `Stored upload: ${fname}`);
+
+      if (out.plan_preview && out.plan_preview.ordered_steps) {
+        const steps = out.plan_preview.ordered_steps.map(s => s.kind).join(" → ") || 'none';
+        addBubble("assistant", `Plan preview: ${steps}`);
+        addBubble("assistant", "Upload ≠ process. Confirm-to-run is implemented in the main /api web door.");
       } else {
-        addBubble("assistant", "Run completed but no PDF URL was returned.");
+        addBubble("assistant", "Upload stored. No plan preview payload was returned.");
       }
     } catch (err) {
       addBubble("assistant", `Upload error: ${err.message || err}`);

@@ -2,6 +2,78 @@ from __future__ import annotations
 
 import time
 from pathlib import Path
+import json
+
+def _load_transcript_lines(run_dir: Path, *, mode: str) -> list[str]:
+    """Return transcript lines for rendering.
+
+    Preference:
+    - meeting: aligned_transcript.json (speaker-tagged) if present
+    - else: transcript.json (speaker-tagged) if present
+    - else: transcript.txt (raw) if present
+    - else: [] (no transcript)
+    """
+    artifacts = run_dir / "artifacts"
+    ajson = artifacts / "aligned_transcript.json"
+    tjson = artifacts / "transcript.json"
+    ttxt = artifacts / "transcript.txt"
+
+    if mode == "meeting" and ajson.exists():
+        try:
+            payload = json.loads(ajson.read_text(encoding="utf-8"))
+            lines = []
+            for s in payload.get("segments") or []:
+                spk = (s.get("speaker") or "SPEAKER_00")
+                text = (s.get("text") or "").strip()
+                if text:
+                    lines.append(f"{spk}: {text}")
+            return lines
+        except Exception:
+            pass
+
+    if tjson.exists():
+        try:
+            payload = json.loads(tjson.read_text(encoding="utf-8"))
+            lines = []
+            for s in payload.get("segments") or []:
+                spk = (s.get("speaker") or "SPEAKER_00")
+                text = (s.get("text") or "").strip()
+                if text:
+                    lines.append(f"{spk}: {text}")
+            return lines
+        except Exception:
+            pass
+
+    if ttxt.exists():
+        return [ln.strip() for ln in ttxt.read_text(encoding="utf-8", errors="replace").splitlines() if ln.strip()]
+
+    return []
+
+from typing import Any, Dict, List, Tuple
+
+def _load_segments_for_render(run_dir: Path, *, mode: str) -> Tuple[str, List[Dict[str, Any]]]:
+    """Return (source_name, segments) for rendering.
+
+    Rule:
+    - meeting mode prefers aligned_transcript.json if present
+    - journal mode uses transcript.json
+    - fallback to transcript.txt as SPEAKER_00 lines
+    """
+    ajson = run_dir / "artifacts" / "aligned_transcript.json"
+    tjson = run_dir / "artifacts" / "transcript.json"
+    if mode == "meeting" and ajson.exists():
+        payload = json.loads(ajson.read_text(encoding="utf-8"))
+        return ("aligned_transcript.json", payload.get("segments") or [])
+    if tjson.exists():
+        payload = json.loads(tjson.read_text(encoding="utf-8"))
+        return ("transcript.json", payload.get("segments") or [])
+    ttxt = run_dir / "artifacts" / "transcript.txt"
+    segs: List[Dict[str, Any]] = []
+    if ttxt.exists():
+        for i, line in enumerate(ttxt.read_text(encoding="utf-8", errors="replace").splitlines()):
+            segs.append({"segment_id": i, "start_ms": 0, "end_ms": 0, "speaker": "SPEAKER_00", "text": line.strip()})
+    return ("transcript.txt", segs)
+
 from typing import Any, Dict, Optional
 
 from ashby.modules.meetings.hashing import sha256_file
@@ -37,6 +109,11 @@ def render_formalized_md(
         if speaker_map:
             transcript_txt = apply_speaker_map_to_transcript_text(transcript_txt, speaker_map)
 
+    # QUEST_039: if no transcript_path provided, load from canonical artifacts
+    if not transcript_txt:
+        lines = _load_transcript_lines(run_dir, mode=mode)
+        if lines:
+            transcript_txt = "\n".join(lines).strip()
     out_path = artifacts_dir / "formalized.md"
     if not out_path.exists():
         parts = []

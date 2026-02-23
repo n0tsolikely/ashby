@@ -39,4 +39,4 @@ def resolve_ui_from_text(text: str, ui: UIState) -> UIState:
     """
     mode = ui.mode or _extract_mode(text)
     speakers = ui.speakers if ui.speakers is not None else _extract_speakers(text)
-    return UIState(mode=mode, template=ui.template, speakers=speakers)
+    return UIState(mode=mode, template=ui.template, retention=ui.retention, speakers=speakers)

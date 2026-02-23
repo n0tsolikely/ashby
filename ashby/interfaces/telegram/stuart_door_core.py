@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Literal, Optional, Tuple
+from typing import List, Literal, Optional, Tuple
+
+from ashby.modules.meetings.schemas.run_request import RunRequest
 
 Mode = Literal["meeting", "journal"]
 Speakers = Literal["auto", "1", "2", "3+"]
@@ -23,7 +25,7 @@ class DoorPrompt:
 
 @dataclass
 class DoorState:
-    stage: str  # "awaiting_mode" | "awaiting_speakers" | "ready"
+    stage: str  # "awaiting_mode" | "awaiting_speakers" | "awaiting_confirm" | "ready"
     local_path: str
     source_kind: str  # "audio" | "video" | "voice" | "document"
     mode: Optional[Mode] = None
@@ -31,6 +33,11 @@ class DoorState:
     # Once executed:
     session_id: Optional[str] = None
     run_id: Optional[str] = None
+
+    def to_run_request(self) -> RunRequest:
+        """Convert door selections into the canonical meetings RunRequest contract."""
+        # Normalize through the RunRequest contract (e.g., "2" -> 2, "3+" -> 3)
+        return RunRequest.from_dict({"mode": self.mode, "speakers": self.speakers})
 
 
 def start_from_upload(*, local_path: str, source_kind: str) -> Tuple[DoorState, DoorPrompt]:
@@ -60,25 +67,36 @@ def apply_mode(st: DoorState, mode: Mode) -> Tuple[DoorState, DoorPrompt]:
     return st, prompt
 
 
-def apply_speakers(st: DoorState, speakers: Speakers) -> DoorState:
-    st.stage = "ready"
+def apply_speakers(st: DoorState, speakers: Speakers) -> Tuple[DoorState, DoorPrompt]:
+    st.stage = "awaiting_confirm"
     st.speakers = speakers
-    return st
+    prompt = DoorPrompt(
+        text=(
+            "Stuart: confirm run\n"
+            f"Mode: {st.mode or 'meeting'}\n"
+            f"Speakers: {speakers}"
+        ),
+        buttons=[
+            DoorButton("Confirm & Run", f"{STUART_CB_PREFIX}go:run"),
+            DoorButton("Cancel", f"{STUART_CB_PREFIX}go:cancel"),
+        ],
+    )
+    return st, prompt
 
 
 def parse_callback_data(data: str) -> Optional[Tuple[str, str]]:
-    # Returns (kind, value) where kind in {"mode","spk"}
+    # Returns (kind, value) where kind in {"mode","spk","go"}
     if not isinstance(data, str):
         return None
     if not data.startswith(STUART_CB_PREFIX):
         return None
-    body = data[len(STUART_CB_PREFIX):]
+    body = data[len(STUART_CB_PREFIX) :]
     if ":" not in body:
         return None
     kind, value = body.split(":", 1)
     kind = kind.strip()
     value = value.strip()
-    if kind not in ("mode", "spk"):
+    if kind not in ("mode", "spk", "go"):
         return None
     if not value:
         return None

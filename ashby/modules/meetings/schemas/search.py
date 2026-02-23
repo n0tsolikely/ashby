@@ -8,20 +8,22 @@ from typing import Any, Dict, List, Optional
 class CitationAnchor:
     """Pointer back to a ground-truth transcript segment.
 
-    V1 anchor discipline (QUEST_022/023): transcript.txt line numbers.
-    Future: replace/augment with aligned timestamps.
+    Anchor discipline:
+    - segment_id is the stable pointer (from transcript.json/aligned_transcript.json)
+      or legacy transcript.txt line anchor.
+    - t_start/t_end are optional timestamp hints (seconds) when available.
     """
 
     session_id: str
     run_id: str
-    segment_id: int  # v1: transcript line number
+    segment_id: int
 
     speaker_label: Optional[str] = None
     t_start: Optional[float] = None
     t_end: Optional[float] = None
     source_path: Optional[str] = None
 
-    kind: str = "transcript_line"
+    kind: str = "transcript_segment"
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -63,6 +65,8 @@ class SearchResults:
     query: str
     limit: int
     total_hits: int
+    session_filter: Optional[str] = None
+    mode_filter: Optional[str] = None
     results: List[SearchResultItem] = field(default_factory=list)
 
     message: Optional[str] = None
@@ -72,6 +76,8 @@ class SearchResults:
             "query": self.query,
             "limit": int(self.limit),
             "total_hits": int(self.total_hits),
+            "session_filter": self.session_filter,
+            "mode_filter": self.mode_filter,
             "results": [r.to_dict() for r in self.results],
             "message": self.message,
         }

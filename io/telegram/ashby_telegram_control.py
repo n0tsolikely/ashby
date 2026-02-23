@@ -143,7 +143,16 @@ async def handle_media(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Where to stash the incoming file
     import os
     from pathlib import Path
-    stuart_root = os.environ.get("STUART_ROOT") or str(Path.cwd() / "StuartRuntime")
+    # Runtime storage must stay outside repo by default.
+    # Priority:
+    # 1) STUART_ROOT (explicit operator override)
+    # 2) ASHBY_TELEGRAM_RUNTIME_ROOT (telegram-specific override)
+    # 3) ~/ashby_runtime/ashby (canonical default for telegram control runtime)
+    stuart_root = (
+        os.environ.get("STUART_ROOT")
+        or os.environ.get("ASHBY_TELEGRAM_RUNTIME_ROOT")
+        or str(Path("~/ashby_runtime/ashby").expanduser())
+    )
     inbox = Path(stuart_root) / "inbox" / "telegram" / chat_id
     inbox.mkdir(parents=True, exist_ok=True)
     dest = inbox / filename
@@ -182,34 +191,35 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if kind == "spk":
-        # Store choice (not yet used by pipeline, but captured for future diarization adapters)
-        st = apply_speakers(st, value if value in ("auto", "1", "2", "3+") else "auto")  # type: ignore[arg-type]
+        # Capture speakers, then require an explicit confirm before running.
+        st, prompt = apply_speakers(st, value if value in ("auto", "1", "2", "3+") else "auto")  # type: ignore[arg-type]
         context.user_data["stuart_door_state"] = st.__dict__
+        await q.message.reply_text(prompt.text, reply_markup=_prompt_to_markup(prompt))
+        return
 
-        await q.message.reply_text("Stuart: running default pipeline…")
-        await q.message.reply_text("Stuart: running default pipeline…")
+    if kind == "go":
+        if value == "cancel":
+            context.user_data.pop("stuart_door_state", None)
+            await q.message.reply_text("Stuart: cancelled.")
+            return
+
+        if value != "run":
+            return
+
+        rr = st.to_run_request()
+        await q.message.reply_text("Stuart: running...")
         try:
             out = run_default_pipeline(
                 local_path=st.local_path,
                 source_kind="audio" if st.source_kind != "video" else "video",
-                mode=st.mode or "meeting",
+                run_request=rr,
             )
 
-            # DEBUG: print everything to the console
-            import json
-            print("\n========== STUART PIPELINE OUT ==========")
-            try:
-                print(json.dumps(out, indent=2, default=str))
-            except Exception:
-                print(out)
-            print("========== /STUART PIPELINE OUT ==========\n")
-
             pdf_path = out.get("pdf_path")
-
             if isinstance(pdf_path, str) and pdf_path:
                 from pathlib import Path
+
                 p = Path(pdf_path)
-                print(f"[telegram] pdf_path={pdf_path} exists={p.exists()}")
                 if p.exists():
                     await q.message.reply_document(document=p.read_bytes(), filename=p.name)
                 else:
@@ -218,27 +228,10 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await q.message.reply_text("Stuart: ran, but no PDF path returned.")
         except Exception as e:
             import traceback
+
             print("\n========== STUART ERROR ==========")
             traceback.print_exc()
             print("========== /STUART ERROR ==========\n")
-            await q.message.reply_text(f"Stuart error: {e}")
-        finally:
-            context.user_data.pop("stuart_door_state", None)
-        return
-
-        try:
-            out = run_default_pipeline(local_path=st.local_path, source_kind="audio" if st.source_kind != "video" else "video", mode=st.mode or "meeting")
-            pdf_path = out.get("pdf_path")
-            if isinstance(pdf_path, str) and pdf_path:
-                from pathlib import Path
-                p = Path(pdf_path)
-                if p.exists():
-                    await q.message.reply_document(document=p.read_bytes(), filename=p.name)
-                else:
-                    await q.message.reply_text(f"Stuart: ran, but PDF missing: {pdf_path}")
-            else:
-                await q.message.reply_text("Stuart: ran, but no PDF path returned.")
-        except Exception as e:
             await q.message.reply_text(f"Stuart error: {e}")
         finally:
             context.user_data.pop("stuart_door_state", None)

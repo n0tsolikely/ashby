@@ -21,12 +21,14 @@ def test_mode_then_speakers_then_ready():
     assert st.mode == "meeting"
     assert any(b.data.startswith(STUART_CB_PREFIX + "spk:") for b in prompt.buttons)
 
-    st = apply_speakers(st, "2")
-    assert st.stage == "ready"
+    st, confirm = apply_speakers(st, "2")
+    assert st.stage == "awaiting_confirm"
     assert st.speakers == "2"
+    assert any(b.data.startswith(STUART_CB_PREFIX + "go:") for b in confirm.buttons)
 
 
 def test_parse_callback_data():
     assert parse_callback_data("nope") is None
     assert parse_callback_data(STUART_CB_PREFIX + "mode:meeting") == ("mode", "meeting")
     assert parse_callback_data(STUART_CB_PREFIX + "spk:3+") == ("spk", "3+")
+    assert parse_callback_data(STUART_CB_PREFIX + "go:run") == ("go", "run")

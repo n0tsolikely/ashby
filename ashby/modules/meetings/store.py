@@ -7,6 +7,9 @@ from typing import Any, Dict, Optional
 from .init_root import init_stuart_root
 from .ids import new_id
 from .hashing import sha256_file
+from .mode_registry import validate_mode
+from .retention_registry import default_retention, validate_retention
+from .template_registry import validate_template
 from .manifests import (
     SessionManifest,
     ContributionManifest,
@@ -16,6 +19,76 @@ from .manifests import (
     save_manifest_atomic_overwrite,
     append_event_jsonl,
 )
+
+
+def _step_kind(step: Dict[str, Any]) -> str:
+    for k in ("kind", "name", "stage", "id"):
+        v = step.get(k)
+        if isinstance(v, str) and v.strip():
+            return v.strip().lower()
+    return ""
+
+
+def _normalize_formalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize + validate formalize params before a run is created.
+
+    QUEST_042:
+      - stable param names: retention, template_id
+      - defaults: retention=MED, template_id=default
+      - invalid values must fail BEFORE we create a run dir/manifest
+    """
+    p: Dict[str, Any] = dict(params or {})
+
+    mode_raw = p.get("mode") or "meeting"
+    mv = validate_mode(str(mode_raw))
+    if not mv.ok or mv.canonical is None:
+        raise ValueError(mv.message or "Invalid mode.")
+
+    template_raw = p.get("template_id") or p.get("template") or "default"
+    template_id = (str(template_raw).strip().lower() or "default")
+    tv = validate_template(mv.canonical, template_id)
+    if not tv.ok or tv.template_id is None:
+        raise ValueError(tv.message or "Invalid mode/template.")
+
+    retention_raw = p.get("retention") or default_retention()
+    rv = validate_retention(str(retention_raw))
+    if not rv.ok or rv.canonical is None:
+        raise ValueError(rv.message or "Invalid retention.")
+
+    # write back canonical params
+    p["mode"] = mv.canonical
+    p["template_id"] = tv.template_id
+    p["retention"] = rv.canonical
+    # legacy key cleanup
+    p.pop("template", None)
+    return p
+
+
+def _normalize_plan_for_run(plan: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(plan, dict):
+        raise TypeError("plan must be a dict")
+
+    steps = plan.get("steps")
+    if not isinstance(steps, list):
+        return dict(plan)
+
+    out_plan = dict(plan)
+    out_steps = []
+    for s in steps:
+        if not isinstance(s, dict):
+            out_steps.append(s)
+            continue
+
+        if _step_kind(s) == "formalize":
+            params = s.get("params") if isinstance(s.get("params"), dict) else {}
+            ns = dict(s)
+            ns["params"] = _normalize_formalize_params(params)
+            out_steps.append(ns)
+        else:
+            out_steps.append(s)
+
+    out_plan["steps"] = out_steps
+    return out_plan
 
 def create_session(mode: str, title: Optional[str] = None) -> str:
     lay = init_stuart_root()
@@ -94,6 +167,9 @@ def create_run(session_id: str, plan: Dict[str, Any]) -> str:
     if not sess_manifest.exists():
         raise FileNotFoundError(f"Unknown session_id (missing manifest): {sess_manifest}")
 
+    # QUEST_042: normalize + validate run params before allocating a run dir.
+    plan = _normalize_plan_for_run(plan)
+
     run_id = new_id("run")
 
     run_dir = lay.runs / run_id
@@ -111,6 +187,7 @@ def create_run(session_id: str, plan: Dict[str, Any]) -> str:
         stage="queued",
         errors=[],
         artifacts=[],
+        primary_outputs={},
     )
     save_manifest_write_once(run_dir / "run.json", m.to_dict())
     # initial lifecycle event
@@ -133,6 +210,7 @@ def update_run_state(
     ended_ts: Optional[float] = None,
     error: Optional[Dict[str, Any]] = None,
     artifact: Optional[Dict[str, Any]] = None,
+    primary_outputs: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     lay = init_stuart_root()
 
@@ -181,6 +259,12 @@ def update_run_state(
             if key not in existing:
                 m['artifacts'].append(artifact)
 
+
+    if primary_outputs is not None:
+        if not isinstance(primary_outputs, dict):
+            raise TypeError("primary_outputs must be a dict")
+        m["primary_outputs"] = primary_outputs
+
     # Write state + append event
     save_manifest_atomic_overwrite(run_path, m)
 
@@ -196,6 +280,8 @@ def update_run_state(
     if artifact is not None:
         evt["artifact"] = artifact
 
+    if primary_outputs is not None:
+        evt["primary_outputs"] = primary_outputs
     append_event_jsonl(events_path, evt)
     return m
 def get_run_state(run_id: str) -> Dict[str, Any]:

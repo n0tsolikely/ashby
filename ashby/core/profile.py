@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Literal, TypeAlias
@@ -18,6 +20,23 @@ class ExecutionProfile(str, Enum):
     LOCAL_ONLY = "LOCAL_ONLY"
     HYBRID = "HYBRID"
     CLOUD = "CLOUD"
+
+
+
+def get_execution_profile() -> ExecutionProfile:
+    """Return the active execution profile.
+
+    Rule:
+    - Reads ASHBY_EXECUTION_PROFILE from env.
+    - Defaults to LOCAL_ONLY.
+    - Invalid values fall back to LOCAL_ONLY (truthful + safe).
+    """
+    raw = (os.environ.get("ASHBY_EXECUTION_PROFILE") or "").strip().upper()
+    try:
+        return ExecutionProfile(raw) if raw else ExecutionProfile.LOCAL_ONLY
+    except Exception:
+        return ExecutionProfile.LOCAL_ONLY
+
 
 
 DataCategory: TypeAlias = Literal["audio", "transcript", "text", "image", "metadata"]

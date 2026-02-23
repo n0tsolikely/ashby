@@ -62,11 +62,13 @@ class RunManifest:
     stage: str = "queued"
     errors: List[Dict[str, Any]] = None
     artifacts: List[Dict[str, Any]] = None
+    primary_outputs: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         d = asdict(self)
         d["errors"] = d["errors"] or []
         d["artifacts"] = d["artifacts"] or []
+        d["primary_outputs"] = d.get("primary_outputs") or {}
         return d
 
 

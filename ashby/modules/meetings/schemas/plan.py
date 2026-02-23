@@ -9,6 +9,7 @@ class IntentKind(str, Enum):
     SET_MODE = "set_mode"
     SET_SPEAKERS = "set_speakers"
     INTAKE = "intake"
+    TRANSCRIBE = "transcribe"
     FORMALIZE = "formalize"
     SEARCH = "search"
     EXPORT = "export"
@@ -21,6 +22,7 @@ class PlanStepKind(str, Enum):
     SET_MODE = "set_mode"
     SET_SPEAKERS = "set_speakers"
     INTAKE = "intake"
+    TRANSCRIBE = "transcribe"
     FORMALIZE = "formalize"
     SEARCH = "search"
     EXPORT = "export"
@@ -40,7 +42,10 @@ class AttachmentMeta:
 class UIState:
     mode: Optional[str] = None
     template: Optional[str] = None
+    retention: Optional[str] = None
     speakers: Optional[Union[int, str]] = None  # int or "auto"
+    diarization_enabled: Optional[bool] = None
+    transcript_version_id: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -68,6 +73,7 @@ class MeetingsIntent:
     raw_text: str = ""
     mode: Optional[str] = None
     template: Optional[str] = None
+    retention: Optional[str] = None
     speakers: Optional[Union[int, str]] = None
     query: Optional[str] = None
     export_format: Optional[str] = None

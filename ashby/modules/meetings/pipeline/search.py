@@ -16,6 +16,7 @@ def search_and_write_results(
     *,
     query: str,
     session_id: Optional[str] = None,
+    mode_filter: Optional[str] = None,
     limit: int = 10,
 ) -> Dict[str, Any]:
     """Execute deterministic keyword search and write door-agnostic results artifact.
@@ -34,7 +35,7 @@ def search_and_write_results(
     conn = connect(db_path)
     try:
         ensure_schema(conn)
-        hits = search(conn, q, limit=int(limit), session_id=session_id)
+        hits = search(conn, q, limit=int(limit), session_id=session_id, mode=mode_filter)
     finally:
         conn.close()
 
@@ -70,6 +71,8 @@ def search_and_write_results(
         query=q,
         limit=int(limit),
         total_hits=len(items),
+        session_filter=session_id,
+        mode_filter=mode_filter,
         results=items,
         message=msg,
     )

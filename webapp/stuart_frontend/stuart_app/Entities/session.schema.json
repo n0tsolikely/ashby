@@ -1,0 +1,72 @@
+{
+  "name": "Session",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Session title or auto-generated from date/content"
+    },
+    "audio_file_url": {
+      "type": "string",
+      "description": "URL of uploaded audio file"
+    },
+    "audio_filename": {
+      "type": "string",
+      "description": "Original filename"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Audio duration in seconds"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "uploaded",
+        "processing",
+        "transcribed",
+        "formalized",
+        "failed",
+        "partial"
+      ],
+      "default": "uploaded"
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "LOCAL_ONLY",
+        "HYBRID",
+        "CLOUD"
+      ],
+      "default": "HYBRID"
+    },
+    "transcript_json_str": {
+      "type": "string",
+      "description": "JSON string of transcript segments array"
+    },
+    "transcript_text": {
+      "type": "string",
+      "description": "Plain text transcript for human reading"
+    },
+    "diarization_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "speaker_map_str": {
+      "type": "string",
+      "description": "JSON string mapping speaker labels to real names"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "error_message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "status"
+  ]
+}

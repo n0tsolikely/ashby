@@ -22,9 +22,14 @@ def load_session_state(session_id: str) -> Dict[str, Any]:
             "version": 1,
             "session_id": session_id,
             "active_speaker_overlay_id": None,
+            "active_transcript_version_id": None,
             "updated_ts": None,
         }
-    return json.loads(p.read_text(encoding="utf-8"))
+    payload = json.loads(p.read_text(encoding="utf-8"))
+    # Back-compat: older state files may not carry the transcript pointer key.
+    if "active_transcript_version_id" not in payload:
+        payload["active_transcript_version_id"] = None
+    return payload
 
 
 def set_active_speaker_overlay(session_id: str, overlay_id: Optional[str]) -> Dict[str, Any]:
@@ -33,3 +38,15 @@ def set_active_speaker_overlay(session_id: str, overlay_id: Optional[str]) -> Di
     s["updated_ts"] = time.time()
     save_manifest_atomic_overwrite(_state_path(session_id), s)
     return s
+
+
+def set_active_transcript_version(session_id: str, transcript_version_id: Optional[str]) -> Dict[str, Any]:
+    s = load_session_state(session_id)
+    s["active_transcript_version_id"] = transcript_version_id
+    s["updated_ts"] = time.time()
+    save_manifest_atomic_overwrite(_state_path(session_id), s)
+    return s
+
+
+def clear_active_transcript_version(session_id: str) -> Dict[str, Any]:
+    return set_active_transcript_version(session_id, None)

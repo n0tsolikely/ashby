@@ -1,0 +1,88 @@
+{
+  "name": "Formalization",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Reference to parent session"
+    },
+    "run_id": {
+      "type": "string",
+      "description": "Unique run identifier"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "meeting_minutes",
+        "journal",
+        "incident_report",
+        "general_query"
+      ],
+      "description": "Formalization mode"
+    },
+    "template": {
+      "type": "string",
+      "description": "Template name within mode"
+    },
+    "retention_level": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "MED",
+        "HIGH",
+        "NEAR_VERBATIM"
+      ],
+      "default": "MED"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "partial"
+      ],
+      "default": "pending"
+    },
+    "output_json_str": {
+      "type": "string",
+      "description": "JSON string of structured formalization output"
+    },
+    "output_markdown": {
+      "type": "string",
+      "description": "Markdown formatted output"
+    },
+    "evidence_map_str": {
+      "type": "string",
+      "description": "JSON string of evidence links"
+    },
+    "pdf_url": {
+      "type": "string",
+      "description": "URL to generated PDF"
+    },
+    "data_left_machine": {
+      "type": "boolean",
+      "default": false
+    },
+    "adapters_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "error_message": {
+      "type": "string"
+    },
+    "processing_log_str": {
+      "type": "string",
+      "description": "JSON string of processing steps log"
+    }
+  },
+  "required": [
+    "session_id",
+    "mode",
+    "template",
+    "retention_level"
+  ]
+}
