@@ -63,6 +63,7 @@ class RunManifest:
     errors: List[Dict[str, Any]] = None
     artifacts: List[Dict[str, Any]] = None
     primary_outputs: Optional[Dict[str, Any]] = None
+    title_override: Optional[str] = None
 
     def to_dict(self) -> Dict[str, Any]:
         d = asdict(self)

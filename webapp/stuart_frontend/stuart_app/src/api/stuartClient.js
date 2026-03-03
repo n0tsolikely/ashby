@@ -123,6 +123,13 @@ export const stuartClient = {
         method: 'DELETE',
       });
     },
+    async update(runId, data) {
+      return request(`/runs/${encodeURIComponent(runId)}`, {
+        method: 'PATCH',
+        headers: JSON_HEADERS,
+        body: JSON.stringify(data),
+      });
+    },
     async listBySession(sessionId) {
       const payload = await requestOrEmpty(`/sessions/${encodeURIComponent(sessionId)}/runs`);
       return asArray(payload);

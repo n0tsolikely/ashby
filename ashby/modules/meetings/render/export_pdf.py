@@ -27,7 +27,12 @@ def _normalize_text(md_text: str) -> list[str]:
     return out or ["(empty document)"]
 
 
-def _build_text_pdf_bytes(md_text: str, title: str = "Stuart Formalization") -> bytes:
+def _build_text_pdf_bytes(
+    md_text: str,
+    title: str = "Stuart Formalization",
+    *,
+    footer_text: Optional[str] = None,
+) -> bytes:
     lines = _normalize_text(md_text)
     lines_per_page = 58
     pages = [lines[i : i + lines_per_page] for i in range(0, len(lines), lines_per_page)]
@@ -58,6 +63,17 @@ def _build_text_pdf_bytes(md_text: str, title: str = "Stuart Formalization") -> 
         for ln in page_lines:
             stream_lines.append(f"({_pdf_escape(ln)}) Tj")
             stream_lines.append("T*")
+
+        if footer_text:
+            stream_lines.extend(
+                [
+                    "ET",
+                    "BT",
+                    "/F1 8 Tf",
+                    "72 28 Td",
+                    f"({_pdf_escape(footer_text)}) Tj",
+                ]
+            )
         stream_lines.append("ET")
         stream_text = "\n".join(stream_lines) + "\n"
         stream_bytes = stream_text.encode("latin-1", errors="replace")
@@ -101,7 +117,13 @@ def _build_text_pdf_bytes(md_text: str, title: str = "Stuart Formalization") -> 
     return b"".join(chunks)
 
 
-def export_pdf_stub(run_dir: Path, *, md_path: Optional[Path] = None, out_name: str = "formalized.pdf") -> Dict[str, Any]:
+def export_pdf_stub(
+    run_dir: Path,
+    *,
+    md_path: Optional[Path] = None,
+    out_name: str = "formalized.pdf",
+    footer_text: Optional[str] = None,
+) -> Dict[str, Any]:
     """Export dependency-free content PDF.
 
     Used as a fallback renderer when richer engines are unavailable.
@@ -122,7 +144,11 @@ def export_pdf_stub(run_dir: Path, *, md_path: Optional[Path] = None, out_name: 
     md_text = ""
     if md_path and md_path.exists():
         md_text = md_path.read_text(encoding="utf-8", errors="replace")
-    pdf_bytes = _build_text_pdf_bytes(md_text or "No content available.", title=Path(out_name).stem.replace("_", " ").title())
+    pdf_bytes = _build_text_pdf_bytes(
+        md_text or "No content available.",
+        title=Path(out_name).stem.replace("_", " ").title(),
+        footer_text=footer_text or None,
+    )
     out_path.write_bytes(pdf_bytes)
 
     h = sha256_file(out_path)

@@ -20,6 +20,28 @@ from .manifests import (
     append_event_jsonl,
 )
 
+MAX_FORMALIZATION_TITLE_LEN = 120
+
+
+def normalize_formalization_title(title: Any) -> Optional[str]:
+    if not isinstance(title, str):
+        return None
+    norm = " ".join(title.strip().split())
+    if not norm:
+        return None
+    if len(norm) > MAX_FORMALIZATION_TITLE_LEN:
+        norm = norm[:MAX_FORMALIZATION_TITLE_LEN].rstrip()
+    return norm or None
+
+
+def default_formalization_title(
+    *, session_title: Optional[str], session_id: str, mode: str, run_id: str
+) -> str:
+    base = normalize_formalization_title(session_title or "") or str(session_id or "").strip()[:8] or "session"
+    mode_norm = str(mode or "meeting").strip().lower() or "meeting"
+    run_short = str(run_id or "").strip()[:8] or "run"
+    return f"{base} - {mode_norm} - {run_short}"
+
 
 def _step_kind(step: Dict[str, Any]) -> str:
     for k in ("kind", "name", "stage", "id"):
@@ -157,7 +179,7 @@ def add_contribution(session_id: str, source_path: Path, source_kind: str) -> st
     save_manifest_write_once(con_dir / "contribution.json", m.to_dict())
     return contribution_id
 
-def create_run(session_id: str, plan: Dict[str, Any]) -> str:
+def create_run(session_id: str, plan: Dict[str, Any], *, title_override: Optional[str] = None) -> str:
     """
     Rerun semantics rail:
     Every run gets a new run_id and new run directory.
@@ -191,6 +213,7 @@ def create_run(session_id: str, plan: Dict[str, Any]) -> str:
         errors=[],
         artifacts=[],
         primary_outputs={},
+        title_override=normalize_formalization_title(title_override),
     )
     save_manifest_write_once(run_dir / "run.json", m.to_dict())
     # initial lifecycle event

@@ -8,6 +8,7 @@ from ashby.modules.meetings.cli_stuart import cmd_export, cmd_search
 from ashby.modules.meetings.export.bundle import export_session_bundle
 from ashby.modules.meetings.index import ingest_run
 from ashby.modules.meetings.store import create_run, create_session
+from ashby.modules.meetings.transcript_versions import create_transcript_version
 
 
 class NS:
@@ -57,13 +58,33 @@ def _seed_session_with_run(root: Path, *, mode: str, title: str, transcript_text
 
     # Add a couple of representative outputs so export can include them.
     (art_dir / "minutes.md").write_text("# Minutes\n\nhello", encoding="utf-8")
+    (art_dir / "minutes.json").write_text("{}", encoding="utf-8")
     (art_dir / "evidence_map.json").write_text("{}", encoding="utf-8")
+    (art_dir / "llm_usage.json").write_text("{}", encoding="utf-8")
 
     # Export surface outputs live under run_dir/exports (PDF).
     exp_dir = run_dir / "exports"
     exp_dir.mkdir(parents=True, exist_ok=True)
     pdf_name = "minutes.pdf" if mode == "meeting" else "journal.pdf"
     (exp_dir / pdf_name).write_bytes(b"%PDF-1.4\n% Stuart test stub\n")
+
+    create_transcript_version(
+        session_id=session_id,
+        run_id=run_id,
+        segments=[
+            {
+                "segment_id": 0,
+                "speaker": "SPEAKER_00",
+                "start_ms": 0,
+                "end_ms": 500,
+                "text": transcript_text,
+            }
+        ],
+        diarization_enabled=True,
+        asr_engine="default",
+        audio_ref={},
+        created_ts=1,
+    )
 
     ingest_run(run_id)
     return session_id, run_id
@@ -112,12 +133,9 @@ def test_cli_export_produces_session_bundle_zip(tmp_path: Path, monkeypatch):
     with zipfile.ZipFile(zpath, "r") as z:
         names = set(z.namelist())
 
-    assert f"sessions/{session_id}/session.json" in names
-    assert f"runs/{run_id}/run.json" in names
-    assert f"runs/{run_id}/artifacts/transcript.json" in names
-    assert f"runs/{run_id}/artifacts/minutes.md" in names
-    assert f"runs/{run_id}/artifacts/evidence_map.json" in names
-    assert f"runs/{run_id}/exports/minutes.pdf" in names
+    assert "session.json" in names
+    assert any(n.startswith("transcripts/") and n.endswith("/transcript.txt") for n in names)
+    assert f"formalizations/{run_id}/minutes.pdf" in names
 
 
 

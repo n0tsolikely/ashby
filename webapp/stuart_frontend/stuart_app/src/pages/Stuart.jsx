@@ -5,6 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { Plus, Archive, Search, Sparkles, WifiOff, Wifi, Cloud, Download, Trash2, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -110,6 +119,10 @@ function mapRunConfigToUi(config) {
     diarization_enabled: diarizationEnabled,
     include_citations: config?.include_citations === true,
     show_empty_sections: config?.show_empty_sections === true,
+    formalization_title:
+      typeof config?.formalization_title === 'string' && config.formalization_title.trim()
+        ? config.formalization_title.trim()
+        : undefined,
   };
 }
 
@@ -117,6 +130,15 @@ function defaultSessionTitle(sessionId) {
   const sid = String(sessionId || '').trim();
   if (!sid) return 'Session';
   return `Session ${sid.replace(/^ses_/, '').slice(0, 8).toUpperCase()}`;
+}
+
+function sanitizeExportTitle(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+  return raw
+    .replace(/[^a-z0-9_-]+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
 }
 
 export default function Stuart() {
@@ -140,6 +162,11 @@ export default function Stuart() {
   const [isEditingSessionTitle, setIsEditingSessionTitle] = useState(false);
   const [sessionTitleDraft, setSessionTitleDraft] = useState('');
   const [showUploadPanel, setShowUploadPanel] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportType, setExportType] = useState('full_bundle');
+  const [transcriptFormats, setTranscriptFormats] = useState(['txt']);
+  const [formalizationFormats, setFormalizationFormats] = useState(['pdf']);
+  const [isExporting, setIsExporting] = useState(false);
   const lastRunStatusRef = useRef(null);
   const sessionTitleInputRef = useRef(null);
 
@@ -558,6 +585,27 @@ export default function Stuart() {
     }
   };
 
+  const handleRenameFormalization = async (formalization, title) => {
+    const runId = formalization?.run_id || formalization?.id;
+    const nextTitle = String(title || '').trim();
+    if (!runId || !nextTitle) {
+      toast.error('Invalid formalization title');
+      return;
+    }
+    try {
+      await stuartClient.runs.update(runId, { formalization_title: nextTitle });
+      if (selectedSession?.id) {
+        await queryClient.invalidateQueries({ queryKey: ['formalizations', selectedSession.id] });
+      }
+      setSelectedFormalization((prev) =>
+        prev && (prev.run_id === runId || prev.id === runId) ? { ...prev, title: nextTitle } : prev
+      );
+      toast.success('Formalization renamed');
+    } catch (error) {
+      toast.error(error.message || 'Failed to rename formalization');
+    }
+  };
+
   const handleSpeakerMapUpdate = async (speakerMap) => {
     const transcriptVersionId = selectedSessionView?.transcript_version_id || selectedTranscriptVersionId;
     if (!transcriptVersionId) {
@@ -603,17 +651,15 @@ export default function Stuart() {
     }
 
     const text = String(message || '').trim();
-    const exportMatch = text.match(/^\/export(?:\s+(full_bundle|transcript_only|formalization_only))?$/i);
+    const exportMatch = text.match(/^\/export(?:\s+(full_bundle|transcript_only|formalization_only|dev_bundle))?$/i);
     if (exportMatch) {
       const exportType = exportMatch[1] || 'full_bundle';
       try {
-        const blob = await stuartClient.exportSession(selectedSession.id, { format: 'zip', export_type: exportType });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${selectedSession.title || 'stuart-session'}__${exportType}.zip`;
-        link.click();
-        URL.revokeObjectURL(url);
+        await downloadSessionExport({
+          selectedType: exportType,
+          selectedTranscriptFormats: exportType === 'formalization_only' ? [] : ['txt'],
+          selectedFormalizationFormats: exportType === 'transcript_only' ? [] : ['pdf'],
+        });
         onResponse(`Export complete (${exportType}).`);
       } catch (error) {
         onResponse(error.message || `Export failed (${exportType}).`);
@@ -672,23 +718,69 @@ export default function Stuart() {
     return uploaded;
   };
 
+  const downloadSessionExport = async ({
+    selectedType,
+    selectedTranscriptFormats,
+    selectedFormalizationFormats,
+  }) => {
+    if (!selectedSession?.id) {
+      throw new Error('No session selected');
+    }
+
+    const params = {
+      format: 'zip',
+      export_type: selectedType || 'full_bundle',
+    };
+    if (params.export_type !== 'dev_bundle' && selectedTranscriptFormats?.length) {
+      params.transcript_formats = selectedTranscriptFormats.join(',');
+    }
+    if (params.export_type !== 'dev_bundle' && selectedFormalizationFormats?.length) {
+      params.formalization_formats = selectedFormalizationFormats.join(',');
+    }
+
+    const blob = await stuartClient.exportSession(selectedSession.id, params);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const titleSlug = sanitizeExportTitle(selectedSession.title || '');
+    const baseName = titleSlug
+      ? `${selectedSession.id}__${titleSlug}__export_${params.export_type}.zip`
+      : `${selectedSession.id}__export_${params.export_type}.zip`;
+    link.href = url;
+    link.download = baseName;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleExportZip = async () => {
     if (!selectedSession?.id) {
       toast.error('No session selected');
       return;
     }
 
+    const needsTranscript = exportType === 'full_bundle' || exportType === 'transcript_only';
+    const needsFormalization = exportType === 'full_bundle' || exportType === 'formalization_only';
+    if (needsTranscript && transcriptFormats.length === 0) {
+      toast.error('Select at least one transcript format');
+      return;
+    }
+    if (needsFormalization && formalizationFormats.length === 0) {
+      toast.error('Select at least one formalization format');
+      return;
+    }
+
     try {
-      const blob = await stuartClient.exportSession(selectedSession.id, { format: 'zip' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${selectedSession.title || 'stuart-session'}.zip`;
-      link.click();
-      URL.revokeObjectURL(url);
+      setIsExporting(true);
+      await downloadSessionExport({
+        selectedType: exportType,
+        selectedTranscriptFormats: transcriptFormats,
+        selectedFormalizationFormats: formalizationFormats,
+      });
+      setExportModalOpen(false);
       toast.success('Export complete');
     } catch (error) {
       toast.error(error.message || 'Export failed');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -787,6 +879,27 @@ export default function Stuart() {
     } catch (error) {
       toast.error(error.message || 'PDF print failed');
     }
+  };
+
+  const transcriptFormatsEnabled = exportType === 'full_bundle' || exportType === 'transcript_only';
+  const formalizationFormatsEnabled = exportType === 'full_bundle' || exportType === 'formalization_only';
+
+  const toggleTranscriptFormat = (fmt, checked) => {
+    setTranscriptFormats((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(fmt);
+      else next.delete(fmt);
+      return Array.from(next);
+    });
+  };
+
+  const toggleFormalizationFormat = (fmt, checked) => {
+    setFormalizationFormats((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(fmt);
+      else next.delete(fmt);
+      return Array.from(next);
+    });
   };
 
   const commitSessionRename = () => {
@@ -1091,7 +1204,7 @@ export default function Stuart() {
                         <Trash2 className="h-4 w-4 mr-1.5" />
                         Delete Session
                       </Button>
-                      <Button variant="outline" onClick={handleExportZip}>
+                      <Button variant="outline" onClick={() => setExportModalOpen(true)}>
                         <Download className="h-4 w-4 mr-1.5" />
                         Export ZIP
                       </Button>
@@ -1197,6 +1310,7 @@ export default function Stuart() {
                             onDownloadText={handleDownloadText}
                             onDownloadPdf={handleDownloadPdf}
                             onPrintPdf={handlePrintPdf}
+                            onRenameRun={handleRenameFormalization}
                             onDeleteRun={handleDeleteRun}
                           />
                         </div>
@@ -1229,6 +1343,7 @@ export default function Stuart() {
                               onDownloadText={handleDownloadText}
                               onDownloadPdf={handleDownloadPdf}
                               onPrintPdf={handlePrintPdf}
+                              onRenameRun={handleRenameFormalization}
                               onDeleteRun={handleDeleteRun}
                             />
                           ))
@@ -1242,6 +1357,79 @@ export default function Stuart() {
           </div>
         </div>
       </main>
+
+      <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Session Bundle</DialogTitle>
+            <DialogDescription>Choose export type and artifact formats.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Export Type</label>
+              <Select value={exportType} onValueChange={setExportType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select export type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="full_bundle">full_bundle</SelectItem>
+                  <SelectItem value="transcript_only">transcript_only</SelectItem>
+                  <SelectItem value="formalization_only">formalization_only</SelectItem>
+                  <SelectItem value="dev_bundle">dev_bundle</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Transcript Formats</label>
+              <div className={`space-y-2 ${transcriptFormatsEnabled ? '' : 'opacity-50'}`}>
+                {['txt', 'md', 'pdf'].map((fmt) => (
+                  <label key={fmt} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={transcriptFormats.includes(fmt)}
+                      disabled={!transcriptFormatsEnabled}
+                      onCheckedChange={(checked) => toggleTranscriptFormat(fmt, Boolean(checked))}
+                    />
+                    {fmt}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Formalization Formats</label>
+              <div className={`space-y-2 ${formalizationFormatsEnabled ? '' : 'opacity-50'}`}>
+                {['md', 'pdf'].map((fmt) => (
+                  <label key={fmt} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={formalizationFormats.includes(fmt)}
+                      disabled={!formalizationFormatsEnabled}
+                      onCheckedChange={(checked) => toggleFormalizationFormat(fmt, Boolean(checked))}
+                    />
+                    {fmt}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {exportType === 'dev_bundle' && (
+              <p className="text-xs text-slate-500">
+                DEV bundle includes user-facing artifacts plus `dev/` receipts and raw JSON outputs.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExportModalOpen(false)} disabled={isExporting}>
+              Cancel
+            </Button>
+            <Button onClick={handleExportZip} disabled={isExporting}>
+              {isExporting ? 'Exporting...' : 'Export'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,6 +40,7 @@ export default function RunControls({
   const [diarizationEnabled, setDiarizationEnabled] = useState(session?.diarization_enabled ?? true);
   const [includeCitations, setIncludeCitations] = useState(false);
   const [showEmptySections, setShowEmptySections] = useState(false);
+  const [formalizationTitle, setFormalizationTitle] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   const templates = getTemplatesForMode(mode);
@@ -76,6 +78,7 @@ export default function RunControls({
       diarization_enabled: diarizationEnabled,
       include_citations: includeCitations,
       show_empty_sections: showEmptySections,
+      formalization_title: formalizationTitle.trim() || undefined,
     });
   };
 
@@ -198,6 +201,16 @@ export default function RunControls({
             <Switch
               checked={diarizationEnabled}
               onCheckedChange={setDiarizationEnabled}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-slate-600">Formalization Title (optional)</Label>
+            <Input
+              value={formalizationTitle}
+              onChange={(e) => setFormalizationTitle(e.target.value)}
+              placeholder="e.g., Weekly Sync Draft"
+              maxLength={120}
             />
           </div>
 

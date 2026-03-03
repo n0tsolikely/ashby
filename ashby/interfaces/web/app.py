@@ -37,7 +37,13 @@ from ashby.modules.meetings.manifests import load_manifest
 from ashby.modules.meetings.mode_registry import validate_mode
 from ashby.modules.meetings.pipeline.job_runner import run_job, poll_progress
 from ashby.modules.meetings.router.router import build_intent_and_plan
-from ashby.modules.meetings.store import create_run, get_run_state
+from ashby.modules.meetings.manifests import save_manifest_atomic_overwrite
+from ashby.modules.meetings.store import (
+    create_run,
+    default_formalization_title,
+    get_run_state,
+    normalize_formalization_title,
+)
 from ashby.modules.meetings.overlays import create_speaker_map_overlay, load_speaker_map_overlay
 from ashby.modules.meetings.session_state import (
     get_speaker_overlay_for_transcript,
@@ -243,6 +249,7 @@ def create_app() -> FastAPI:
                     "ended_ts": state.get("ended_ts"),
                     "plan": state.get("plan") or {},
                     "primary_outputs": state.get("primary_outputs") or {},
+                    "title_override": state.get("title_override"),
                     "downloads": primary_downloads(run_id, state=state),
                     "artifacts": list_run_artifacts(run_id),
                 }
@@ -629,6 +636,17 @@ def create_app() -> FastAPI:
     async def api_session_formalizations(session_id: str, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
         rows = _runs_for_session(session_id, limit=max(int(limit), 1) * 4)
         out: list[Dict[str, Any]] = []
+        lay = init_stuart_root()
+        session_title = None
+        sm_path = lay.sessions / session_id / "session.json"
+        if sm_path.exists():
+            try:
+                sm = load_manifest(sm_path)
+                raw_t = sm.get("title")
+                if isinstance(raw_t, str):
+                    session_title = raw_t
+            except Exception:
+                session_title = None
 
         for row in rows:
             downloads = (row.get("downloads") or {}).get("primary") or {}
@@ -651,6 +669,13 @@ def create_app() -> FastAPI:
             template_id = str(formalize_params.get("template_id") or "default")
             retention = str(formalize_params.get("retention") or "MED")
             run_id = str(row.get("run_id"))
+            title_override = normalize_formalization_title(row.get("title_override"))
+            title = title_override or default_formalization_title(
+                session_title=session_title,
+                session_id=session_id,
+                mode=mode,
+                run_id=run_id,
+            )
             consumed_tv = None
             if isinstance(row.get("primary_outputs"), dict):
                 consumed_tv = row["primary_outputs"].get("consumed_transcript_version_id")
@@ -681,6 +706,7 @@ def create_app() -> FastAPI:
                     "formalization_id": run_id,
                     "run_id": run_id,
                     "session_id": session_id,
+                    "title": title,
                     "status": row.get("status"),
                     "mode": mode,
                     "template_id": template_id,
@@ -1210,7 +1236,8 @@ def create_app() -> FastAPI:
             )
 
         plan = {"steps": [{"kind": s.kind.value, "params": dict(s.params)} for s in out.plan.steps]}
-        run_id = create_run(session_id=session_id, plan=plan)
+        title_override = normalize_formalization_title(ui_raw.get("formalization_title") if isinstance(ui_raw, dict) else None)
+        run_id = create_run(session_id=session_id, plan=plan, title_override=title_override)
 
         # Run in background so the UI can poll progress.
         _spawn_run_job(run_id)
@@ -1262,6 +1289,32 @@ def create_app() -> FastAPI:
         except Exception as e:
             return fail("INTERNAL_ERROR", f"failed to delete run: {type(e).__name__}: {e}", status=500)
         return ok(result)
+
+    @app.patch("/api/runs/{run_id}")
+    async def api_update_run(run_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        title_raw = payload.get("formalization_title")
+        if not isinstance(title_raw, str):
+            return fail("INVALID_REQUEST", "formalization_title must be a string", status=400)
+        title_norm = normalize_formalization_title(title_raw)
+        if not title_norm:
+            return fail("INVALID_REQUEST", "formalization_title cannot be empty", status=400)
+
+        lay = init_stuart_root()
+        run_path = lay.runs / run_id / "run.json"
+        if not run_path.exists():
+            return fail("NOT_FOUND", "run not found", status=404)
+
+        try:
+            state = load_manifest(run_path)
+        except Exception as e:
+            return fail("INTERNAL_ERROR", f"failed to load run manifest: {type(e).__name__}: {e}", status=500)
+
+        state["title_override"] = title_norm
+        try:
+            save_manifest_atomic_overwrite(run_path, state)
+        except Exception as e:
+            return fail("INTERNAL_ERROR", f"failed to update run manifest: {type(e).__name__}: {e}", status=500)
+        return ok({"run_id": run_id, "formalization_title": title_norm, "state": state})
 
     @app.get("/api/runs/{run_id}")
     async def api_run_status(run_id: str) -> Dict[str, Any]:
@@ -1544,17 +1597,71 @@ def create_app() -> FastAPI:
         return poll_progress(run_id)
 
     @app.get("/api/sessions/{session_id}/export")
-    async def api_session_export(session_id: str, export_type: str = "full_bundle", format: Optional[str] = None) -> Any:
+    async def api_session_export(
+        session_id: str,
+        export_type: str = "full_bundle",
+        format: Optional[str] = None,
+        transcript_formats: Optional[str] = None,
+        formalization_formats: Optional[str] = None,
+    ) -> Any:
         lay = init_stuart_root()
-        if not (lay.sessions / session_id / "session.json").exists():
+        session_manifest_path = lay.sessions / session_id / "session.json"
+        if not session_manifest_path.exists():
             return fail("NOT_FOUND", "session not found", status=404)
 
         et = (export_type or "full_bundle").strip().lower()
-        if et not in {"full_bundle", "transcript_only", "formalization_only"}:
+        if et not in {"full_bundle", "transcript_only", "formalization_only", "dev_bundle"}:
             return fail("INVALID_REQUEST", "invalid export_type", status=400)
 
+        def _parse_csv(raw: Optional[str], *, allowed: set[str], default: list[str], key: str) -> tuple[Optional[list[str]], Optional[str]]:
+            if raw is None:
+                return list(default), None
+            parts = [str(x).strip().lower() for x in str(raw).split(",")]
+            vals = [p for p in parts if p]
+            if not vals:
+                return list(default), None
+            bad = sorted({v for v in vals if v not in allowed})
+            if bad:
+                return None, f"invalid {key}: {','.join(bad)}"
+            dedup: list[str] = []
+            seen: set[str] = set()
+            for v in vals:
+                if v in seen:
+                    continue
+                seen.add(v)
+                dedup.append(v)
+            return dedup, None
+
+        transcript_vals: list[str] = []
+        formalization_vals: list[str] = []
+        if et == "dev_bundle":
+            transcript_vals = []
+            formalization_vals = []
+        else:
+            transcript_vals, err_t = _parse_csv(
+                transcript_formats,
+                allowed={"txt", "md", "pdf"},
+                default=["txt"],
+                key="transcript_formats",
+            )
+            if err_t:
+                return fail("INVALID_REQUEST", err_t, status=400)
+            formalization_vals, err_f = _parse_csv(
+                formalization_formats,
+                allowed={"md", "pdf"},
+                default=["pdf"],
+                key="formalization_formats",
+            )
+            if err_f:
+                return fail("INVALID_REQUEST", err_f, status=400)
+
         try:
-            res = export_session_bundle(session_id, export_type=et)
+            res = export_session_bundle(
+                session_id,
+                export_type=et,
+                transcript_formats=transcript_vals,
+                formalization_formats=formalization_vals,
+            )
             zip_path = Path(res.zip_path)
         except FileExistsError:
             candidates = sorted(lay.exports.glob(f"{session_id}__export_{et}__*.zip"))
@@ -1567,9 +1674,25 @@ def create_app() -> FastAPI:
         if not zip_path.exists():
             return fail("INTERNAL_ERROR", "export zip missing after creation", status=500)
 
+        try:
+            session_manifest = load_manifest(session_manifest_path)
+        except Exception:
+            session_manifest = {}
+        title_raw = session_manifest.get("title") if isinstance(session_manifest, dict) else None
+        title_clean = normalize_formalization_title(title_raw) if isinstance(title_raw, str) else None
+        title_slug = ""
+        if title_clean:
+            title_slug = (
+                "".join(ch.lower() if (ch.isalnum() or ch in {"_", "-"}) else "_" for ch in title_clean)
+                .strip("_")
+            )
+        download_name = f"{session_id}__export_{et}.zip"
+        if title_slug:
+            download_name = f"{session_id}__{title_slug}__export_{et}.zip"
+
         # Backward-compat for existing frontend behavior expecting blob bytes.
         if (format or "").strip().lower() == "zip":
-            return FileResponse(path=str(zip_path), filename=zip_path.name)
+            return FileResponse(path=str(zip_path), filename=download_name)
 
         h = hashlib.sha256()
         with zip_path.open("rb") as f:
@@ -1583,10 +1706,13 @@ def create_app() -> FastAPI:
                 "zip": {
                     "name": zip_path.name,
                     "path": str(zip_path),
+                    "download_name": download_name,
                     "sha256": h.hexdigest(),
                     "size_bytes": zip_path.stat().st_size,
                     "download_url": f"/api/exports/{zip_path.name}",
                 },
+                "transcript_formats": transcript_vals,
+                "formalization_formats": formalization_vals,
             }
         )
 

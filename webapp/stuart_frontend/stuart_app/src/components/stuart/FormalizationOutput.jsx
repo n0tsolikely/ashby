@@ -15,6 +15,7 @@ import {
   Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export default function FormalizationOutput({ 
   formalization, 
@@ -23,10 +24,13 @@ export default function FormalizationOutput({
   onDownloadText,
   onDownloadPdf,
   onPrintPdf,
+  onRenameRun,
   onDeleteRun,
   className 
 }) {
   const [activeTab, setActiveTab] = useState("formatted");
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameDraft, setRenameDraft] = useState('');
 
   if (!formalization) {
     return (
@@ -44,6 +48,7 @@ export default function FormalizationOutput({
 
   const { output_json, output_markdown, evidence_map, status, mode, template, retention_level } = formalization;
   const runLabel = formalization.run_id || formalization.id;
+  const titleLabel = (typeof formalization.title === 'string' && formalization.title.trim()) || `Formalization ${String(runLabel || '').replace(/^run_/, '').slice(0, 8)}`;
   const printUrl = formalization.pdf_url || output_json?.downloads?.primary?.pdf?.url || null;
   const textUrl = output_json?.downloads?.primary?.txt?.url || null;
   const isDevMode =
@@ -51,13 +56,21 @@ export default function FormalizationOutput({
       (typeof import.meta !== 'undefined' && import.meta?.env?.REACT_APP_DEVTOOLS === '1') ||
       (typeof process !== 'undefined' && process?.env?.REACT_APP_DEVTOOLS === '1'));
 
+  const commitRename = () => {
+    const next = renameDraft.trim();
+    setIsRenaming(false);
+    if (!next) return;
+    if (next === (formalization?.title || '').trim()) return;
+    onRenameRun?.(formalization, next);
+  };
+
   return (
     <Card className={cn("border-slate-200", className)}>
       <CardHeader className="pb-3 border-b border-slate-100">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
             <CardTitle className="text-base font-medium text-slate-700">
-              Formalization Output
+              {titleLabel}
             </CardTitle>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Badge variant="secondary" className="capitalize">
@@ -115,6 +128,16 @@ export default function FormalizationOutput({
             <Button
               variant="outline"
               size="sm"
+              onClick={() => {
+                setRenameDraft(formalization?.title || '');
+                setIsRenaming(true);
+              }}
+            >
+              Rename
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => onDeleteRun?.(formalization)}
             >
               <Trash2 className="h-4 w-4 mr-1.5" />
@@ -128,6 +151,21 @@ export default function FormalizationOutput({
             <span className="text-sm text-amber-700">
               Partial output - some sections may be incomplete
             </span>
+          </div>
+        )}
+        {isRenaming && (
+          <div className="mt-3 flex items-center gap-2">
+            <Input
+              value={renameDraft}
+              onChange={(e) => setRenameDraft(e.target.value)}
+              maxLength={120}
+              placeholder="Formalization title"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitRename();
+                if (e.key === 'Escape') setIsRenaming(false);
+              }}
+              onBlur={commitRename}
+            />
           </div>
         )}
       </CardHeader>
