@@ -59,6 +59,9 @@ def _normalize_formalize_params(params: Dict[str, Any]) -> Dict[str, Any]:
     p["mode"] = mv.canonical
     p["template_id"] = tv.template_id
     p["retention"] = rv.canonical
+    # QUEST_159: explicit render-control params are always present on formalize steps.
+    p["include_citations"] = bool(p.get("include_citations")) if isinstance(p.get("include_citations"), bool) else False
+    p["show_empty_sections"] = bool(p.get("show_empty_sections")) if isinstance(p.get("show_empty_sections"), bool) else False
     # legacy key cleanup
     p.pop("template", None)
     return p
@@ -300,4 +303,3 @@ def get_run_state(run_id: str) -> Dict[str, Any]:
         raise FileNotFoundError(f"Unknown session_id (missing manifest): {sess_manifest}")
 
     return m
-

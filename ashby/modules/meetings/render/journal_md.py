@@ -9,6 +9,8 @@ from ashby.modules.meetings.hashing import sha256_file
 from ashby.modules.meetings.render.citations import format_citations, load_segments_by_id
 from ashby.modules.meetings.schemas.journal_v1 import validate_journal_v1
 
+_EMPTY_PLACEHOLDER = "_No entries._"
+
 
 def _sort_items(items: Any, key: str) -> List[Dict[str, Any]]:
     if not isinstance(items, list):
@@ -21,6 +23,21 @@ def _sort_items(items: Any, key: str) -> List[Dict[str, Any]]:
         return "" if v is None else str(v)
 
     return sorted([d for d in items if isinstance(d, dict)], key=_k)
+
+
+def _render_flags(payload: Dict[str, Any]) -> tuple[bool, bool]:
+    include_citations = payload.get("include_citations")
+    show_empty_sections = payload.get("show_empty_sections")
+    return (
+        bool(include_citations) if isinstance(include_citations, bool) else False,
+        bool(show_empty_sections) if isinstance(show_empty_sections, bool) else False,
+    )
+
+
+def _citations_text(citations: Any, *, segs_by_id: Dict[int, Dict[str, Any]], include_citations: bool) -> str:
+    if not include_citations:
+        return ""
+    return format_citations(citations, segs_by_id=segs_by_id)
 
 
 def render_journal_md(run_dir: Path) -> Dict[str, Any]:
@@ -53,6 +70,7 @@ def render_journal_md(run_dir: Path) -> Dict[str, Any]:
     mode = str(header.get("mode") or "journal")
 
     segs_by_id = load_segments_by_id(run_dir, mode=mode)
+    include_citations, show_empty_sections = _render_flags(payload)
 
     parts: List[str] = []
     parts.append(f"# {title}")
@@ -77,12 +95,10 @@ def render_journal_md(run_dir: Path) -> Dict[str, Any]:
         parts.append(mood.strip())
         parts.append("")
 
-    # Narrative sections
-    parts.append("## Narrative")
     sections = _sort_items(payload.get("narrative_sections"), "section_id")
-    if not sections:
-        parts.append("_No narrative sections._")
-    else:
+    if sections or show_empty_sections:
+        parts.append("## Narrative")
+    if sections:
         for s in sections:
             sid = str(s.get("section_id") or "")
             stitle = str(s.get("title") or sid or "Section")
@@ -91,46 +107,55 @@ def render_journal_md(run_dir: Path) -> Dict[str, Any]:
             if text:
                 parts.append(text)
             else:
-                parts.append("_No text._")
-            cite_txt = format_citations(s.get("citations"), segs_by_id=segs_by_id).strip()
+                parts.append(_EMPTY_PLACEHOLDER)
+            cite_txt = _citations_text(s.get("citations"), segs_by_id=segs_by_id, include_citations=include_citations).strip()
             if cite_txt:
                 parts.append(cite_txt)
             parts.append("")
-    parts.append("")
+    elif show_empty_sections:
+        parts.append(_EMPTY_PLACEHOLDER)
+        parts.append("")
+    if sections or show_empty_sections:
+        parts.append("")
 
     # Key points
-    if "key_points" in payload:
+    kps = _sort_items(payload.get("key_points"), "point_id")
+    if kps or show_empty_sections:
         parts.append("## Key Points")
-        kps = _sort_items(payload.get("key_points"), "point_id")
         if not kps:
-            parts.append("_No key points._")
+            parts.append(_EMPTY_PLACEHOLDER)
         else:
             for kp in kps:
                 pid = str(kp.get("point_id") or "")
                 text = str(kp.get("text") or "").strip()
-                parts.append(f"- ({pid}) {text}{format_citations(kp.get('citations'), segs_by_id=segs_by_id)}")
+                parts.append(
+                    f"- ({pid}) {text}{_citations_text(kp.get('citations'), segs_by_id=segs_by_id, include_citations=include_citations)}"
+                )
         parts.append("")
 
     # Feelings
-    if "feelings" in payload:
+    fl = payload.get("feelings")
+    feelings = [x for x in fl if isinstance(x, dict)] if isinstance(fl, list) else []
+    has_feelings = any(str(f.get("text") or "").strip() for f in feelings)
+    if has_feelings or show_empty_sections:
         parts.append("## Feelings")
-        fl = payload.get("feelings")
-        if not isinstance(fl, list) or not fl:
-            parts.append("_No feelings._")
+        if not has_feelings:
+            parts.append(_EMPTY_PLACEHOLDER)
         else:
-            for f in [x for x in fl if isinstance(x, dict)]:
+            for f in feelings:
                 text = str(f.get("text") or "").strip()
                 if not text:
                     continue
-                parts.append(f"- {text}{format_citations(f.get('citations'), segs_by_id=segs_by_id)}")
+                parts.append(
+                    f"- {text}{_citations_text(f.get('citations'), segs_by_id=segs_by_id, include_citations=include_citations)}"
+                )
         parts.append("")
 
     # Action items
-    parts.append("## Action Items")
     actions = _sort_items(payload.get("action_items"), "action_id")
-    if not actions:
-        parts.append("_No action items._")
-    else:
+    if actions or show_empty_sections:
+        parts.append("## Action Items")
+    if actions:
         for a in actions:
             aid = str(a.get("action_id") or "")
             text = str(a.get("text") or "").strip()
@@ -142,8 +167,13 @@ def render_journal_md(run_dir: Path) -> Dict[str, Any]:
             if due:
                 suffix.append(f"due={due}")
             meta = f" ({', '.join(suffix)})" if suffix else ""
-            parts.append(f"- ({aid}) {text}{meta}{format_citations(a.get('citations'), segs_by_id=segs_by_id)}")
-    parts.append("")
+            parts.append(
+                f"- ({aid}) {text}{meta}{_citations_text(a.get('citations'), segs_by_id=segs_by_id, include_citations=include_citations)}"
+            )
+    elif show_empty_sections:
+        parts.append(_EMPTY_PLACEHOLDER)
+    if actions or show_empty_sections:
+        parts.append("")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(parts).rstrip() + "\n", encoding="utf-8")

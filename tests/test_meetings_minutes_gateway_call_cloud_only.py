@@ -37,6 +37,15 @@ def test_gateway_called_when_profile_cloud_and_remote_enabled(tmp_path: Path, mo
         def formalize(self, request, *, artifacts_dir=None):
             called["count"] += 1
             assert request.profile == "CLOUD"
+            assert request.transcript_text
+            assert request.transcript_segments is not None
+            assert len(request.transcript_segments) == 1
+            assert request.transcript_segments[0].segment_id == "0"
+            assert request.template_text
+            assert request.template_sections is not None
+            assert len(request.template_sections) >= 1
+            assert request.include_citations is False
+            assert request.show_empty_sections is False
             payload = {
                 "version": 1,
                 "session_id": "ses_cloud",
@@ -65,4 +74,9 @@ def test_gateway_called_when_profile_cloud_and_remote_enabled(tmp_path: Path, mo
     art = formalize_meeting_to_minutes_json(run_dir, template_id="default", retention="MED")
     assert art["kind"] == "minutes_json"
     assert called["count"] == 1
-
+    out = json.loads((run_dir / "artifacts" / "minutes.json").read_text(encoding="utf-8"))
+    assert out["template_id"] == "default"
+    assert out["template_version"] == "2"
+    assert out["retention"] == "MED"
+    assert out["include_citations"] is False
+    assert out["show_empty_sections"] is False

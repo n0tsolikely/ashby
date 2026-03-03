@@ -47,6 +47,8 @@ def test_resolve_primary_outputs_meeting(tmp_path: Path, monkeypatch):
     assert str(po["json"]["path"]).endswith("/artifacts/minutes.json")
     assert po["md"]["kind"] == "minutes_md"
     assert str(po["md"]["path"]).endswith("/artifacts/minutes.md")
+    assert po["txt"]["kind"] == "minutes_txt"
+    assert str(po["txt"]["path"]).endswith("/artifacts/minutes.txt")
     assert po["pdf"]["kind"] == "minutes_pdf"
     assert str(po["pdf"]["path"]).endswith("/exports/minutes.pdf")
     assert po["evidence_map"]["kind"] == "evidence_map"
@@ -77,6 +79,8 @@ def test_resolve_primary_outputs_journal(tmp_path: Path, monkeypatch):
     assert str(po["json"]["path"]).endswith("/artifacts/journal.json")
     assert po["md"]["kind"] == "journal_md"
     assert str(po["md"]["path"]).endswith("/artifacts/journal.md")
+    assert po["txt"]["kind"] == "journal_txt"
+    assert str(po["txt"]["path"]).endswith("/artifacts/journal.txt")
     assert po["pdf"]["kind"] == "journal_pdf"
     assert str(po["pdf"]["path"]).endswith("/exports/journal.pdf")
     assert po["evidence_map"]["kind"] == "evidence_map"

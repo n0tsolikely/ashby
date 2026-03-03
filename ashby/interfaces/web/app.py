@@ -27,6 +27,11 @@ from ashby.interfaces.web.transcripts import (
 )
 
 from ashby.modules.meetings.clarify_or_preview import clarify_or_preview
+from ashby.modules.meetings.delete_ops import (
+    delete_run as delete_run_op,
+    delete_session as delete_session_op,
+    list_run_dependencies_for_transcript,
+)
 from ashby.modules.meetings.init_root import init_stuart_root
 from ashby.modules.meetings.manifests import load_manifest
 from ashby.modules.meetings.mode_registry import validate_mode
@@ -43,6 +48,7 @@ from ashby.modules.meetings.session_state import (
 from ashby.modules.meetings.schemas.plan import SessionContext, AttachmentMeta
 from ashby.modules.meetings.schemas.run_request import RunRequest
 from ashby.modules.meetings.transcript_versions import (
+    delete_transcript_version,
     ensure_legacy_transcript_versions,
     list_transcript_versions,
     load_transcript_version,
@@ -163,6 +169,7 @@ def create_app() -> FastAPI:
             )
             has_formalization = any(
                 bool(((r.get("downloads") or {}).get("primary") or {}).get("md"))
+                or bool(((r.get("downloads") or {}).get("primary") or {}).get("txt"))
                 or bool(((r.get("downloads") or {}).get("primary") or {}).get("json"))
                 or bool(((r.get("downloads") or {}).get("primary") or {}).get("pdf"))
                 for r in runs
@@ -479,6 +486,68 @@ def create_app() -> FastAPI:
             }
         )
 
+    @app.delete("/api/transcripts/{transcript_version_id}")
+    async def api_delete_transcript(transcript_version_id: str, cascade: bool = False) -> Dict[str, Any]:
+        resolved = resolve_transcript_version(transcript_version_id)
+        if not resolved:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        session_id = str(resolved.get("session_id") or "")
+        if not session_id:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+
+        deps = list_run_dependencies_for_transcript(session_id, transcript_version_id)
+        consumers = deps.get("consumers") if isinstance(deps.get("consumers"), list) else []
+        producers = deps.get("producers") if isinstance(deps.get("producers"), list) else []
+        dependent_run_ids = sorted(
+            {
+                str(row.get("run_id") or "").strip()
+                for row in (consumers + producers)
+                if isinstance(row, dict) and str(row.get("run_id") or "").strip()
+            }
+        )
+        if dependent_run_ids and not cascade:
+            return JSONResponse(
+                status_code=409,
+                content={
+                    "ok": False,
+                    "error": "TRANSCRIPT_HAS_DEPENDENTS",
+                    "session_id": session_id,
+                    "transcript_version_id": transcript_version_id,
+                    "dependents": {"consumers": consumers, "producers": producers},
+                },
+            )
+
+        deleted_runs: list[str] = []
+        for run_id in dependent_run_ids:
+            try:
+                delete_run_op(run_id)
+                deleted_runs.append(run_id)
+            except FileNotFoundError:
+                continue
+
+        try:
+            delete_transcript_version(session_id, transcript_version_id)
+        except FileNotFoundError:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        except Exception as e:
+            return fail("INTERNAL_ERROR", f"failed to delete transcript version: {type(e).__name__}: {e}", status=500)
+
+        lay = init_stuart_root()
+        conn = sqlite_fts.connect(sqlite_fts.get_db_path(stuart_root=lay.root))
+        try:
+            sqlite_fts.ensure_schema(conn)
+            sqlite_fts.delete_transcript_version_rows(conn, transcript_version_id, run_ids=deleted_runs)
+        finally:
+            conn.close()
+
+        return ok(
+            {
+                "session_id": session_id,
+                "deleted_transcript_version_id": transcript_version_id,
+                "deleted_runs": deleted_runs,
+            }
+        )
+
     @app.get("/api/transcripts/{transcript_version_id}/speaker_map")
     async def api_get_transcript_speaker_map(transcript_version_id: str) -> Dict[str, Any]:
         resolved = resolve_transcript_version(transcript_version_id)
@@ -563,7 +632,7 @@ def create_app() -> FastAPI:
 
         for row in rows:
             downloads = (row.get("downloads") or {}).get("primary") or {}
-            has_primary = any(downloads.get(k) for k in ("md", "json", "pdf", "evidence_map"))
+            has_primary = any(downloads.get(k) for k in ("md", "txt", "json", "pdf", "evidence_map"))
             if not has_primary:
                 continue
 
@@ -784,87 +853,13 @@ def create_app() -> FastAPI:
 
     @app.delete("/api/sessions/{session_id}")
     async def api_delete_session(session_id: str) -> Dict[str, Any]:
-        lay = init_stuart_root()
-        # Resolve by either directory name OR manifest session_id.
-        # This handles legacy drift where folder name and manifest id differ.
-        matched_dirs: list[Path] = []
-        identity_keys: set[str] = {session_id}
-
-        if lay.sessions.exists():
-            for sdir in lay.sessions.iterdir():
-                if not sdir.is_dir():
-                    continue
-                manifest_id = ""
-                mpath = sdir / "session.json"
-                if mpath.exists():
-                    try:
-                        sm = load_manifest(mpath)
-                        manifest_id = str(sm.get("session_id") or "")
-                    except Exception:
-                        manifest_id = ""
-                if sdir.name == session_id or manifest_id == session_id:
-                    matched_dirs.append(sdir)
-                    identity_keys.add(sdir.name)
-                    if manifest_id:
-                        identity_keys.add(manifest_id)
-
-        if not matched_dirs:
-            return JSONResponse(status_code=404, content={"ok": False, "error": "session not found", "session_id": session_id})
-
-        deleted = {
-            "session": 0,
-            "runs": 0,
-            "contributions": 0,
-            "overlays": 0,
-        }
-
-        # Delete matched session folders first.
-        for sdir in matched_dirs:
-            shutil.rmtree(sdir, ignore_errors=False)
-            deleted["session"] += 1
-
-        # Delete linked runs by scanning run manifests.
-        if lay.runs.exists():
-            for run_dir in list(lay.runs.iterdir()):
-                if not run_dir.is_dir():
-                    continue
-                run_json = run_dir / "run.json"
-                if not run_json.exists():
-                    continue
-                try:
-                    r = load_manifest(run_json)
-                except Exception:
-                    continue
-                if str(r.get("session_id") or "") not in identity_keys:
-                    continue
-                shutil.rmtree(run_dir, ignore_errors=False)
-                deleted["runs"] += 1
-
-        # Delete linked contributions by scanning contribution manifests.
-        if lay.contributions.exists():
-            for con_dir in list(lay.contributions.iterdir()):
-                if not con_dir.is_dir():
-                    continue
-                con_json = con_dir / "contribution.json"
-                if not con_json.exists():
-                    continue
-                try:
-                    c = load_manifest(con_json)
-                except Exception:
-                    continue
-                if str(c.get("session_id") or "") not in identity_keys:
-                    continue
-                shutil.rmtree(con_dir, ignore_errors=False)
-                deleted["contributions"] += 1
-
-        # Delete overlay subtrees for every known identity key.
-        for sid in identity_keys:
-            overlay_dir = lay.overlays / sid
-            if overlay_dir.exists():
-                shutil.rmtree(overlay_dir, ignore_errors=False)
-                deleted["overlays"] += 1
-
-        return {"ok": True, "session_id": session_id, "resolved_keys": sorted(identity_keys), "deleted": deleted}
+        try:
+            result = delete_session_op(session_id)
+        except FileNotFoundError:
+            return fail("NOT_FOUND", "session not found", status=404)
+        except Exception as e:
+            return fail("INTERNAL_ERROR", f"failed to delete session: {type(e).__name__}: {e}", status=500)
+        return ok(result)
 
     @app.post("/api/upload")
     async def api_upload(
@@ -1257,6 +1252,16 @@ def create_app() -> FastAPI:
         _spawn_run_job(run_id)
         state = get_run_state(run_id)
         return ok({"run_id": run_id, "state": state})
+
+    @app.delete("/api/runs/{run_id}")
+    async def api_delete_run(run_id: str) -> Dict[str, Any]:
+        try:
+            result = delete_run_op(run_id)
+        except FileNotFoundError:
+            return fail("NOT_FOUND", "run not found", status=404)
+        except Exception as e:
+            return fail("INTERNAL_ERROR", f"failed to delete run: {type(e).__name__}: {e}", status=500)
+        return ok(result)
 
     @app.get("/api/runs/{run_id}")
     async def api_run_status(run_id: str) -> Dict[str, Any]:

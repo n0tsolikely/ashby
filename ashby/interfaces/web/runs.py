@@ -87,7 +87,7 @@ def primary_downloads(run_id: str, *, state: Optional[Dict[str, Any]] = None) ->
             "created_ts": ptr.get("created_ts"),
         }
 
-    for k in ("pdf", "md", "json", "evidence_map", "transcript"):
+    for k in ("pdf", "md", "txt", "json", "evidence_map", "transcript"):
         add_ptr(k)
 
     return {

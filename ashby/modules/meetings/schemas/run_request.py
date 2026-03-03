@@ -92,6 +92,8 @@ class RunRequest:
     speakers: SpeakerHint = None
     diarization_enabled: Optional[bool] = None
     transcript_version_id: Optional[str] = None
+    include_citations: bool = False
+    show_empty_sections: bool = False
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, Any]) -> "RunRequest":
@@ -121,6 +123,21 @@ class RunRequest:
         else:
             diarization_value = None
 
+        include_citations = payload.get("include_citations")
+        if include_citations is None:
+            include_citations = payload.get("citations")
+        if include_citations is None:
+            include_citations = payload.get("show_citations")
+
+        show_empty_sections = payload.get("show_empty_sections")
+        if show_empty_sections is None:
+            show_empty_sections = payload.get("show_sections")
+        if show_empty_sections is None:
+            show_empty_sections = payload.get("show_empty")
+
+        include_citations_value = bool(include_citations) if isinstance(include_citations, bool) else False
+        show_empty_sections_value = bool(show_empty_sections) if isinstance(show_empty_sections, bool) else False
+
         return cls(
             mode=_norm_lower(payload.get("mode")),
             template_id=_norm_lower(template_id),
@@ -128,6 +145,8 @@ class RunRequest:
             speakers=_norm_speakers(speakers),
             diarization_enabled=diarization_value,
             transcript_version_id=_norm_str(transcript_version_id),
+            include_citations=include_citations_value,
+            show_empty_sections=show_empty_sections_value,
         )
 
     @classmethod
@@ -139,6 +158,8 @@ class RunRequest:
             speakers=_norm_speakers(ui.speakers),
             diarization_enabled=ui.diarization_enabled if isinstance(ui.diarization_enabled, bool) else None,
             transcript_version_id=_norm_str(ui.transcript_version_id),
+            include_citations=bool(ui.include_citations),
+            show_empty_sections=bool(ui.show_empty_sections),
         )
 
     def to_ui_state(self) -> UIState:
@@ -150,4 +171,6 @@ class RunRequest:
             speakers=_norm_speakers(self.speakers),
             diarization_enabled=self.diarization_enabled if isinstance(self.diarization_enabled, bool) else None,
             transcript_version_id=_norm_str(self.transcript_version_id),
+            include_citations=bool(self.include_citations),
+            show_empty_sections=bool(self.show_empty_sections),
         )

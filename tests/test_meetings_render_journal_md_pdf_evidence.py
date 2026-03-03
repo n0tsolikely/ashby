@@ -51,6 +51,8 @@ def test_formalize_renders_journal_json_md_evidence_and_pdf(tmp_path: Path, monk
     assert str(po["json"]["path"]).endswith("/artifacts/journal.json")
     assert po.get("md") and po["md"]["kind"] == "journal_md"
     assert str(po["md"]["path"]).endswith("/artifacts/journal.md")
+    assert po.get("txt") and po["txt"]["kind"] == "journal_txt"
+    assert str(po["txt"]["path"]).endswith("/artifacts/journal.txt")
     assert po.get("pdf") and po["pdf"]["kind"] == "journal_pdf"
     assert str(po["pdf"]["path"]).endswith("/exports/journal.pdf")
     assert po.get("evidence_map") and po["evidence_map"]["kind"] == "evidence_map"
@@ -61,6 +63,7 @@ def test_formalize_renders_journal_json_md_evidence_and_pdf(tmp_path: Path, monk
     assert "transcript" in kinds
     assert "journal_json" in kinds
     assert "journal_md" in kinds
+    assert "journal_txt" in kinds
     assert "formalized_md" not in kinds
     assert "evidence_map" in kinds
     assert "journal_pdf" in kinds
@@ -68,11 +71,13 @@ def test_formalize_renders_journal_json_md_evidence_and_pdf(tmp_path: Path, monk
 
     run_dir = root / "runs" / run_id
     md_path = run_dir / "artifacts" / "journal.md"
+    txt_path = run_dir / "artifacts" / "journal.txt"
     journal_path = run_dir / "artifacts" / "journal.json"
     ev_path = run_dir / "artifacts" / "evidence_map.json"
     pdf_path = run_dir / "exports" / "journal.pdf"
 
     assert md_path.exists()
+    assert txt_path.exists()
     assert journal_path.exists()
     assert ev_path.exists()
     assert pdf_path.exists()
@@ -80,7 +85,9 @@ def test_formalize_renders_journal_json_md_evidence_and_pdf(tmp_path: Path, monk
     assert not (run_dir / "artifacts" / "formalized.md").exists()
 
     md_txt = md_path.read_text(encoding="utf-8")
+    txt_txt = txt_path.read_text(encoding="utf-8")
     assert "## Narrative" in md_txt
+    assert "## Narrative" not in txt_txt
 
     payload = json.loads(ev_path.read_text(encoding="utf-8"))
     assert payload["version"] == 2

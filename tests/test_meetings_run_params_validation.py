@@ -31,6 +31,8 @@ def test_create_run_normalizes_template_to_template_id_and_sets_default_retentio
 
     assert params["template_id"] == "default"
     assert params["retention"] == "MED"
+    assert params["include_citations"] is False
+    assert params["show_empty_sections"] is False
     assert "template" not in params
 
 

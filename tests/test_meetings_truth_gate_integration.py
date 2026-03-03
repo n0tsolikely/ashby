@@ -72,7 +72,15 @@ def test_truth_gate_blocks_unknown_citation_segment_id(tmp_path: Path, monkeypat
         plan={"steps": [{"name": "formalize", "params": {"mode": "meeting"}}]},
     )
 
-    def _bad_minutes(run_dir: Path, template_id: str, retention: str):
+    def _bad_minutes(
+        run_dir: Path,
+        template_id: str,
+        retention: str,
+        *,
+        include_citations: bool | None = None,
+        show_empty_sections: bool | None = None,
+    ):
+        del include_citations, show_empty_sections
         artifacts = run_dir / "artifacts"
         artifacts.mkdir(parents=True, exist_ok=True)
         out_path = artifacts / "minutes.json"

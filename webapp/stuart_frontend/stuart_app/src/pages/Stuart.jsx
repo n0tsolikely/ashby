@@ -108,6 +108,8 @@ function mapRunConfigToUi(config) {
     retention: config?.retention_level || config?.retention || 'MED',
     speakers,
     diarization_enabled: diarizationEnabled,
+    include_citations: config?.include_citations === true,
+    show_empty_sections: config?.show_empty_sections === true,
   };
 }
 
@@ -457,6 +459,46 @@ export default function Stuart() {
     }
   };
 
+  const handleDeleteTranscriptVersion = async () => {
+    if (!selectedSession?.id || !selectedTranscriptVersionId) return;
+    const current = transcriptVersions.find((t) => t.transcript_version_id === selectedTranscriptVersionId);
+    const label = current?.transcript_version_id || selectedTranscriptVersionId;
+    const okBasic = window.confirm(`Delete transcript version "${label}"?`);
+    if (!okBasic) return;
+
+    try {
+      await stuartClient.transcripts.remove(selectedTranscriptVersionId, { cascade: false });
+    } catch (error) {
+      const message = String(error?.message || '');
+      if (error?.status === 409 || message.includes('TRANSCRIPT_HAS_DEPENDENTS')) {
+        let details = '';
+        const deps = error?.body?.dependents || {};
+        const consumers = Array.isArray(deps?.consumers) ? deps.consumers.map((r) => r.run_id).filter(Boolean) : [];
+        const producers = Array.isArray(deps?.producers) ? deps.producers.map((r) => r.run_id).filter(Boolean) : [];
+        const runList = [...new Set([...consumers, ...producers])];
+        if (runList.length) {
+          details = `\n\nDependent runs:\n- ${runList.join('\n- ')}`;
+        }
+        const okCascade = window.confirm(
+          `This transcript has dependent formalizations. Delete transcript and dependent runs?${details}`
+        );
+        if (!okCascade) return;
+        await stuartClient.transcripts.remove(selectedTranscriptVersionId, { cascade: true });
+      } else {
+        throw error;
+      }
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['transcripts', selectedSession.id] }),
+      queryClient.invalidateQueries({ queryKey: ['formalizations', selectedSession.id] }),
+      queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+    ]);
+    setSelectedFormalization(null);
+    setSelectedTranscriptVersionId(null);
+    toast.success(`Deleted transcript version ${label}`);
+  };
+
   const handleRun = async (config) => {
     if (!selectedSession?.id) {
       toast.error('No session selected');
@@ -689,6 +731,30 @@ export default function Stuart() {
     URL.revokeObjectURL(blobUrl);
   };
 
+  const handleDownloadText = async (formalization) => {
+    const txtUrl = formalization?.output_json?.downloads?.primary?.txt?.url;
+    if (!txtUrl) {
+      toast.error('No text output available.');
+      return;
+    }
+
+    try {
+      const res = await fetch(txtUrl);
+      if (!res.ok) {
+        throw new Error(`Text download failed (${res.status})`);
+      }
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `${selectedSession?.title || 'session'}_${formalization?.id || 'formalization'}.txt`;
+      link.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      toast.error(error.message || 'Text download failed');
+    }
+  };
+
   const handlePrintPdf = async (formalization) => {
     const pdfUrl = formalization?.pdf_url || formalization?.output_json?.downloads?.primary?.pdf?.url;
     if (!pdfUrl) {
@@ -779,6 +845,27 @@ export default function Stuart() {
       toast.success('Session deleted');
     } catch (error) {
       toast.error(error.message || 'Failed to delete session');
+    }
+  };
+
+  const handleDeleteRun = async (formalization) => {
+    const runId = formalization?.run_id || formalization?.id;
+    if (!runId) return;
+    const ok = window.confirm(`Delete run "${runId}"?\n\nThis removes outputs/evidence for this run.`);
+    if (!ok) return;
+
+    try {
+      await stuartClient.runs.remove(runId);
+      if ((selectedFormalization?.run_id || selectedFormalization?.id) === runId) {
+        setSelectedFormalization(null);
+      }
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['formalizations', selectedSession?.id] }),
+        queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+      ]);
+      toast.success(`Deleted run ${runId}`);
+    } catch (error) {
+      toast.error(error.message || 'Failed to delete run');
     }
   };
 
@@ -1023,27 +1110,39 @@ export default function Stuart() {
                         <div className="col-span-12 xl:col-span-7 space-y-6">
                           <div className="flex items-center justify-between gap-3">
                             <div className="text-sm text-slate-500">Transcript Version</div>
-                            <Select
-                              value={selectedTranscriptVersionId || undefined}
-                              onValueChange={handleSelectTranscriptVersion}
-                            >
-                              <SelectTrigger className="w-[320px]">
-                                <SelectValue placeholder="Select transcript version" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {transcriptVersions.map((version) => {
-                                  const vid = version.transcript_version_id;
-                                  const created = version.created_ts
-                                    ? new Date(version.created_ts * 1000).toLocaleString()
-                                    : 'unknown';
-                                  return (
-                                    <SelectItem key={vid} value={vid}>
-                                      {`${String(vid).replace(/^trv_/, '').slice(0, 10)} • ${created} • ${version.segments_count} segments${version.active ? ' • ACTIVE' : ''}`}
-                                    </SelectItem>
-                                  );
-                                })}
-                              </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={selectedTranscriptVersionId || undefined}
+                                onValueChange={handleSelectTranscriptVersion}
+                              >
+                                <SelectTrigger className="w-[320px]">
+                                  <SelectValue placeholder="Select transcript version" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {transcriptVersions.map((version) => {
+                                    const vid = version.transcript_version_id;
+                                    const created = version.created_ts
+                                      ? new Date(version.created_ts * 1000).toLocaleString()
+                                      : 'unknown';
+                                    return (
+                                      <SelectItem key={vid} value={vid}>
+                                        {`${String(vid).replace(/^trv_/, '').slice(0, 10)} • ${created} • ${version.segments_count} segments${version.active ? ' • ACTIVE' : ''}`}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleDeleteTranscriptVersion}
+                                disabled={!selectedTranscriptVersionId}
+                                className="text-red-700 border-red-300 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4 mr-1.5" />
+                                Delete
+                              </Button>
+                            </div>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-slate-500">
                             <Badge variant={selectedSessionView?.transcript_meta?.diarization_enabled ? 'default' : 'secondary'}>
@@ -1095,8 +1194,10 @@ export default function Stuart() {
                             formalization={selectedFormalization || formalizations[0]}
                             onHighlightSegments={setHighlightedSegments}
                             onDownloadMarkdown={handleDownloadMarkdown}
+                            onDownloadText={handleDownloadText}
                             onDownloadPdf={handleDownloadPdf}
                             onPrintPdf={handlePrintPdf}
+                            onDeleteRun={handleDeleteRun}
                           />
                         </div>
                       </div>
@@ -1125,8 +1226,10 @@ export default function Stuart() {
                               formalization={formalization}
                               onHighlightSegments={setHighlightedSegments}
                               onDownloadMarkdown={handleDownloadMarkdown}
+                              onDownloadText={handleDownloadText}
                               onDownloadPdf={handleDownloadPdf}
                               onPrintPdf={handlePrintPdf}
+                              onDeleteRun={handleDeleteRun}
                             />
                           ))
                         )}

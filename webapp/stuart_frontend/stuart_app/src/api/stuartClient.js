@@ -25,7 +25,10 @@ async function request(path, options = {}) {
   const body = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
-    throw errorFromResponse(response, body, url);
+    const err = errorFromResponse(response, body, url);
+    err.status = response.status;
+    err.body = body;
+    throw err;
   }
 
   return body;
@@ -115,6 +118,11 @@ export const stuartClient = {
         method: 'POST',
       });
     },
+    async remove(runId) {
+      return request(`/runs/${encodeURIComponent(runId)}`, {
+        method: 'DELETE',
+      });
+    },
     async listBySession(sessionId) {
       const payload = await requestOrEmpty(`/sessions/${encodeURIComponent(sessionId)}/runs`);
       return asArray(payload);
@@ -170,6 +178,12 @@ export const stuartClient = {
         method: 'PATCH',
         headers: JSON_HEADERS,
         body: JSON.stringify({ transcript_version_id: transcriptVersionId }),
+      });
+    },
+    async remove(transcriptVersionId, { cascade = false } = {}) {
+      const q = cascade ? '?cascade=true' : '';
+      return request(`/transcripts/${encodeURIComponent(transcriptVersionId)}${q}`, {
+        method: 'DELETE',
       });
     },
   },

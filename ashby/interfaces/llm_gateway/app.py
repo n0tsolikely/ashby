@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 
 from ashby.interfaces.llm_gateway.providers import GeminiProvider
 from ashby.interfaces.llm_gateway.schemas import ErrorResponse, FormalizeRequest, FormalizeResponse
-from ashby.interfaces.llm_gateway.validate import validate_formalization_output
+from ashby.interfaces.llm_gateway.validate import validate_formalization_output, validate_formalization_request
 
 
 logger = logging.getLogger("ashby.llm_gateway")
@@ -94,6 +94,7 @@ def create_app() -> FastAPI:
         request_id = _request_id()
         started = time.time()
         try:
+            validate_formalization_request(req)
             provider = _get_provider()
             provider_out = provider.formalize(req)
             if not isinstance(provider_out, dict):
@@ -130,8 +131,8 @@ def create_app() -> FastAPI:
                 status_code=422,
                 content=_error_body(
                     request_id=request_id,
-                    code="schema_validation_failed",
-                    message="Gateway output failed schema validation",
+                    code="validation_failed",
+                    message=str(e),
                     details={"error": str(e)},
                 ),
             )

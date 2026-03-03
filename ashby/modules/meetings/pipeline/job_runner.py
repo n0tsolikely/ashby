@@ -22,6 +22,7 @@ from ashby.modules.meetings.formalize.minutes_json import formalize_meeting_to_m
 from ashby.modules.meetings.formalize.journal_json import formalize_journal_to_journal_json
 from ashby.modules.meetings.render.evidence_map import build_evidence_map
 from ashby.modules.meetings.render.export_pdf import export_pdf_stub
+from ashby.modules.meetings.render.export_txt import export_txt
 from ashby.modules.meetings.index import ingest_run
 from ashby.modules.meetings.session_state import (
     load_session_state,
@@ -921,11 +922,17 @@ def run_job(run_id: str) -> RunResult:
 
                     bump("formalize_json")
                     _raise_if_cancelled(run_id, run_dir)
+                    include_citations = params.get("include_citations") if isinstance(params.get("include_citations"), bool) else None
+                    show_empty_sections = (
+                        params.get("show_empty_sections") if isinstance(params.get("show_empty_sections"), bool) else None
+                    )
                     if mode == "meeting":
                         a_minutes = formalize_meeting_to_minutes_json(
                             run_dir,
                             template_id=template_id,
                             retention=retention,
+                            include_citations=include_citations,
+                            show_empty_sections=show_empty_sections,
                         )
                         update_run_state(run_id, artifact=a_minutes)
                     elif mode == "journal":
@@ -933,6 +940,8 @@ def run_job(run_id: str) -> RunResult:
                             run_dir,
                             template_id=template_id,
                             retention=retention,
+                            include_citations=include_citations,
+                            show_empty_sections=show_empty_sections,
                         )
                         update_run_state(run_id, artifact=a_journal)
 
@@ -973,6 +982,11 @@ def run_job(run_id: str) -> RunResult:
                     else:
                         raise ValueError(f"Unsupported mode for MD render: {mode}")
                     update_run_state(run_id, artifact=a3)
+                    txt_name = "minutes.txt" if mode == "meeting" else "journal.txt"
+                    bump("render_txt")
+                    _raise_if_cancelled(run_id, run_dir)
+                    a_txt = export_txt(run_dir, md_path=md_path, out_name=txt_name)
+                    update_run_state(run_id, artifact=a_txt)
                     bump("evidence_map")
                     a4 = build_evidence_map(run_dir)
                     update_run_state(run_id, artifact=a4)

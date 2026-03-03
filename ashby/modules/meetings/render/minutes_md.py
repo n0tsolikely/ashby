@@ -10,6 +10,8 @@ from ashby.modules.meetings.render.citations import format_citations, load_segme
 from ashby.modules.meetings.render.speaker_overlay import apply_speaker_map_to_transcript_text
 from ashby.modules.meetings.schemas.minutes_v1 import validate_minutes_v1
 
+_EMPTY_PLACEHOLDER = "_No entries._"
+
 
 def _sort_items(items: Any, key: str) -> List[Dict[str, Any]]:
     if not isinstance(items, list):
@@ -113,6 +115,21 @@ def _load_diarization_confidence(run_dir: Path) -> float | None:
     return None
 
 
+def _render_flags(payload: Dict[str, Any]) -> tuple[bool, bool]:
+    include_citations = payload.get("include_citations")
+    show_empty_sections = payload.get("show_empty_sections")
+    return (
+        bool(include_citations) if isinstance(include_citations, bool) else False,
+        bool(show_empty_sections) if isinstance(show_empty_sections, bool) else False,
+    )
+
+
+def _citations_text(citations: Any, *, segs_by_id: Dict[int, Dict[str, Any]], include_citations: bool) -> str:
+    if not include_citations:
+        return ""
+    return format_citations(citations, segs_by_id=segs_by_id)
+
+
 
 def render_minutes_md(run_dir: Path) -> Dict[str, Any]:
     """Render artifacts/minutes.json → artifacts/minutes.md (deterministic).
@@ -143,6 +160,7 @@ def render_minutes_md(run_dir: Path) -> Dict[str, Any]:
     mode = str(header.get("mode") or "meeting")
 
     segs_by_id = load_segments_by_id(run_dir, mode=mode)
+    include_citations, show_empty_sections = _render_flags(payload)
 
     speaker_map = _load_speaker_map_for_run(run_dir)
 
@@ -169,12 +187,10 @@ def render_minutes_md(run_dir: Path) -> Dict[str, Any]:
 
     parts.append("")
 
-    # Participants
-    parts.append("## Participants")
     participants = _sort_items(payload.get("participants"), "speaker_label")
-    if not participants:
-        parts.append("_No participants listed._")
-    else:
+    if participants or show_empty_sections:
+        parts.append("## Participants")
+    if participants:
         for p in participants:
             spk = str(p.get("speaker_label") or "")
             dn = str(p.get("display_name") or "")
@@ -184,14 +200,15 @@ def render_minutes_md(run_dir: Path) -> Dict[str, Any]:
                 parts.append(f"- `{spk}` → {dn}")
             else:
                 parts.append(f"- `{spk}`")
-    parts.append("")
+    elif show_empty_sections:
+        parts.append(_EMPTY_PLACEHOLDER)
+    if participants or show_empty_sections:
+        parts.append("")
 
-    # Topics
-    parts.append("## Topics")
     topics = _sort_items(payload.get("topics"), "topic_id")
-    if not topics:
-        parts.append("_No topics._")
-    else:
+    if topics or show_empty_sections:
+        parts.append("## Topics")
+    if topics:
         for t in topics:
             tid = str(t.get("topic_id") or "")
             ttitle = str(t.get("title") or "")
@@ -199,31 +216,33 @@ def render_minutes_md(run_dir: Path) -> Dict[str, Any]:
             line = f"- ({tid}) **{ttitle}**"
             if summary:
                 line += f": {summary}"
-            line += format_citations(t.get("citations"), segs_by_id=segs_by_id)
+            line += _citations_text(t.get("citations"), segs_by_id=segs_by_id, include_citations=include_citations)
             parts.append(line)
-    parts.append("")
+    elif show_empty_sections:
+        parts.append(_EMPTY_PLACEHOLDER)
+    if topics or show_empty_sections:
+        parts.append("")
 
-    # Decisions
-    parts.append("## Decisions")
     decisions = _sort_items(payload.get("decisions"), "decision_id")
-    if not decisions:
-        parts.append("No explicit decisions recorded.")
-    else:
+    if decisions or show_empty_sections:
+        parts.append("## Decisions")
+    if decisions:
         for d in decisions:
             did = str(d.get("decision_id") or "")
             text = str(d.get("text") or "").strip()
             if speaker_map:
                 text = apply_speaker_map_to_transcript_text(text, speaker_map).strip()
-            line = f"- ({did}) {text}{format_citations(d.get('citations'), segs_by_id=segs_by_id)}"
+            line = f"- ({did}) {text}{_citations_text(d.get('citations'), segs_by_id=segs_by_id, include_citations=include_citations)}"
             parts.append(line)
-    parts.append("")
+    elif show_empty_sections:
+        parts.append(_EMPTY_PLACEHOLDER)
+    if decisions or show_empty_sections:
+        parts.append("")
 
-    # Action Items
-    parts.append("## Action Items")
     actions = _sort_items(payload.get("action_items"), "action_id")
-    if not actions:
-        parts.append("No action items recorded.")
-    else:
+    if actions or show_empty_sections:
+        parts.append("## Action Items")
+    if actions:
         for a in actions:
             aid = str(a.get("action_id") or "")
             text = str(a.get("text") or "").strip()
@@ -240,39 +259,44 @@ def render_minutes_md(run_dir: Path) -> Dict[str, Any]:
             if due:
                 suffix.append(f"due={due}")
             meta = f" ({', '.join(suffix)})" if suffix else ""
-            line = f"- ({aid}) {text}{meta}{format_citations(a.get('citations'), segs_by_id=segs_by_id)}"
+            line = f"- ({aid}) {text}{meta}{_citations_text(a.get('citations'), segs_by_id=segs_by_id, include_citations=include_citations)}"
             parts.append(line)
-    parts.append("")
+    elif show_empty_sections:
+        parts.append(_EMPTY_PLACEHOLDER)
+    if actions or show_empty_sections:
+        parts.append("")
 
-    # Notes
-    parts.append("## Notes")
     notes = _sort_items(payload.get("notes"), "note_id")
-    if not notes:
-        parts.append("_No notes._")
-    else:
+    if notes or show_empty_sections:
+        parts.append("## Notes")
+    if notes:
         for n in notes:
             nid = str(n.get("note_id") or "")
             text = str(n.get("text") or "").strip()
             if speaker_map:
                 text = apply_speaker_map_to_transcript_text(text, speaker_map).strip()
-            line = f"- ({nid}) {text}{format_citations(n.get('citations'), segs_by_id=segs_by_id)}"
+            line = f"- ({nid}) {text}{_citations_text(n.get('citations'), segs_by_id=segs_by_id, include_citations=include_citations)}"
             parts.append(line)
-    parts.append("")
+    elif show_empty_sections:
+        parts.append(_EMPTY_PLACEHOLDER)
+    if notes or show_empty_sections:
+        parts.append("")
 
-    # Open Questions
-    parts.append("## Open Questions")
     qs = _sort_items(payload.get("open_questions"), "question_id")
-    if not qs:
-        parts.append("_No open questions._")
-    else:
+    if qs or show_empty_sections:
+        parts.append("## Open Questions")
+    if qs:
         for q in qs:
             qid = str(q.get("question_id") or "")
             text = str(q.get("text") or "").strip()
             if speaker_map:
                 text = apply_speaker_map_to_transcript_text(text, speaker_map).strip()
-            line = f"- ({qid}) {text}{format_citations(q.get('citations'), segs_by_id=segs_by_id)}"
+            line = f"- ({qid}) {text}{_citations_text(q.get('citations'), segs_by_id=segs_by_id, include_citations=include_citations)}"
             parts.append(line)
-    parts.append("")
+    elif show_empty_sections:
+        parts.append(_EMPTY_PLACEHOLDER)
+    if qs or show_empty_sections:
+        parts.append("")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(parts).rstrip() + "\n", encoding="utf-8")

@@ -25,7 +25,7 @@ def _write_transcript_json(run_dir: Path, *, session_id: str) -> None:
     (artifacts / "transcript.json").write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _write_minutes_json(run_dir: Path) -> None:
+def _write_minutes_json(run_dir: Path, *, include_citations: bool = False, show_empty_sections: bool = False) -> None:
     artifacts = run_dir / "artifacts"
     artifacts.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -33,6 +33,8 @@ def _write_minutes_json(run_dir: Path) -> None:
         "session_id": "ses_test",
         "run_id": run_dir.name,
         "header": {"title": "Test Minutes", "mode": "meeting", "retention": "MED", "template_id": "default", "created_ts": 123.0},
+        "include_citations": include_citations,
+        "show_empty_sections": show_empty_sections,
         "participants": [{"speaker_label": "SPEAKER_01"}, {"speaker_label": "SPEAKER_00"}],
         "topics": [
             {"topic_id": "topic_002", "title": "Second", "summary": "B", "citations": [{"segment_id": 2}, {"segment_id": 1}]},
@@ -61,7 +63,7 @@ def _write_minutes_json(run_dir: Path) -> None:
     _write_transcript_json(run_dir, session_id="ses_test")
 
 
-def _write_journal_json(run_dir: Path) -> None:
+def _write_journal_json(run_dir: Path, *, include_citations: bool = False, show_empty_sections: bool = False) -> None:
     artifacts = run_dir / "artifacts"
     artifacts.mkdir(parents=True, exist_ok=True)
     payload = {
@@ -69,6 +71,8 @@ def _write_journal_json(run_dir: Path) -> None:
         "session_id": "ses_test",
         "run_id": run_dir.name,
         "header": {"title": "Test Journal", "mode": "journal", "retention": "LOW", "template_id": "default", "created_ts": 123.0},
+        "include_citations": include_citations,
+        "show_empty_sections": show_empty_sections,
         "mood": "ok",
         "narrative_sections": [
             {"section_id": "sec_002", "title": "Second", "text": "B", "citations": [{"segment_id": 1}]},
@@ -107,8 +111,8 @@ def test_render_minutes_md_deterministic_and_no_overwrite(tmp_path: Path):
     txt2 = out_path.read_text(encoding="utf-8")
     assert txt1 == txt2
 
-    # citations visible (segment_id + timestamps)
-    assert "[S0@00:00:00–00:00:01]" in txt1
+    # default render hides citation tokens
+    assert "[S0@00:00:00–00:00:01]" not in txt1
     assert "## Decisions" in txt1
     assert "## Action Items" in txt1
 
@@ -135,10 +139,10 @@ def test_render_journal_md_deterministic_and_no_overwrite(tmp_path: Path):
     txt2 = out_path.read_text(encoding="utf-8")
     assert txt1 == txt2
 
-    # citations visible for action items + key points
+    # default render hides citation tokens
     assert "## Action Items" in txt1
     assert "## Key Points" in txt1
-    assert "[S0@00:00:00–00:00:01]" in txt1
+    assert "[S0@00:00:00–00:00:01]" not in txt1
 
     # sorted ordering (ja_001 before ja_002)
     assert txt1.find("(ja_001)") < txt1.find("(ja_002)")
@@ -146,3 +150,17 @@ def test_render_journal_md_deterministic_and_no_overwrite(tmp_path: Path):
     # no-overwrite enforced
     with pytest.raises(FileExistsError):
         render_journal_md(run_dir)
+
+
+def test_render_md_respects_include_citations_true(tmp_path: Path):
+    run_minutes = tmp_path / "run_minutes_cites"
+    _write_minutes_json(run_minutes, include_citations=True)
+    render_minutes_md(run_minutes)
+    txt_minutes = (run_minutes / "artifacts" / "minutes.md").read_text(encoding="utf-8")
+    assert "[S0@00:00:00–00:00:01]" in txt_minutes
+
+    run_journal = tmp_path / "run_journal_cites"
+    _write_journal_json(run_journal, include_citations=True)
+    render_journal_md(run_journal)
+    txt_journal = (run_journal / "artifacts" / "journal.md").read_text(encoding="utf-8")
+    assert "[S0@00:00:00–00:00:01]" in txt_journal

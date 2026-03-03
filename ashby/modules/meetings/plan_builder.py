@@ -63,6 +63,9 @@ def build_plan(
             "retention": ui.retention or "MED",
             "speakers": ui.speakers,
             "session_id": session.active_session_id,
+            # QUEST_159: explicit formalization rendering controls.
+            "include_citations": bool(ui.include_citations),
+            "show_empty_sections": bool(ui.show_empty_sections),
         }
         if isinstance(ui.diarization_enabled, bool):
             params["diarization_enabled"] = ui.diarization_enabled

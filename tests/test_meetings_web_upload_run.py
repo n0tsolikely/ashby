@@ -93,10 +93,15 @@ async def test_web_upload_and_run(tmp_path: Path, monkeypatch):
         downloads = st.get("downloads") or {}
         primary = downloads.get("primary") or {}
         pdf = primary.get("pdf")
+        txt = primary.get("txt")
         assert isinstance(pdf, dict)
+        assert isinstance(txt, dict)
         url = pdf.get("url")
         assert isinstance(url, str)
         assert url.startswith(f"/download/{run_id}/")
+        txt_url = txt.get("url")
+        assert isinstance(txt_url, str)
+        assert txt_url.startswith(f"/download/{run_id}/")
 
         # ensure filename was not guessed (it must match the pointer path basename)
         po = (st.get("state") or {}).get("primary_outputs") or {}

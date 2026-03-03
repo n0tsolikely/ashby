@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from ashby.modules.llm.http_gateway import HTTPGatewayLLMService
-from ashby.modules.llm.service import LLMFormalizeRequest
+from ashby.modules.llm.service import LLMFormalizeRequest, TemplateSectionPayload, TranscriptSegmentPayload
 
 
 def test_gateway_client_posts_expected_payload() -> None:
@@ -35,11 +35,25 @@ def test_gateway_client_posts_expected_payload() -> None:
     client = httpx.Client(transport=httpx.MockTransport(handler))
     svc = HTTPGatewayLLMService(base_url="http://gateway.local", client=client)
     req = LLMFormalizeRequest(
-        transcript_text="hello world",
         mode="meeting",
         template_id="default",
         retention="MED",
         profile="HYBRID",
+        transcript_text="hello world",
+        transcript_segments=[
+            TranscriptSegmentPayload(
+                segment_id="seg_0001",
+                start_ms=0,
+                end_ms=1000,
+                speaker_label="SPEAKER_00",
+                speaker_name="Alex",
+                text="hello world",
+            )
+        ],
+        template_text="# Template",
+        template_sections=[TemplateSectionPayload(heading="Summary", target_key="summary", order=1)],
+        include_citations=True,
+        show_empty_sections=True,
     )
 
     res = svc.formalize(req)
@@ -47,11 +61,25 @@ def test_gateway_client_posts_expected_payload() -> None:
     assert seen["method"] == "POST"
     assert seen["path"] == "/v1/formalize"
     assert seen["json"] == {
-        "transcript_text": "hello world",
         "mode": "meeting",
         "template_id": "default",
         "retention": "MED",
         "profile": "HYBRID",
+        "transcript_text": "hello world",
+        "transcript_segments": [
+            {
+                "segment_id": "seg_0001",
+                "start_ms": 0,
+                "end_ms": 1000,
+                "speaker_label": "SPEAKER_00",
+                "speaker_name": "Alex",
+                "text": "hello world",
+            }
+        ],
+        "template_text": "# Template",
+        "template_sections": [{"heading": "Summary", "target_key": "summary", "order": 1}],
+        "include_citations": True,
+        "show_empty_sections": True,
     }
     assert res.version == 1
     assert res.request_id == "req_123"

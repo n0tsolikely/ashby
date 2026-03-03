@@ -124,3 +124,69 @@ async def test_schema_validation_422_includes_version_and_request_id(monkeypatch
     assert body["ok"] is False
     assert body["version"] == 1
     assert isinstance(body["request_id"], str) and body["request_id"]
+
+
+@pytest.mark.asyncio
+async def test_segments_only_payload_is_accepted(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    app = create_app()
+    app.state.provider = _FakeProvider(
+        {
+            "output_json": _valid_meeting_output(),
+            "evidence_map": {},
+            "usage": {"char_count": 10},
+        }
+    )
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.post(
+            "/v1/formalize",
+            json={
+                "mode": "meeting",
+                "template_id": "default",
+                "retention": "MED",
+                "profile": "HYBRID",
+                "transcript_segments": [
+                    {
+                        "segment_id": "seg_0001",
+                        "start_ms": 0,
+                        "end_ms": 1000,
+                        "speaker_label": "SPEAKER_00",
+                        "speaker_name": "Alex",
+                        "text": "hello world",
+                    }
+                ],
+            },
+        )
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_segments_with_invalid_timing_returns_422(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    app = create_app()
+    app.state.provider = _FakeProvider({"output_json": _valid_meeting_output()})
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        r = await client.post(
+            "/v1/formalize",
+            json={
+                "mode": "meeting",
+                "template_id": "default",
+                "retention": "MED",
+                "profile": "HYBRID",
+                "transcript_segments": [
+                    {
+                        "segment_id": "seg_0001",
+                        "start_ms": 1000,
+                        "end_ms": 100,
+                        "speaker_label": "SPEAKER_00",
+                        "text": "hello world",
+                    }
+                ],
+            },
+        )
+    body = r.json()
+    assert r.status_code == 422
+    assert body["error"]["code"] == "validation_failed"
+    assert "end_ms must be >= start_ms" in body["error"]["message"]

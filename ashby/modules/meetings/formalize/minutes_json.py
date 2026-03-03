@@ -8,13 +8,16 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ashby.core.profile import ExecutionProfile, get_execution_profile
 from ashby.modules.llm import HTTPGatewayLLMService, LLMFormalizeRequest
+from ashby.modules.llm.service import TemplateSectionPayload, TranscriptSegmentPayload
 from ashby.modules.meetings.formalize.llm_evidence_map import persist_llm_evidence_map
 from ashby.modules.meetings.formalize.llm_text_sanitizer import sanitize_llm_text_fields
 from ashby.modules.meetings.formalize.llm_usage_receipt import write_llm_usage_receipt
 from ashby.modules.meetings.hashing import sha256_file
+from ashby.modules.meetings.overlays import load_speaker_map_overlay
 from ashby.modules.meetings.schemas.artifacts_v1 import dump_json
 from ashby.modules.meetings.schemas.minutes_v1 import validate_minutes_v1
-from ashby.modules.meetings.template_registry import validate_template
+from ashby.modules.meetings.session_state import load_session_state
+from ashby.modules.meetings.template_registry import load_template_spec, validate_template
 
 
 _REMOTE_ENV_FLAG = "ASHBY_MEETINGS_LLM_ENABLED"
@@ -73,6 +76,52 @@ def _segment_id_set(segs: List[Dict[str, Any]]) -> Set[int]:
 def _enabled_remote_llm() -> bool:
     v = (os.environ.get(_REMOTE_ENV_FLAG) or "").strip().lower()
     return v in ("1", "true", "yes", "y", "on")
+
+
+def _load_active_speaker_map(session_id: str) -> Dict[str, str]:
+    st = load_session_state(session_id)
+    overlay_id = st.get("active_speaker_overlay_id")
+    if not isinstance(overlay_id, str) or not overlay_id.strip():
+        return {}
+    return load_speaker_map_overlay(session_id, overlay_id.strip())
+
+
+def _as_transcript_segments_payload(segs: List[Dict[str, Any]], speaker_map: Dict[str, str]) -> List[TranscriptSegmentPayload]:
+    payload: List[TranscriptSegmentPayload] = []
+    for i, seg in enumerate(segs):
+        sid = str(seg.get("segment_id", i))
+        speaker_label = str(seg.get("speaker") or "SPEAKER_00")
+        speaker_name = speaker_map.get(speaker_label)
+        payload.append(
+            TranscriptSegmentPayload(
+                segment_id=sid,
+                start_ms=int(seg.get("start_ms", 0)),
+                end_ms=int(seg.get("end_ms", 0)),
+                speaker_label=speaker_label,
+                speaker_name=speaker_name if isinstance(speaker_name, str) and speaker_name.strip() else None,
+                text=str(seg.get("text") or ""),
+            )
+        )
+    return payload
+
+
+def _apply_output_metadata(
+    payload: Dict[str, Any],
+    *,
+    template_id: str,
+    template_version: str,
+    retention: str,
+    include_citations: bool,
+    show_empty_sections: bool,
+    transcript_version_id: Optional[str],
+) -> None:
+    payload["template_id"] = template_id
+    payload["template_version"] = template_version
+    payload["retention"] = retention
+    payload["include_citations"] = bool(include_citations)
+    payload["show_empty_sections"] = bool(show_empty_sections)
+    if transcript_version_id:
+        payload["transcript_version_id"] = transcript_version_id
 
 
 def _write_text_write_once(path: Path, text: str) -> None:
@@ -198,7 +247,14 @@ def _assert_citations_reference_real_segments(payload: Dict[str, Any], valid_ids
     check_list(payload.get("open_questions"), item_name="open_question")
 
 
-def formalize_meeting_to_minutes_json(run_dir: Path, template_id: str, retention: str) -> Dict[str, Any]:
+def formalize_meeting_to_minutes_json(
+    run_dir: Path,
+    template_id: str,
+    retention: str,
+    *,
+    include_citations: Optional[bool] = None,
+    show_empty_sections: Optional[bool] = None,
+) -> Dict[str, Any]:
     """Produce artifacts/minutes.json (v1) for meeting mode.
 
     Profile gating:
@@ -220,9 +276,22 @@ def formalize_meeting_to_minutes_json(run_dir: Path, template_id: str, retention
     tv = validate_template("meeting", template_id)
     if not tv.ok or tv.template_id is None:
         raise ValueError(tv.message or "Invalid meeting template.")
+    spec = load_template_spec("meeting", tv.template_id)
 
     session_id, run_id, segs, transcript_version_id = _load_transcript_segments(run_dir)
     valid_seg_ids = _segment_id_set(segs)
+    speaker_map = _load_active_speaker_map(session_id)
+    transcript_segments = _as_transcript_segments_payload(segs, speaker_map)
+    template_sections = [
+        TemplateSectionPayload(heading=section.heading, target_key=section.section_id, order=idx + 1)
+        for idx, section in enumerate(spec.sections)
+    ]
+    resolved_include_citations = (
+        bool(include_citations) if isinstance(include_citations, bool) else bool(spec.defaults.get("include_citations"))
+    )
+    resolved_show_empty_sections = (
+        bool(show_empty_sections) if isinstance(show_empty_sections, bool) else bool(spec.defaults.get("show_empty_sections"))
+    )
 
     profile = get_execution_profile()
 
@@ -238,6 +307,15 @@ def formalize_meeting_to_minutes_json(run_dir: Path, template_id: str, retention
         if transcript_version_id:
             payload["transcript_version_id"] = transcript_version_id
             payload.setdefault("header", {})["transcript_version_id"] = transcript_version_id
+        _apply_output_metadata(
+            payload,
+            template_id=tv.template_id,
+            template_version=spec.template_version,
+            retention=retention,
+            include_citations=resolved_include_citations,
+            show_empty_sections=resolved_show_empty_sections,
+            transcript_version_id=transcript_version_id,
+        )
         validate_minutes_v1(payload)
         dump_json(out_path, payload, write_once=True)
         return {
@@ -260,6 +338,15 @@ def formalize_meeting_to_minutes_json(run_dir: Path, template_id: str, retention
         if transcript_version_id:
             payload["transcript_version_id"] = transcript_version_id
             payload.setdefault("header", {})["transcript_version_id"] = transcript_version_id
+        _apply_output_metadata(
+            payload,
+            template_id=tv.template_id,
+            template_version=spec.template_version,
+            retention=retention,
+            include_citations=resolved_include_citations,
+            show_empty_sections=resolved_show_empty_sections,
+            transcript_version_id=transcript_version_id,
+        )
         validate_minutes_v1(payload)
         dump_json(out_path, payload, write_once=True)
         return {
@@ -278,10 +365,15 @@ def formalize_meeting_to_minutes_json(run_dir: Path, template_id: str, retention
     service = HTTPGatewayLLMService()
     request = LLMFormalizeRequest(
         transcript_text=transcript_text,
+        transcript_segments=transcript_segments,
         mode="meeting",
         template_id=tv.template_id,
         retention=retention,
         profile=profile.value,
+        template_text=spec.raw_text,
+        template_sections=template_sections,
+        include_citations=resolved_include_citations,
+        show_empty_sections=resolved_show_empty_sections,
     )
     try:
         gateway_resp = service.formalize(request, artifacts_dir=artifacts)
@@ -304,6 +396,15 @@ def formalize_meeting_to_minutes_json(run_dir: Path, template_id: str, retention
         if transcript_version_id:
             payload["transcript_version_id"] = transcript_version_id
             payload.setdefault("header", {})["transcript_version_id"] = transcript_version_id
+        _apply_output_metadata(
+            payload,
+            template_id=tv.template_id,
+            template_version=spec.template_version,
+            retention=retention,
+            include_citations=resolved_include_citations,
+            show_empty_sections=resolved_show_empty_sections,
+            transcript_version_id=transcript_version_id,
+        )
         validate_minutes_v1(payload)
         dump_json(out_path, payload, write_once=True)
         return {
@@ -377,6 +478,15 @@ def formalize_meeting_to_minutes_json(run_dir: Path, template_id: str, retention
     header.setdefault("retention", retention)
     header.setdefault("template_id", tv.template_id)
     header.setdefault("created_ts", time.time())
+    _apply_output_metadata(
+        llm_payload,
+        template_id=tv.template_id,
+        template_version=spec.template_version,
+        retention=retention,
+        include_citations=resolved_include_citations,
+        show_empty_sections=resolved_show_empty_sections,
+        transcript_version_id=transcript_version_id,
+    )
 
     # Validate schema and truth-guard citations
     try:

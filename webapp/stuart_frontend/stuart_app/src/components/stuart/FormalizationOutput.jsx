@@ -11,7 +11,8 @@ import {
   Link2, 
   Download, 
   Printer,
-  AlertTriangle
+  AlertTriangle,
+  Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,8 +20,10 @@ export default function FormalizationOutput({
   formalization, 
   onHighlightSegments,
   onDownloadMarkdown,
+  onDownloadText,
   onDownloadPdf,
   onPrintPdf,
+  onDeleteRun,
   className 
 }) {
   const [activeTab, setActiveTab] = useState("formatted");
@@ -42,6 +45,11 @@ export default function FormalizationOutput({
   const { output_json, output_markdown, evidence_map, status, mode, template, retention_level } = formalization;
   const runLabel = formalization.run_id || formalization.id;
   const printUrl = formalization.pdf_url || output_json?.downloads?.primary?.pdf?.url || null;
+  const textUrl = output_json?.downloads?.primary?.txt?.url || null;
+  const isDevMode =
+    ((typeof window !== 'undefined' && window.localStorage?.getItem('stuartDevMode') === '1') ||
+      (typeof import.meta !== 'undefined' && import.meta?.env?.REACT_APP_DEVTOOLS === '1') ||
+      (typeof process !== 'undefined' && process?.env?.REACT_APP_DEVTOOLS === '1'));
 
   return (
     <Card className={cn("border-slate-200", className)}>
@@ -75,6 +83,15 @@ export default function FormalizationOutput({
               <Download className="h-4 w-4 mr-1.5" />
               Markdown
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDownloadText?.(formalization)}
+              disabled={!textUrl}
+            >
+              <Download className="h-4 w-4 mr-1.5" />
+              Text
+            </Button>
             {printUrl && (
               <>
                 <Button 
@@ -95,6 +112,14 @@ export default function FormalizationOutput({
                 </Button>
               </>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDeleteRun?.(formalization)}
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Delete
+            </Button>
           </div>
         </div>
         {status === 'partial' && (
@@ -118,14 +143,18 @@ export default function FormalizationOutput({
               <FileText className="h-4 w-4 mr-1.5" />
               Markdown
             </TabsTrigger>
-            <TabsTrigger value="json" className="text-sm">
-              <Code className="h-4 w-4 mr-1.5" />
-              JSON
-            </TabsTrigger>
-            <TabsTrigger value="evidence" className="text-sm">
-              <Link2 className="h-4 w-4 mr-1.5" />
-              Evidence Map
-            </TabsTrigger>
+            {isDevMode && (
+              <TabsTrigger value="json" className="text-sm">
+                <Code className="h-4 w-4 mr-1.5" />
+                JSON
+              </TabsTrigger>
+            )}
+            {isDevMode && (
+              <TabsTrigger value="evidence" className="text-sm">
+                <Link2 className="h-4 w-4 mr-1.5" />
+                Evidence Map
+              </TabsTrigger>
+            )}
           </TabsList>
         </div>
 
@@ -150,28 +179,32 @@ export default function FormalizationOutput({
             )}
           </TabsContent>
 
-          <TabsContent value="json" className="p-4 mt-0">
-            {output_json ? (
-              <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg text-xs overflow-x-auto">
-                {JSON.stringify(output_json, null, 2)}
-              </pre>
-            ) : (
-              <p className="text-slate-400 italic">No JSON output available</p>
-            )}
-          </TabsContent>
+          {isDevMode && (
+            <TabsContent value="json" className="p-4 mt-0">
+              {output_json ? (
+                <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg text-xs overflow-x-auto">
+                  {JSON.stringify(output_json, null, 2)}
+                </pre>
+              ) : (
+                <p className="text-slate-400 italic">No JSON output available</p>
+              )}
+            </TabsContent>
+          )}
 
-          <TabsContent value="evidence" className="p-4 mt-0">
-            {evidence_map && (Array.isArray(evidence_map) ? evidence_map.length > 0 : true) ? (
-              <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg text-xs overflow-x-auto">
-                {JSON.stringify(evidence_map, null, 2)}
-              </pre>
-            ) : (
-              <div className="text-center py-8">
-                <Link2 className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-400">No evidence mapping available</p>
-              </div>
-            )}
-          </TabsContent>
+          {isDevMode && (
+            <TabsContent value="evidence" className="p-4 mt-0">
+              {evidence_map && (Array.isArray(evidence_map) ? evidence_map.length > 0 : true) ? (
+                <pre className="p-4 bg-slate-900 text-slate-100 rounded-lg text-xs overflow-x-auto">
+                  {JSON.stringify(evidence_map, null, 2)}
+                </pre>
+              ) : (
+                <div className="text-center py-8">
+                  <Link2 className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                  <p className="text-slate-400">No evidence mapping available</p>
+                </div>
+              )}
+            </TabsContent>
+          )}
         </ScrollArea>
       </Tabs>
 

@@ -5,17 +5,37 @@ from typing import Any, Dict, Literal, Optional
 from pydantic import BaseModel, Field, field_validator
 
 
+class TranscriptSegmentPayload(BaseModel):
+    segment_id: str = Field(min_length=1)
+    start_ms: int
+    end_ms: int
+    speaker_label: str = Field(min_length=1)
+    speaker_name: Optional[str] = None
+    text: str = Field(min_length=1)
+
+
+class TemplateSectionPayload(BaseModel):
+    heading: str = Field(min_length=1)
+    target_key: Optional[str] = None
+    order: int
+
+
 RetentionLiteral = Literal["LOW", "MED", "HIGH", "NEAR-VERBATIM"]
 ModeLiteral = Literal["meeting", "journal"]
 ProfileLiteral = Literal["LOCAL_ONLY", "HYBRID", "CLOUD_ONLY", "CLOUD"]
 
 
 class FormalizeRequest(BaseModel):
-    transcript_text: str = Field(min_length=1)
+    transcript_text: Optional[str] = None
+    transcript_segments: Optional[list[TranscriptSegmentPayload]] = None
     mode: ModeLiteral
     template_id: str = Field(min_length=1)
     retention: RetentionLiteral
     profile: ProfileLiteral = "HYBRID"
+    template_text: Optional[str] = None
+    template_sections: Optional[list[TemplateSectionPayload]] = None
+    include_citations: bool = False
+    show_empty_sections: bool = False
 
     @field_validator("template_id")
     @classmethod
@@ -35,6 +55,14 @@ class FormalizeRequest(BaseModel):
     @classmethod
     def _normalize_profile(cls, value: Any) -> str:
         return str(value).strip().upper()
+
+    @field_validator("transcript_text", mode="before")
+    @classmethod
+    def _normalize_transcript_text(cls, value: Any) -> Optional[str]:
+        if value is None:
+            return None
+        v = str(value).strip()
+        return v or None
 
 
 class GatewayUsage(BaseModel):

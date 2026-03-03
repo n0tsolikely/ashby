@@ -383,6 +383,48 @@ def list_sessions(
     return out
 
 
+def delete_run_rows(conn: sqlite3.Connection, run_id: str) -> dict:
+    """Delete indexed rows for a run_id across all index tables."""
+    rid = str(run_id or "").strip()
+    if not rid:
+        return {"run_id": rid, "deleted": 0}
+    with conn:
+        conn.execute("DELETE FROM speaker_maps WHERE run_id = ?;", (rid,))
+        conn.execute("DELETE FROM segments_fts WHERE run_id = ?;", (rid,))
+        conn.execute("DELETE FROM segments WHERE run_id = ?;", (rid,))
+        rc = conn.execute("DELETE FROM runs WHERE run_id = ?;", (rid,)).rowcount
+    return {"run_id": rid, "deleted": int(rc if rc is not None and rc > 0 else 0)}
+
+
+def delete_session_rows(conn: sqlite3.Connection, session_id: str) -> dict:
+    """Delete indexed rows for a session_id across all index tables."""
+    sid = str(session_id or "").strip()
+    if not sid:
+        return {"session_id": sid, "deleted": 0}
+    with conn:
+        conn.execute("DELETE FROM speaker_maps WHERE session_id = ?;", (sid,))
+        conn.execute("DELETE FROM segments_fts WHERE session_id = ?;", (sid,))
+        conn.execute("DELETE FROM segments WHERE session_id = ?;", (sid,))
+        conn.execute("DELETE FROM runs WHERE session_id = ?;", (sid,))
+        rc = conn.execute("DELETE FROM sessions WHERE session_id = ?;", (sid,)).rowcount
+    return {"session_id": sid, "deleted": int(rc if rc is not None and rc > 0 else 0)}
+
+
+def delete_transcript_version_rows(conn: sqlite3.Connection, transcript_version_id: str, *, run_ids: Optional[List[str]] = None) -> dict:
+    """Delete index rows tied to a transcript version by associated run_ids."""
+    trv = str(transcript_version_id or "").strip()
+    rids = [str(r).strip() for r in (run_ids or []) if str(r).strip()]
+    deleted = 0
+    with conn:
+        for rid in rids:
+            conn.execute("DELETE FROM speaker_maps WHERE run_id = ?;", (rid,))
+            conn.execute("DELETE FROM segments_fts WHERE run_id = ?;", (rid,))
+            conn.execute("DELETE FROM segments WHERE run_id = ?;", (rid,))
+            rc = conn.execute("DELETE FROM runs WHERE run_id = ?;", (rid,)).rowcount
+            deleted += int(rc if rc is not None and rc > 0 else 0)
+    return {"transcript_version_id": trv, "deleted_runs": deleted}
+
+
 def list_sessions_by_attendee(
     conn: sqlite3.Connection,
     attendee: str,

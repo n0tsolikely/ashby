@@ -40,9 +40,9 @@ def _last_artifact(artifacts: List[Dict[str, Any]], kind: str) -> Optional[Dict[
 
 def _infer_mode_from_artifacts(artifacts: List[Dict[str, Any]]) -> Optional[str]:
     kinds = {a.get("kind") for a in artifacts if isinstance(a, dict)}
-    if "minutes_json" in kinds or "minutes_md" in kinds or "minutes_pdf" in kinds:
+    if "minutes_json" in kinds or "minutes_md" in kinds or "minutes_pdf" in kinds or "minutes_txt" in kinds:
         return "meeting"
-    if "journal_json" in kinds or "journal_md" in kinds or "journal_pdf" in kinds:
+    if "journal_json" in kinds or "journal_md" in kinds or "journal_pdf" in kinds or "journal_txt" in kinds:
         return "journal"
     return None
 
@@ -76,10 +76,12 @@ def build_primary_outputs(state: Dict[str, Any]) -> Dict[str, Any]:
     minutes_json = _first_artifact(artifacts, "minutes_json")
     minutes_md = _first_artifact(artifacts, "minutes_md")
     minutes_pdf = _first_artifact(artifacts, "minutes_pdf")
+    minutes_txt = _first_artifact(artifacts, "minutes_txt")
 
     journal_json = _first_artifact(artifacts, "journal_json")
     journal_md = _first_artifact(artifacts, "journal_md")
     journal_pdf = _first_artifact(artifacts, "journal_pdf")
+    journal_txt = _first_artifact(artifacts, "journal_txt")
 
     ev = _first_artifact(artifacts, "evidence_map")
     transcript = _first_artifact(artifacts, "transcript")
@@ -105,6 +107,7 @@ def build_primary_outputs(state: Dict[str, Any]) -> Dict[str, Any]:
         "json": ptr(minutes_json if mode == "meeting" else journal_json if mode == "journal" else None),
         "md": ptr(minutes_md if mode == "meeting" else journal_md if mode == "journal" else None),
         "pdf": ptr(minutes_pdf if mode == "meeting" else journal_pdf if mode == "journal" else None),
+        "txt": ptr(minutes_txt if mode == "meeting" else journal_txt if mode == "journal" else None),
         "evidence_map": ptr(ev),
         "transcript": ptr(aligned_transcript) or ptr(transcript),
     }

@@ -264,8 +264,16 @@ def ensure_legacy_transcript_versions(session_id: str) -> List[str]:
 def list_transcript_versions(session_id: str) -> List[Dict[str, Any]]:
     _ensure_session_exists(session_id)
     rows = [r for r in _read_jsonl(_session_index_path(session_id)) if r.get("session_id") == session_id]
-    rows.sort(key=lambda r: float(r.get("created_ts") or 0.0), reverse=True)
-    return rows
+    out: List[Dict[str, Any]] = []
+    for row in rows:
+        trv_id = str(row.get("transcript_version_id") or "").strip()
+        if not trv_id:
+            continue
+        if not (_versions_dir(session_id) / f"{trv_id}.json").exists():
+            continue
+        out.append(row)
+    out.sort(key=lambda r: float(r.get("created_ts") or 0.0), reverse=True)
+    return out
 
 
 def load_transcript_version(session_id: str, transcript_version_id: str) -> Dict[str, Any]:
@@ -284,10 +292,26 @@ def resolve_transcript_version(transcript_version_id: str) -> Optional[Dict[str,
     rows = _read_jsonl(_global_lookup_path())
     for row in reversed(rows):
         if str(row.get("transcript_version_id") or "") == transcript_version_id:
+            session_id = str(row.get("session_id") or "")
+            if not session_id:
+                continue
+            if not (_versions_dir(session_id) / f"{transcript_version_id}.json").exists():
+                continue
             return {
                 "transcript_version_id": transcript_version_id,
-                "session_id": str(row.get("session_id") or ""),
+                "session_id": session_id,
                 "run_id": str(row.get("run_id") or ""),
                 "created_ts": row.get("created_ts"),
             }
     return None
+
+
+def delete_transcript_version(session_id: str, transcript_version_id: str) -> None:
+    _ensure_session_exists(session_id)
+    trv = str(transcript_version_id or "").strip()
+    if not trv:
+        raise FileNotFoundError("transcript version not found")
+    version_path = _versions_dir(session_id) / f"{trv}.json"
+    if not version_path.exists():
+        raise FileNotFoundError(f"Unknown transcript_version_id for session {session_id}: {trv}")
+    version_path.unlink()

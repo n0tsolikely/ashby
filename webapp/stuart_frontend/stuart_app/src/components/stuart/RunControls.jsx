@@ -37,6 +37,8 @@ export default function RunControls({
   const [retentionLevel, setRetentionLevel] = useState('MED');
   const [profile, setProfile] = useState(session?.profile || 'LOCAL_ONLY');
   const [diarizationEnabled, setDiarizationEnabled] = useState(session?.diarization_enabled ?? true);
+  const [includeCitations, setIncludeCitations] = useState(false);
+  const [showEmptySections, setShowEmptySections] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   const templates = getTemplatesForMode(mode);
@@ -71,7 +73,9 @@ export default function RunControls({
       template,
       retention_level: retentionLevel,
       profile,
-      diarization_enabled: diarizationEnabled
+      diarization_enabled: diarizationEnabled,
+      include_citations: includeCitations,
+      show_empty_sections: showEmptySections,
     });
   };
 
@@ -194,6 +198,28 @@ export default function RunControls({
             <Switch
               checked={diarizationEnabled}
               onCheckedChange={setDiarizationEnabled}
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+            <div>
+              <Label className="text-sm font-medium text-slate-600">Include Citations</Label>
+              <p className="text-xs text-slate-400">Show citation tokens in rendered outputs</p>
+            </div>
+            <Switch
+              checked={includeCitations}
+              onCheckedChange={setIncludeCitations}
+            />
+          </div>
+
+          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+            <div>
+              <Label className="text-sm font-medium text-slate-600">Show Empty Sections</Label>
+              <p className="text-xs text-slate-400">Render empty headings instead of hiding them</p>
+            </div>
+            <Switch
+              checked={showEmptySections}
+              onCheckedChange={setShowEmptySections}
             />
           </div>
 

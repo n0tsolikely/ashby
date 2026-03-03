@@ -65,12 +65,16 @@ def test_formalize_plan_includes_transcript_version_id_when_supplied():
             template_id="default",
             retention="MED",
             transcript_version_id="trv_abc123",
+            include_citations=True,
+            show_empty_sections=False,
         ),
         session=SessionContext(active_session_id="sess5"),
     )
     assert out.intent.kind == IntentKind.FORMALIZE
     assert out.plan.steps[1].kind == PlanStepKind.FORMALIZE
     assert out.plan.steps[1].params["transcript_version_id"] == "trv_abc123"
+    assert out.plan.steps[1].params["include_citations"] is True
+    assert out.plan.steps[1].params["show_empty_sections"] is False
 
 
 def test_ui_validation_rejects_blank_transcript_version_id_when_provided():
@@ -109,3 +113,29 @@ def test_run_request_round_trips_diarization_enabled_and_legacy_alias():
     assert ui.diarization_enabled is False
     rr2 = RunRequest.from_ui_state(ui)
     assert rr2.diarization_enabled is False
+
+
+def test_run_request_parses_new_flags_and_aliases():
+    rr = RunRequest.from_dict(
+        {
+            "mode": "meeting",
+            "template_id": "default",
+            "retention": "med",
+            "show_citations": True,
+            "show_sections": True,
+        }
+    )
+    assert rr.include_citations is True
+    assert rr.show_empty_sections is True
+
+    rr2 = RunRequest.from_dict(
+        {
+            "mode": "meeting",
+            "template_id": "default",
+            "retention": "med",
+            "citations": False,
+            "show_empty": False,
+        }
+    )
+    assert rr2.include_citations is False
+    assert rr2.show_empty_sections is False

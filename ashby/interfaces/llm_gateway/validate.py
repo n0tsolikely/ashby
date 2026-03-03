@@ -8,6 +8,35 @@ from ashby.modules.meetings.schemas.journal_v1 import validate_journal_v1
 from ashby.modules.meetings.schemas.minutes_v1 import validate_minutes_v1
 
 
+def validate_formalization_request(request: FormalizeRequest) -> None:
+    has_text = bool((request.transcript_text or "").strip())
+    has_segments = bool(request.transcript_segments)
+    if not has_text and not has_segments:
+        raise ValueError("formalize request must include transcript_text or transcript_segments")
+
+    if not request.transcript_segments:
+        return
+
+    seen_segment_ids: set[str] = set()
+    for idx, seg in enumerate(request.transcript_segments):
+        where = f"transcript_segments[{idx}]"
+        if not seg.segment_id.strip():
+            raise ValueError(f"{where}.segment_id must not be blank")
+        if seg.segment_id in seen_segment_ids:
+            raise ValueError(f"{where}.segment_id must be unique; duplicate={seg.segment_id!r}")
+        seen_segment_ids.add(seg.segment_id)
+        if seg.start_ms < 0:
+            raise ValueError(f"{where}.start_ms must be >= 0")
+        if seg.end_ms < 0:
+            raise ValueError(f"{where}.end_ms must be >= 0")
+        if seg.end_ms < seg.start_ms:
+            raise ValueError(f"{where}.end_ms must be >= start_ms")
+        if not seg.speaker_label.strip():
+            raise ValueError(f"{where}.speaker_label must not be blank")
+        if not seg.text.strip():
+            raise ValueError(f"{where}.text must not be blank")
+
+
 def normalize_output_json(*, request: FormalizeRequest, request_id: str, output_json: Dict[str, Any]) -> Dict[str, Any]:
     """Coerce provider output into canonical Stuart schema envelope fields before validation."""
     payload: Dict[str, Any] = dict(output_json or {})

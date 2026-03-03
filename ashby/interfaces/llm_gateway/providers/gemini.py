@@ -28,7 +28,43 @@ class GeminiProvider:
         self._api_key = api_key
         self.model = (os.environ.get("GEMINI_MODEL") or "gemini-2.5-flash").strip()
 
+    @staticmethod
+    def _format_template_sections(request: FormalizeRequest) -> str:
+        if not request.template_sections:
+            return "[]"
+        payload = [
+            {
+                "heading": section.heading,
+                "target_key": section.target_key,
+                "order": section.order,
+            }
+            for section in request.template_sections
+        ]
+        return json.dumps(payload, ensure_ascii=False)
+
+    @staticmethod
+    def _format_transcript_segments(request: FormalizeRequest) -> str:
+        if not request.transcript_segments:
+            return "[]"
+        payload = [
+            {
+                "segment_id": seg.segment_id,
+                "start_ms": seg.start_ms,
+                "end_ms": seg.end_ms,
+                "speaker_label": seg.speaker_label,
+                "speaker_name": seg.speaker_name,
+                "text": seg.text,
+            }
+            for seg in request.transcript_segments
+        ]
+        return json.dumps(payload, ensure_ascii=False)
+
     def _build_prompt(self, request: FormalizeRequest) -> str:
+        transcript_text = (request.transcript_text or "").strip()
+        transcript_segments_json = self._format_transcript_segments(request)
+        template_sections_json = self._format_template_sections(request)
+        template_text = (request.template_text or "").strip()
+
         retention_policy = get_retention_prompt(request.retention)
         if request.mode == "meeting":
             schema_keys = "header, participants, topics, decisions, action_items, notes, open_questions"
@@ -42,6 +78,13 @@ class GeminiProvider:
                 "journal schema rules: key_points/action_items with factual claims should include citations. "
                 "When segment mapping is unavailable, use segment_id=0 as whole-transcript anchor."
             )
+
+        transcript_block_label = "TRANSCRIPT_SEGMENTS_JSON"
+        transcript_block = transcript_segments_json
+        if transcript_block == "[]":
+            transcript_block_label = "TRANSCRIPT_TEXT"
+            transcript_block = transcript_text
+
         return (
             "Return ONLY JSON object (no markdown fences). "
             f"Mode={request.mode}; required top-level keys={schema_keys}. "
@@ -51,9 +94,17 @@ class GeminiProvider:
             f"Template={request.template_id}; retention={request.retention}.\n"
             f"Retention policy: {retention_policy}\n"
             f"{mode_rules}\n"
+            "If template sections are provided, treat them as required structure buckets and map content accordingly.\n"
+            "If raw template text is provided, preserve its intent and sectioning when shaping output.\n"
+            "For every factual item (decisions/action_items/key_points/topics/open_questions/notes with claims), "
+            "include citations that reference source segment_id values.\n"
+            "Use ONLY segment_id values present in TRANSCRIPT_SEGMENTS_JSON. "
+            "If evidence is missing, omit the item or mark it unknown; do NOT invent.\n"
             "For MED, HIGH, and NEAR_VERBATIM keep at least one substantive content item "
             "(notes for meeting or narrative_sections for journal).\n\n"
-            f"TRANSCRIPT:\n{request.transcript_text}"
+            f"TEMPLATE_SECTIONS_JSON:\n{template_sections_json}\n\n"
+            f"RAW_TEMPLATE_TEXT:\n{template_text}\n\n"
+            f"{transcript_block_label}:\n{transcript_block}"
         )
 
     def _gemini_url(self) -> str:
@@ -139,6 +190,7 @@ class GeminiProvider:
         }
 
     def formalize(self, request: FormalizeRequest) -> Dict[str, Any]:
+        transcript_text = (request.transcript_text or "").strip()
         resp_json = self._generate(request)
         text = self._extract_text(resp_json)
 
@@ -159,11 +211,11 @@ class GeminiProvider:
             return {
                 "output_json": output_json if isinstance(output_json, dict) else self._map_text_to_output_json(request, text),
                 "evidence_map": evidence_map if isinstance(evidence_map, dict) else {},
-                "usage": usage if isinstance(usage, dict) else self._extract_usage(resp_json, request.transcript_text),
+                "usage": usage if isinstance(usage, dict) else self._extract_usage(resp_json, transcript_text),
             }
 
         return {
             "output_json": self._map_text_to_output_json(request, text),
             "evidence_map": {},
-            "usage": self._extract_usage(resp_json, request.transcript_text),
+            "usage": self._extract_usage(resp_json, transcript_text),
         }

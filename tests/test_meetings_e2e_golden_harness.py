@@ -52,22 +52,13 @@ MEETING_GOLDEN = _normalize_md(
 - `SPEAKER_01`
 
 ## Topics
-- (topic_001) **Transcript**: Deterministic fallback: transcript-backed notes (no invented decisions/actions). [S0@00:00:00–00:00:00] [S1@00:00:00–00:00:00] [S2@00:00:00–00:00:00] [S3@00:00:00–00:00:00]
-
-## Decisions
-No explicit decisions recorded.
-
-## Action Items
-No action items recorded.
+- (topic_001) **Transcript**: Deterministic fallback: transcript-backed notes (no invented decisions/actions).
 
 ## Notes
-- (note_0000) SPEAKER_00: Hello, this is a sample speaker line. [S0@00:00:00–00:00:00]
-- (note_0001) SPEAKER_01: And this is another speaker line. [S1@00:00:00–00:00:00]
-- (note_0002) SPEAKER_01: I made kimchi yesterday and it was spicy. [S2@00:00:00–00:00:00]
-- (note_0003) SPEAKER_00: Second line from speaker 00 for extraction tests. [S3@00:00:00–00:00:00]
-
-## Open Questions
-_No open questions._
+- (note_0000) SPEAKER_00: Hello, this is a sample speaker line.
+- (note_0001) SPEAKER_01: And this is another speaker line.
+- (note_0002) SPEAKER_01: I made kimchi yesterday and it was spicy.
+- (note_0003) SPEAKER_00: Second line from speaker 00 for extraction tests.
 """
 )
 
@@ -88,17 +79,6 @@ SPEAKER_00: Hello, this is a sample speaker line.
 SPEAKER_01: And this is another speaker line.
 SPEAKER_01: I made kimchi yesterday and it was spicy.
 SPEAKER_00: Second line from speaker 00 for extraction tests.
-[S0@00:00:00–00:00:00] [S1@00:00:00–00:00:00] [S2@00:00:00–00:00:00] [S3@00:00:00–00:00:00]
-
-
-## Key Points
-_No key points._
-
-## Feelings
-_No feelings._
-
-## Action Items
-_No action items._
 """
 )
 
@@ -176,7 +156,15 @@ def test_truth_gate_blocks_uncited_decision(tmp_path: Path, monkeypatch) -> None
 
     run_id = create_run(session_id=ses, plan={"steps": [{"name": "formalize", "params": {"mode": "meeting"}}]})
 
-    def _bad_minutes(run_dir: Path, template_id: str, retention: str):
+    def _bad_minutes(
+        run_dir: Path,
+        template_id: str,
+        retention: str,
+        *,
+        include_citations: bool | None = None,
+        show_empty_sections: bool | None = None,
+    ):
+        del include_citations, show_empty_sections
         artifacts = run_dir / "artifacts"
         artifacts.mkdir(parents=True, exist_ok=True)
         out_path = artifacts / "minutes.json"

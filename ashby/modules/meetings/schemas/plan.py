@@ -46,6 +46,8 @@ class UIState:
     speakers: Optional[Union[int, str]] = None  # int or "auto"
     diarization_enabled: Optional[bool] = None
     transcript_version_id: Optional[str] = None
+    include_citations: bool = False
+    show_empty_sections: bool = False
 
 
 @dataclass(frozen=True)
