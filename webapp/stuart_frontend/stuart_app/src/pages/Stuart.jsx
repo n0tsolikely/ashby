@@ -167,6 +167,12 @@ export default function Stuart() {
   const [transcriptFormats, setTranscriptFormats] = useState(['txt']);
   const [formalizationFormats, setFormalizationFormats] = useState(['pdf']);
   const [isExporting, setIsExporting] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      role: 'assistant',
+      content: "Hello! I'm Stuart. Ask a session question or switch to Global to search across sessions.",
+    },
+  ]);
   const lastRunStatusRef = useRef(null);
   const sessionTitleInputRef = useRef(null);
 
@@ -645,11 +651,6 @@ export default function Stuart() {
   };
 
   const handleChatMessage = async (message, options, onResponse) => {
-    if (!selectedSession?.id) {
-      onResponse('Please select a session first.');
-      return;
-    }
-
     const text = String(message || '').trim();
     const exportMatch = text.match(/^\/export(?:\s+(full_bundle|transcript_only|formalization_only|dev_bundle))?$/i);
     if (exportMatch) {
@@ -670,35 +671,70 @@ export default function Stuart() {
     setIsProcessing(true);
     try {
       const scope = options?.scope === 'global' ? 'global' : 'session';
+      if (scope === 'session' && !selectedSession?.id) {
+        onResponse({ text: 'Please select a session first.' });
+        return;
+      }
+      const historyTail = (chatMessages || [])
+        .slice(-12)
+        .map((m) => ({
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          text: String(m?.reply?.text || m?.content || '').slice(0, 4000),
+        }))
+        .filter((m) => m.text);
+      const uiState = {
+        scope_toggle: scope,
+        selected_session_id: selectedSession?.id || null,
+        selected_session_title: selectedSession?.title || null,
+        active_transcript_version_id: selectedTranscriptVersionId || null,
+        active_overlay_id: selectedSessionView?.speaker_overlay_id || null,
+        selected_profile: formalizationConfig?.profile || 'HYBRID',
+        selected_mode: formalizationConfig?.mode || selectedSession?.mode || 'meeting',
+        selected_template: formalizationConfig?.template || 'default',
+        retention: formalizationConfig?.retention || 'MED',
+        last_user_action: 'chat_send',
+      };
       const requestPayload = {
-        session_id: selectedSession.id,
-        message,
+        session_id: selectedSession?.id || null,
+        text: message,
+        ui_state: uiState,
+        history_tail: historyTail,
         attachments: Array.isArray(options?.attachments) ? options.attachments : [],
       };
       const response =
         scope === 'global'
           ? await stuartClient.chat.global(requestPayload)
           : await stuartClient.chat.session(requestPayload);
-      if (typeof response === 'string') {
-        onResponse(response);
-      } else if (response?.preview?.summary) {
-        onResponse(response.preview.summary);
-      } else if (response?.clarify?.question) {
-        onResponse(response.clarify.question);
-      } else if (response?.answer || response?.message) {
-        onResponse(response.answer || response.message);
-      } else {
-        onResponse('Request accepted. Check run progress/results.');
-      }
+      onResponse(response);
     } catch (error) {
       const msg = String(error?.message || '');
-      if (options?.scope === 'global' && /not[_\s-]*implemented|501|404/i.test(msg)) {
-        onResponse('Global chat is not implemented yet in this runtime.');
-      } else {
-        onResponse(msg || 'I encountered an error processing your request.');
-      }
+      onResponse({ text: msg || 'I encountered an error processing your request.' });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleChatAction = (action) => {
+    const kind = String(action?.kind || '');
+    if (kind === 'open_session') {
+      const target = sessions.find((s) => s.id === action?.session_id || s.session_id === action?.session_id);
+      if (target) {
+        setSelectedSession(target);
+        setSelectedFormalization(null);
+        setActiveTab('session');
+      }
+      return;
+    }
+    if (kind === 'jump_to_segment') {
+      const sid = action?.session_id;
+      const target = sessions.find((s) => s.id === sid || s.session_id === sid);
+      if (target) {
+        setSelectedSession(target);
+      }
+      if (action?.segment_id != null) {
+        setHighlightedSegments([action.segment_id]);
+      }
+      setActiveTab('session');
     }
   };
 
@@ -1320,6 +1356,9 @@ export default function Stuart() {
                     <TabsContent value="chat" className="mt-6">
                       <ChatInterface
                         session={selectedSession}
+                        messages={chatMessages}
+                        onMessagesChange={setChatMessages}
+                        onChatAction={handleChatAction}
                         onUploadAttachments={handleChatUploadAttachments}
                         onSendMessage={handleChatMessage}
                         isProcessing={isProcessing}

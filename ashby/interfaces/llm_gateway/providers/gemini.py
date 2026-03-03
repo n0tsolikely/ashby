@@ -7,7 +7,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Dict
 
-from ashby.interfaces.llm_gateway.schemas import FormalizeRequest
+from ashby.interfaces.llm_gateway.schemas import ChatGatewayRequest, FormalizeRequest
 from ashby.modules.meetings.formalize.retention_prompts import get_retention_prompt
 
 
@@ -218,4 +218,68 @@ class GeminiProvider:
             "output_json": self._map_text_to_output_json(request, text),
             "evidence_map": {},
             "usage": self._extract_usage(resp_json, transcript_text),
+        }
+
+    def _build_chat_prompt(self, request: ChatGatewayRequest) -> str:
+        ev_rows = []
+        for seg in request.evidence_segments:
+            ev_rows.append(
+                {
+                    "session_id": seg.session_id,
+                    "run_id": seg.run_id,
+                    "segment_id": seg.segment_id,
+                    "speaker_label": seg.speaker_label,
+                    "text": seg.text,
+                }
+            )
+        history_rows = [{"role": h.role, "text": h.text} for h in request.history_tail]
+        return (
+            "Return ONLY JSON object with keys: text, citations, actions.\n"
+            "citations: list of {session_id, run_id, segment_id, t_start_ms, t_end_ms, speaker_label}\n"
+            "actions: list of {kind, session_id, run_id?, transcript_version_id?, segment_id?}; "
+            "kind must be open_session or jump_to_segment.\n"
+            "Do not cite evidence outside provided segments.\n\n"
+            f"SCOPE: {request.scope}\n"
+            f"QUESTION: {request.question}\n"
+            f"UI_STATE_JSON: {json.dumps(request.ui_state, ensure_ascii=False)}\n"
+            f"HISTORY_TAIL_JSON: {json.dumps(history_rows, ensure_ascii=False)}\n"
+            f"EVIDENCE_SEGMENTS_JSON: {json.dumps(ev_rows, ensure_ascii=False)}\n"
+        )
+
+    def chat(self, request: ChatGatewayRequest) -> Dict[str, Any]:
+        payload = {
+            "contents": [{"parts": [{"text": self._build_chat_prompt(request)}]}],
+            "generationConfig": {"temperature": 0.2},
+        }
+        body = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            self._gemini_url(),
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                raw = resp.read().decode("utf-8")
+                resp_json = json.loads(raw)
+        except urllib.error.HTTPError as e:
+            detail = e.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"gemini_http_error status={e.code} body={detail[:500]}") from e
+        except Exception as e:
+            raise RuntimeError(f"gemini_request_failed: {type(e).__name__}: {e}") from e
+
+        text = self._extract_text(resp_json)
+        output_json: Dict[str, Any] = {"text": "I could not produce an answer.", "citations": [], "actions": []}
+        if text.startswith("{") and text.endswith("}"):
+            try:
+                parsed = json.loads(text)
+                if isinstance(parsed, dict):
+                    output_json = parsed
+            except Exception:
+                pass
+        elif text.strip():
+            output_json = {"text": text.strip(), "citations": [], "actions": []}
+        return {
+            "output_json": output_json,
+            "usage": self._extract_usage(resp_json, request.question),
         }

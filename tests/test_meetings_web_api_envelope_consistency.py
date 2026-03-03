@@ -59,12 +59,12 @@ async def test_api_run_error_envelope_on_missing_fields():
 
 
 @pytest.mark.asyncio
-async def test_api_chat_clarify_path_returns_200():
+async def test_api_chat_global_returns_chat_envelope():
     app = create_app()
     transport = httpx.ASGITransport(app=app)
     c = httpx.AsyncClient(transport=transport, base_url="http://testserver")
     try:
-        r = await c.post("/api/chat", json={"text": ""})
+        r = await c.post("/api/chat/global", json={"text": "hello", "ui": {}})
     finally:
         await c.aclose()
     assert r.status_code == 200
@@ -72,4 +72,4 @@ async def test_api_chat_clarify_path_returns_200():
     assert data.get("ok") is True
     assert isinstance(data.get("reply"), dict)
     assert isinstance(data["reply"].get("text"), str)
-    assert data["reply"]["text"] == "Choose a mode: journal or meeting."
+    assert isinstance(data["reply"].get("hits"), list)

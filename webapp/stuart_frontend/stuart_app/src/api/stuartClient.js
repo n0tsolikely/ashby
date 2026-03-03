@@ -220,10 +220,11 @@ export const stuartClient = {
           method: 'POST',
           headers: JSON_HEADERS,
           body: JSON.stringify({
-            text: data?.message || data?.text || '',
+            text: data?.text || data?.message || '',
             session_id: data?.session_id,
-            ui: data?.ui || {},
+            ui: data?.ui_state || data?.ui || {},
             attachments: data?.attachments || [],
+            history_tail: data?.history_tail || [],
           }),
         });
         return modern;
@@ -235,10 +236,11 @@ export const stuartClient = {
           method: 'POST',
           headers: JSON_HEADERS,
           body: JSON.stringify({
-            text: data?.message || data?.text || '',
+            text: data?.text || data?.message || '',
             session_id: data?.session_id,
-            ui: data?.ui || {},
+            ui: data?.ui_state || data?.ui || {},
             attachments: data?.attachments || [],
+            history_tail: data?.history_tail || [],
           }),
         });
         return legacy?.result || legacy;
@@ -248,7 +250,13 @@ export const stuartClient = {
       return request('/chat/global', {
         method: 'POST',
         headers: JSON_HEADERS,
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          text: data?.text || data?.message || '',
+          ui: data?.ui_state || data?.ui || {},
+          attachments: data?.attachments || [],
+          history_tail: data?.history_tail || [],
+          ...(data?.session_id ? { session_id: data.session_id } : {}),
+        }),
       });
     },
   },

@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from typing import Any, Dict
 
-from ashby.interfaces.llm_gateway.schemas import FormalizeRequest
+from ashby.interfaces.llm_gateway.schemas import ChatGatewayRequest, ChatOutputV1, FormalizeRequest
 from ashby.modules.meetings.schemas.journal_v1 import validate_journal_v1
 from ashby.modules.meetings.schemas.minutes_v1 import validate_minutes_v1
 
@@ -81,3 +81,21 @@ def validate_formalization_output(*, request: FormalizeRequest, request_id: str,
         return payload
     validate_journal_v1(_ensure_journal_defaults(payload))
     return payload
+
+
+def validate_chat_request(request: ChatGatewayRequest) -> None:
+    if not (request.question or "").strip():
+        raise ValueError("chat request.question must not be blank")
+    if request.scope not in {"session", "global"}:
+        raise ValueError("chat request.scope must be session|global")
+
+
+def validate_chat_output(*, request_id: str, output_json: Dict[str, Any]) -> Dict[str, Any]:
+    payload = dict(output_json or {})
+    try:
+        model = ChatOutputV1.model_validate(payload)
+    except Exception as exc:
+        raise ValueError(f"chat output schema invalid: {exc}") from exc
+    out = model.model_dump()
+    out["request_id"] = request_id
+    return out

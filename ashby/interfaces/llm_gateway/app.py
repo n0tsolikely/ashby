@@ -11,8 +11,19 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from ashby.interfaces.llm_gateway.providers import GeminiProvider
-from ashby.interfaces.llm_gateway.schemas import ErrorResponse, FormalizeRequest, FormalizeResponse
-from ashby.interfaces.llm_gateway.validate import validate_formalization_output, validate_formalization_request
+from ashby.interfaces.llm_gateway.schemas import (
+    ChatGatewayRequest,
+    ChatGatewayResponse,
+    ErrorResponse,
+    FormalizeRequest,
+    FormalizeResponse,
+)
+from ashby.interfaces.llm_gateway.validate import (
+    validate_chat_output,
+    validate_chat_request,
+    validate_formalization_output,
+    validate_formalization_request,
+)
 
 
 logger = logging.getLogger("ashby.llm_gateway")
@@ -139,6 +150,58 @@ def create_app() -> FastAPI:
         except Exception as e:
             elapsed_ms = int((time.time() - started) * 1000)
             logger.exception("formalize_provider_error request_id=%s timing_ms=%s", request_id, elapsed_ms)
+            return JSONResponse(
+                status_code=502,
+                content=_error_body(
+                    request_id=request_id,
+                    code="provider_error",
+                    message="Provider call failed",
+                    details={"error": f"{type(e).__name__}: {e}"},
+                ),
+            )
+
+    @app.post("/v1/chat")
+    async def chat(req: ChatGatewayRequest) -> JSONResponse:
+        request_id = _request_id()
+        started = time.time()
+        try:
+            validate_chat_request(req)
+            provider = _get_provider()
+            provider_out = provider.chat(req)
+            if not isinstance(provider_out, dict):
+                raise ValueError("provider response must be object")
+            raw_output_json = provider_out.get("output_json")
+            if not isinstance(raw_output_json, dict):
+                raise ValueError("provider output_json missing or invalid")
+            output_json = validate_chat_output(request_id=request_id, output_json=raw_output_json)
+            usage = provider_out.get("usage")
+            elapsed_ms = int((time.time() - started) * 1000)
+            usage_payload = usage if isinstance(usage, dict) else {}
+            logger.info("chat_ok request_id=%s timing_ms=%s usage=%s", request_id, elapsed_ms, usage_payload)
+            resp = ChatGatewayResponse(
+                request_id=request_id,
+                output_json=output_json,
+                usage=usage_payload,
+                timing_ms=elapsed_ms,
+                provider=provider.provider_name,
+                model=provider.model,
+            )
+            return JSONResponse(status_code=200, content=resp.model_dump())
+        except ValueError as e:
+            elapsed_ms = int((time.time() - started) * 1000)
+            logger.warning("chat_schema_error request_id=%s timing_ms=%s error=%s", request_id, elapsed_ms, str(e))
+            return JSONResponse(
+                status_code=422,
+                content=_error_body(
+                    request_id=request_id,
+                    code="validation_failed",
+                    message=str(e),
+                    details={"error": str(e)},
+                ),
+            )
+        except Exception as e:
+            elapsed_ms = int((time.time() - started) * 1000)
+            logger.exception("chat_provider_error request_id=%s timing_ms=%s", request_id, elapsed_ms)
             return JSONResponse(
                 status_code=502,
                 content=_error_body(

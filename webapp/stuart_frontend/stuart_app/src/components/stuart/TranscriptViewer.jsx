@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,16 @@ export default function TranscriptViewer({
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedId, setCopiedId] = useState(null);
   const scrollRef = useRef(null);
+  const segmentRefs = useRef({});
+
+  useEffect(() => {
+    if (!Array.isArray(highlightedSegments) || highlightedSegments.length === 0) return;
+    const firstId = highlightedSegments[0];
+    const node = segmentRefs.current[firstId];
+    if (node && typeof node.scrollIntoView === "function") {
+      node.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [highlightedSegments]);
 
   const filteredTranscript = transcript.filter(seg => 
     seg.text?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -108,6 +118,11 @@ export default function TranscriptViewer({
               return (
                 <div
                   key={segment.segment_id || idx}
+                  ref={(el) => {
+                    if (segment?.segment_id != null) {
+                      segmentRefs.current[segment.segment_id] = el;
+                    }
+                  }}
                   className={cn(
                     "group p-3 rounded-lg transition-all cursor-pointer",
                     isHighlighted 

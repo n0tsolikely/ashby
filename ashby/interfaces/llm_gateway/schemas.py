@@ -88,3 +88,68 @@ class ErrorResponse(BaseModel):
     version: int = 1
     request_id: str
     error: Dict[str, Any]
+
+
+class ChatEvidenceSegmentPayload(BaseModel):
+    session_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    segment_id: int
+    text: str = Field(min_length=1)
+    speaker_label: Optional[str] = None
+    t_start: Optional[float] = None
+    t_end: Optional[float] = None
+    source_path: Optional[str] = None
+
+
+class ChatHistoryItemPayload(BaseModel):
+    role: Literal["user", "assistant", "system"]
+    text: str = Field(min_length=1)
+
+
+class ChatGatewayRequest(BaseModel):
+    question: str = Field(min_length=1)
+    scope: Literal["session", "global"] = "session"
+    ui_state: Dict[str, Any] = Field(default_factory=dict)
+    history_tail: list[ChatHistoryItemPayload] = Field(default_factory=list)
+    evidence_segments: list[ChatEvidenceSegmentPayload] = Field(default_factory=list)
+
+    @field_validator("question")
+    @classmethod
+    def _question_not_blank(cls, value: str) -> str:
+        out = value.strip()
+        if not out:
+            raise ValueError("question must not be blank")
+        return out
+
+
+class ChatCitationPayload(BaseModel):
+    session_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    segment_id: int
+    t_start_ms: Optional[int] = None
+    t_end_ms: Optional[int] = None
+    speaker_label: Optional[str] = None
+
+
+class ChatActionPayload(BaseModel):
+    kind: Literal["open_session", "jump_to_segment"]
+    session_id: str = Field(min_length=1)
+    run_id: Optional[str] = None
+    transcript_version_id: Optional[str] = None
+    segment_id: Optional[int] = None
+
+
+class ChatOutputV1(BaseModel):
+    text: str = Field(min_length=1)
+    citations: list[ChatCitationPayload] = Field(default_factory=list)
+    actions: list[ChatActionPayload] = Field(default_factory=list)
+
+
+class ChatGatewayResponse(BaseModel):
+    version: int = 1
+    request_id: str
+    output_json: Dict[str, Any]
+    usage: GatewayUsage = Field(default_factory=GatewayUsage)
+    timing_ms: int
+    provider: str
+    model: str

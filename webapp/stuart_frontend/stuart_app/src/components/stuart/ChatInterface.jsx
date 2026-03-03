@@ -1,30 +1,41 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Send, Loader2, Bot, User, Sparkles, Paperclip, X } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Send, Loader2, Bot, User, Sparkles, Paperclip, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
+import { MatchKindBadge } from '@/components/stuart/MatchKindBadge';
 
-export default function ChatInterface({ 
+function normalizeAssistantPayload(response) {
+  if (response && typeof response === 'object') {
+    const reply = response.reply && typeof response.reply === 'object' ? response.reply : response;
+    return {
+      role: 'assistant',
+      content: String(reply.text || response.text || ''),
+      reply,
+    };
+  }
+  return { role: 'assistant', content: String(response || '') };
+}
+
+function assistantText(message) {
+  if (message.reply && typeof message.reply.text === 'string') return message.reply.text;
+  return String(message.content || '');
+}
+
+export default function ChatInterface({
   session,
+  messages,
+  onMessagesChange,
   onSendMessage,
+  onChatAction,
   onUploadAttachments,
   isProcessing,
-  className 
+  className,
 }) {
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: `Hello! I'm Stuart, your meeting intelligence assistant. ${
-        session?.transcript_json?.length > 0 
-          ? "I see you have a transcript loaded. You can ask me questions about it, or run a formalization to extract structured insights."
-          : "Upload an audio file to get started, then I'll help you extract insights from your meetings."
-      }`
-    }
-  ]);
   const [input, setInput] = useState('');
   const [scope, setScope] = useState('session');
   const [attachments, setAttachments] = useState([]);
@@ -33,20 +44,27 @@ export default function ChatInterface({
   const textareaRef = useRef(null);
   const fileRef = useRef(null);
 
+  const safeMessages = useMemo(() => (Array.isArray(messages) ? messages : []), [messages]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages]);
+  }, [safeMessages, isProcessing]);
+
+  const appendMessages = (rows) => {
+    const nextRows = Array.isArray(rows) ? rows : [rows];
+    const merged = [...safeMessages, ...nextRows];
+    onMessagesChange?.(merged);
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isProcessing) return;
 
-    const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
+    const text = input;
+    appendMessages({ role: 'user', content: text });
     setInput('');
 
-    // Let parent handle the actual processing
-    onSendMessage?.(input, { scope, attachments }, (response) => {
-      setMessages(prev => [...prev, { role: 'assistant', content: response }]);
+    onSendMessage?.(text, { scope, attachments }, (response) => {
+      appendMessages(normalizeAssistantPayload(response));
     });
     setAttachments([]);
   };
@@ -77,7 +95,7 @@ export default function ChatInterface({
   };
 
   return (
-    <Card className={cn("border-slate-200 flex flex-col", className)}>
+    <Card className={cn('border-slate-200 flex flex-col', className)}>
       <div className="p-4 border-b border-slate-100 flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
           <Sparkles className="h-5 w-5 text-white" />
@@ -97,10 +115,7 @@ export default function ChatInterface({
         <div className="inline-flex rounded-md border border-slate-200 overflow-hidden">
           <button
             type="button"
-            className={cn(
-              "px-3 py-1.5 text-xs font-medium",
-              scope === 'session' ? "bg-slate-800 text-white" : "bg-white text-slate-600"
-            )}
+            className={cn('px-3 py-1.5 text-xs font-medium', scope === 'session' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600')}
             onClick={() => setScope('session')}
           >
             Session
@@ -108,55 +123,94 @@ export default function ChatInterface({
           <button
             type="button"
             className={cn(
-              "px-3 py-1.5 text-xs font-medium border-l border-slate-200",
-              scope === 'global' ? "bg-slate-800 text-white" : "bg-white text-slate-600"
+              'px-3 py-1.5 text-xs font-medium border-l border-slate-200',
+              scope === 'global' ? 'bg-slate-800 text-white' : 'bg-white text-slate-600',
             )}
             onClick={() => setScope('global')}
           >
-            Global (Not Implemented)
+            Global
           </button>
         </div>
         <div className="text-xs text-slate-500">
           Scope: <span className="font-medium uppercase">{scope}</span>
         </div>
       </div>
-      {scope === 'global' && (
-        <div className="px-4 py-2 border-b border-amber-200 bg-amber-50 text-xs text-amber-700">
-          Global chat is scaffold-only in this runtime. Session scope is the production path.
-        </div>
-      )}
 
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         <div className="space-y-4">
-          {messages.map((msg, idx) => (
-            <div 
-              key={idx}
-              className={cn(
-                "flex gap-3",
-                msg.role === 'user' ? "justify-end" : "justify-start"
-              )}
-            >
+          {safeMessages.map((msg, idx) => (
+            <div key={idx} className={cn('flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
               {msg.role === 'assistant' && (
                 <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
                   <Bot className="h-4 w-4 text-slate-600" />
                 </div>
               )}
-              <div 
-                className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-3",
-                  msg.role === 'user' 
-                    ? "bg-slate-800 text-white" 
-                    : "bg-slate-100 text-slate-700"
-                )}
-              >
+
+              <div className={cn('max-w-[85%] rounded-2xl px-4 py-3', msg.role === 'user' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-700')}>
                 {msg.role === 'assistant' ? (
-                  <div className="prose prose-sm prose-slate max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  <div>
+                    <div className="prose prose-sm prose-slate max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                      <ReactMarkdown>{assistantText(msg)}</ReactMarkdown>
+                    </div>
+
+                    {Array.isArray(msg?.reply?.citations) && msg.reply.citations.length > 0 && (
+                      <div className="mt-3 border-t border-slate-200 pt-2">
+                        <p className="text-xs font-medium text-slate-600 mb-2">Citations</p>
+                        <div className="space-y-1">
+                          {msg.reply.citations.map((c, cIdx) => (
+                            <button
+                              key={`${c.session_id}-${c.run_id}-${c.segment_id}-${cIdx}`}
+                              type="button"
+                              className="text-left text-xs w-full rounded border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50"
+                              onClick={() =>
+                                onChatAction?.({
+                                  kind: 'jump_to_segment',
+                                  session_id: c.session_id,
+                                  run_id: c.run_id,
+                                  transcript_version_id: c.transcript_version_id,
+                                  segment_id: c.segment_id,
+                                })
+                              }
+                            >
+                              {c.session_id}#{c.segment_id}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {Array.isArray(msg?.reply?.hits) && msg.reply.hits.length > 0 && (
+                      <details className="mt-3 border-t border-slate-200 pt-2">
+                        <summary className="text-xs font-medium cursor-pointer text-slate-600">Evidence hits ({msg.reply.hits.length})</summary>
+                        <div className="mt-2 space-y-2">
+                          {msg.reply.hits.map((h, hIdx) => (
+                            <div key={`${h.session_id}-${h.segment_id}-${hIdx}`} className="rounded border border-slate-200 bg-white px-2 py-1 text-xs">
+                              <div className="flex items-center gap-2 mb-1">
+                                <MatchKindBadge kind={h.match_kind} />
+                                <span className="text-slate-500">{h.session_id}</span>
+                              </div>
+                              <p className="text-slate-700">{h.snippet}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+
+                    {Array.isArray(msg?.reply?.actions) && msg.reply.actions.length > 0 && (
+                      <div className="mt-3 border-t border-slate-200 pt-2 flex flex-wrap gap-2">
+                        {msg.reply.actions.map((a, aIdx) => (
+                          <Button key={`${a.kind}-${a.session_id}-${aIdx}`} type="button" variant="outline" size="sm" onClick={() => onChatAction?.(a)}>
+                            {a.kind === 'open_session' ? `Open ${a.session_id}` : `Jump ${a.segment_id}`}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <p className="text-sm">{msg.content}</p>
                 )}
               </div>
+
               {msg.role === 'user' && (
                 <div className="h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center flex-shrink-0">
                   <User className="h-4 w-4 text-white" />
@@ -204,6 +258,7 @@ export default function ChatInterface({
             ))}
           </div>
         )}
+
         <div className="flex gap-2">
           <Button
             type="button"
@@ -211,7 +266,7 @@ export default function ChatInterface({
             className="h-[44px] px-3"
             onClick={handleAttachClick}
             disabled={isProcessing || isUploadingAttachments || !session?.id}
-            title={session?.id ? "Attach file to this session" : "Select a session first"}
+            title={session?.id ? 'Attach file to this session' : 'Select a session first'}
           >
             {isUploadingAttachments ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
           </Button>
@@ -225,21 +280,11 @@ export default function ChatInterface({
             rows={1}
             disabled={isProcessing}
           />
-          <Button 
-            onClick={handleSend}
-            disabled={!input.trim() || isProcessing}
-            className="h-[44px] px-4"
-          >
-            {isProcessing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+          <Button onClick={handleSend} disabled={!input.trim() || isProcessing} className="h-[44px] px-4">
+            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
-        <p className="text-xs text-slate-400 mt-2 text-center">
-          Press Enter to send • Shift+Enter for new line • Attachments upload to current session
-        </p>
+        <p className="text-xs text-slate-400 mt-2 text-center">Press Enter to send • Shift+Enter for new line • Attachments upload to current session</p>
       </div>
     </Card>
   );

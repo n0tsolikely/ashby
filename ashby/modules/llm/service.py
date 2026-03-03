@@ -80,6 +80,62 @@ class LLMFormalizeResponse:
     model: str = ""
 
 
+@dataclass(frozen=True)
+class LLMChatEvidenceSegment:
+    session_id: str
+    run_id: str
+    segment_id: int
+    text: str
+    speaker_label: Optional[str] = None
+    t_start: Optional[float] = None
+    t_end: Optional[float] = None
+    source_path: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class LLMChatRequest:
+    question: str
+    scope: str
+    ui_state: Dict[str, Any] = field(default_factory=dict)
+    history_tail: list[Dict[str, Any]] = field(default_factory=list)
+    evidence_segments: list[LLMChatEvidenceSegment] = field(default_factory=list)
+
+    def to_payload(self) -> Dict[str, Any]:
+        return {
+            "question": self.question,
+            "scope": self.scope,
+            "ui_state": dict(self.ui_state),
+            "history_tail": [dict(x) for x in self.history_tail],
+            "evidence_segments": [
+                {
+                    "session_id": s.session_id,
+                    "run_id": s.run_id,
+                    "segment_id": int(s.segment_id),
+                    "text": s.text,
+                    "speaker_label": s.speaker_label,
+                    "t_start": s.t_start,
+                    "t_end": s.t_end,
+                    "source_path": s.source_path,
+                }
+                for s in self.evidence_segments
+            ],
+        }
+
+
+@dataclass(frozen=True)
+class LLMChatResponse:
+    version: int
+    request_id: str
+    output_json: Dict[str, Any]
+    usage: Dict[str, Any] = field(default_factory=dict)
+    timing_ms: int = 0
+    provider: str = ""
+    model: str = ""
+
+
 class LLMService(Protocol):
     def formalize(self, request: LLMFormalizeRequest, *, artifacts_dir: Optional[Path] = None) -> LLMFormalizeResponse:
+        ...
+
+    def chat(self, request: LLMChatRequest, *, artifacts_dir: Optional[Path] = None) -> LLMChatResponse:
         ...

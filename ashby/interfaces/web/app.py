@@ -64,6 +64,19 @@ from ashby.modules.meetings.transcript_versions import (
 from ashby.modules.meetings.index import sqlite_fts
 from ashby.modules.meetings.index.ingest import refresh_speaker_maps_for_transcript
 from ashby.modules.meetings.export.bundle import export_session_bundle
+from ashby.modules.meetings.chat import (
+    answer_with_evidence,
+    handle_command,
+    hydrate_evidence,
+    parse_command,
+    retrieve_hits,
+)
+from ashby.modules.meetings.schemas.chat import (
+    ChatActionJumpToSegmentV1,
+    ChatActionOpenSessionV1,
+    ChatReplyV1,
+    parse_chat_request_v1,
+)
 
 
 def create_app() -> FastAPI:
@@ -998,177 +1011,133 @@ def create_app() -> FastAPI:
             "clarify": asdict(preview_out.clarify) if preview_out.clarify else None,
         })
 
+    def _coerce_chat_request(payload: Dict[str, Any]) -> Dict[str, Any]:
+        raw = dict(payload or {})
+        if "text" not in raw and isinstance(raw.get("message"), str):
+            raw["text"] = raw.get("message")
+        if "ui" not in raw and isinstance(raw.get("ui_state"), dict):
+            raw["ui"] = raw.get("ui_state")
+        return raw
+
+    def _transcript_version_for_run(session_id: str, run_id: str) -> Optional[str]:
+        try:
+            rows = list_transcript_versions(session_id)
+        except Exception:
+            return None
+        for row in rows:
+            if str(row.get("run_id") or "").strip() == run_id:
+                out = str(row.get("transcript_version_id") or "").strip()
+                if out:
+                    return out
+        return None
+
+    def _augment_actions_from_hits(reply: ChatReplyV1, *, focus_session_id: Optional[str]) -> ChatReplyV1:
+        actions = list(reply.actions or [])
+        seen_open = {a.session_id for a in actions if isinstance(a, ChatActionOpenSessionV1)}
+        seen_jump = {
+            (a.session_id, int(a.segment_id))
+            for a in actions
+            if isinstance(a, ChatActionJumpToSegmentV1)
+        }
+        for h in reply.hits[:6]:
+            sid = str(h.session_id)
+            if focus_session_id is None or sid != focus_session_id:
+                if sid not in seen_open:
+                    actions.append(ChatActionOpenSessionV1(kind="open_session", session_id=sid))
+                    seen_open.add(sid)
+            key = (sid, int(h.citation.segment_id))
+            if key not in seen_jump:
+                trv = _transcript_version_for_run(sid, str(h.run_id))
+                if trv:
+                    actions.append(
+                        ChatActionJumpToSegmentV1(
+                            kind="jump_to_segment",
+                            session_id=sid,
+                            transcript_version_id=trv,
+                            segment_id=int(h.citation.segment_id),
+                        )
+                    )
+                    seen_jump.add(key)
+        return ChatReplyV1(
+            kind=reply.kind,
+            text=reply.text,
+            citations=list(reply.citations),
+            hits=list(reply.hits),
+            actions=actions,
+            clarify=reply.clarify,
+            planner=reply.planner,
+        )
+
     @app.post("/api/chat")
     async def api_chat(payload: Dict[str, Any]) -> Dict[str, Any]:
-        text = (payload.get("text") or payload.get("message") or "").strip()
-        session_id = payload.get("session_id")
-        ui_raw = payload.get("ui") or {}
-        attachments_raw = payload.get("attachments") or []
+        try:
+            req = parse_chat_request_v1(_coerce_chat_request(payload))
+        except Exception as e:
+            return fail("INVALID_REQUEST", f"invalid chat payload: {type(e).__name__}: {e}", status=400)
 
-        rr = RunRequest.from_dict(ui_raw) if isinstance(ui_raw, dict) else RunRequest()
+        if not req.session_id:
+            return fail("INVALID_REQUEST", "session_id is required for /api/chat; use /api/chat/global for cross-session queries", status=400)
 
-        attachments: Optional[list[AttachmentMeta]] = None
-        if isinstance(attachments_raw, list) and attachments_raw:
-            tmp = []
-            for a in attachments_raw:
-                if isinstance(a, dict):
-                    tmp.append(
-                        AttachmentMeta(
-                            filename=str(a.get("filename") or ""),
-                            mime_type=a.get("mime_type"),
-                            size_bytes=a.get("size_bytes"),
-                            sha256=a.get("sha256"),
-                        )
-                    )
-            attachments = tmp
+        text = req.text.strip()
+        cmd = parse_command(text)
+        if cmd is not None:
+            reply = handle_command(cmd, ui_state=req.ui)
+            return ok({"session_id": req.session_id, "scope": "session", "reply": reply.to_dict()})
 
-        # QUEST_125: transcript control commands handled pre-planner.
-        if isinstance(session_id, str) and session_id and text:
-            cmd = text.strip()
-            if cmd.lower() in ("/transcripts", "transcripts"):
-                ensure_legacy_transcript_versions(session_id)
-                st = load_session_state(session_id)
-                active_id = st.get("active_transcript_version_id")
-                active_id = active_id.strip() if isinstance(active_id, str) and active_id.strip() else None
-                rows = list_transcript_versions(session_id)
-                if not rows:
-                    reply_text = "No transcript versions found for this session."
-                else:
-                    lines = ["Transcript versions:"]
-                    for r in rows:
-                        trv_id = str(r.get("transcript_version_id") or "")
-                        if not trv_id:
-                            continue
-                        ts = r.get("created_ts")
-                        short_ts = "unknown"
-                        try:
-                            short_ts = time.strftime("%Y-%m-%d %H:%M", time.localtime(float(ts)))
-                        except Exception:
-                            pass
-                        marker = " *ACTIVE*" if active_id and trv_id == active_id else ""
-                        lines.append(
-                            f"- {trv_id}{marker} | {short_ts} | diarization={bool(r.get('diarization_enabled'))} | "
-                            f"asr={str(r.get('asr_engine') or 'default')} | segments={int(r.get('segments_count') or 0)}"
-                        )
-                    reply_text = "\n".join(lines)
-                return ok(
-                    {
-                        "session_id": session_id,
-                        "scope": "session",
-                        "reply": {"text": reply_text, "kind": "system", "citations": [], "actions": []},
-                        "planner": None,
-                    }
-                )
+        hits = retrieve_hits(text, session_id=req.session_id, limit=10)
+        evidence = hydrate_evidence(hits)
+        if not evidence:
+            reply = ChatReplyV1(
+                kind="assistant",
+                text="I couldn't find evidence for that in this session. Try Global scope to search across sessions.",
+                citations=[],
+                hits=[],
+                actions=[],
+            )
+            return ok({"session_id": req.session_id, "scope": "session", "reply": reply.to_dict()})
 
-            use_cmd = cmd.split(maxsplit=1)
-            if use_cmd and use_cmd[0].lower() in ("/use", "use"):
-                if len(use_cmd) < 2 or not use_cmd[1].strip():
-                    return ok(
-                        {
-                            "session_id": session_id,
-                            "scope": "session",
-                            "reply": {
-                                "text": "Usage: /use <transcript_version_id>",
-                                "kind": "system",
-                                "citations": [],
-                                "actions": [],
-                            },
-                            "planner": None,
-                        }
-                    )
-                trv_id = use_cmd[1].strip()
-                resolved = resolve_transcript_version(trv_id)
-                if not resolved:
-                    return ok(
-                        {
-                            "session_id": session_id,
-                            "scope": "session",
-                            "reply": {
-                                "text": f"Transcript version not found: {trv_id}",
-                                "kind": "system",
-                                "citations": [],
-                                "actions": [],
-                            },
-                            "planner": None,
-                        }
-                    )
-                if str(resolved.get("session_id") or "") != session_id:
-                    return ok(
-                        {
-                            "session_id": session_id,
-                            "scope": "session",
-                            "reply": {
-                                "text": f"Transcript version {trv_id} does not belong to this session.",
-                                "kind": "system",
-                                "citations": [],
-                                "actions": [],
-                            },
-                            "planner": None,
-                        }
-                    )
-                set_active_transcript_version(session_id, trv_id)
-                return ok(
-                    {
-                        "session_id": session_id,
-                        "scope": "session",
-                        "reply": {
-                            "text": f"Active transcript version set to {trv_id}.",
-                            "kind": "system",
-                            "citations": [],
-                            "actions": [],
-                        },
-                        "planner": None,
-                    }
-                )
-
-        session = SessionContext(active_session_id=session_id, last_run_id=None)
-        out = clarify_or_preview(
-            text=text,
-            attachments=attachments,
-            run_request=rr,
-            session=session,
-            door="web",
+        reply = answer_with_evidence(
+            question=text,
+            scope="session",
+            ui_state=req.ui,
+            history_tail=req.history_tail,
+            evidence_segments=evidence,
+            hits=hits,
         )
-
-        planner = asdict(out)
-        if out.needs_clarification and out.clarify:
-            clarify_text = getattr(out.clarify, "message", None) or getattr(out.clarify, "question", None)
-            reply_text = clarify_text or "I need clarification before preparing a run."
-        elif out.preview:
-            reply_text = out.preview.summary or "Plan preview ready."
-        else:
-            reply_text = "Request accepted."
-
-        return ok(
-            {
-                "session_id": session_id,
-                "scope": "session",
-                "reply": {
-                    "text": reply_text,
-                    "kind": "planner",
-                    "citations": [],
-                    "actions": [],
-                },
-                "planner": planner,
-            }
-        )
+        reply = _augment_actions_from_hits(reply, focus_session_id=req.session_id)
+        return ok({"session_id": req.session_id, "scope": "session", "reply": reply.to_dict()})
 
     @app.post("/api/chat/global")
     async def api_chat_global(payload: Dict[str, Any]) -> Dict[str, Any]:
-        text = (payload.get("text") or "").strip()
-        return ok(
-            {
-                "session_id": None,
-                "scope": "global",
-                "reply": {
-                    "text": f'Global chat scaffold only (not implemented yet). Received: "{text}"' if text else "Global chat scaffold only (not implemented yet).",
-                    "kind": "not_implemented",
-                    "citations": [],
-                    "actions": [],
-                },
-                "planner": None,
-            }
+        try:
+            req = parse_chat_request_v1(_coerce_chat_request(payload))
+        except Exception as e:
+            return fail("INVALID_REQUEST", f"invalid chat payload: {type(e).__name__}: {e}", status=400)
+
+        text = req.text.strip()
+        cmd = parse_command(text)
+        if cmd is not None:
+            reply = handle_command(cmd, ui_state=req.ui)
+            return ok({"session_id": req.session_id, "scope": "global", "reply": reply.to_dict()})
+
+        ui = dict(req.ui or {})
+        focus_session_id = str(ui.get("selected_session_id") or req.session_id or "").strip() or None
+        hits = retrieve_hits(text, session_id=focus_session_id, limit=10) if focus_session_id else []
+        lower = text.lower()
+        wants_cross = any(k in lower for k in ("all sessions", "which meeting", "how many meetings", "across sessions", "global"))
+        if not hits or wants_cross:
+            hits = retrieve_hits(text, session_id=None, limit=15)
+        evidence = hydrate_evidence(hits)
+        reply = answer_with_evidence(
+            question=text,
+            scope="global",
+            ui_state=ui,
+            history_tail=req.history_tail,
+            evidence_segments=evidence,
+            hits=hits,
         )
+        reply = _augment_actions_from_hits(reply, focus_session_id=focus_session_id)
+        return ok({"session_id": req.session_id, "scope": "global", "reply": reply.to_dict()})
 
     @app.post("/api/message")
     async def api_message(payload: Dict[str, Any]) -> Dict[str, Any]:

@@ -249,6 +249,20 @@ class LibrarySession:
     latest_run_status: Optional[str] = None
 
 
+@dataclass(frozen=True)
+class SegmentRow:
+    session_id: str
+    run_id: str
+    segment_id: int
+    text: str
+    speaker_label: Optional[str] = None
+    start_ms: Optional[int] = None
+    end_ms: Optional[int] = None
+    t_start: Optional[float] = None
+    t_end: Optional[float] = None
+    source_path: Optional[str] = None
+
+
 def search(
     conn: sqlite3.Connection,
     query: str,
@@ -311,6 +325,63 @@ def search(
             )
         )
 
+    return out
+
+
+def fetch_segments(
+    conn: sqlite3.Connection,
+    *,
+    run_id: str,
+    segment_ids: List[int],
+) -> List[SegmentRow]:
+    """Fetch canonical segment rows for a run and explicit segment ids.
+
+    Deterministic ordering:
+    - rows returned in ascending segment_id order
+    """
+    rid = str(run_id or "").strip()
+    wanted = sorted({int(s) for s in segment_ids if isinstance(s, int) and int(s) >= 0})
+    if not rid or not wanted:
+        return []
+
+    placeholders = ",".join("?" for _ in wanted)
+    rows = conn.execute(
+        f"""
+        SELECT
+          session_id,
+          run_id,
+          segment_id,
+          text,
+          speaker_label,
+          start_ms,
+          end_ms,
+          t_start,
+          t_end,
+          source_path
+        FROM segments
+        WHERE run_id = ?
+          AND segment_id IN ({placeholders})
+        ORDER BY segment_id ASC;
+        """,
+        [rid, *wanted],
+    ).fetchall()
+
+    out: List[SegmentRow] = []
+    for r in rows:
+        out.append(
+            SegmentRow(
+                session_id=str(r["session_id"]),
+                run_id=str(r["run_id"]),
+                segment_id=int(r["segment_id"]),
+                text=str(r["text"]),
+                speaker_label=(str(r["speaker_label"]) if r["speaker_label"] is not None else None),
+                start_ms=(int(r["start_ms"]) if r["start_ms"] is not None else None),
+                end_ms=(int(r["end_ms"]) if r["end_ms"] is not None else None),
+                t_start=(float(r["t_start"]) if r["t_start"] is not None else None),
+                t_end=(float(r["t_end"]) if r["t_end"] is not None else None),
+                source_path=(str(r["source_path"]) if r["source_path"] is not None else None),
+            )
+        )
     return out
 
 

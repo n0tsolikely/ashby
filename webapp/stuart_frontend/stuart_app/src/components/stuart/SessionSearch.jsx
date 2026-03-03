@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Clock, FileText, User, Hash, ChevronRight, Loader2, X } from 'lucide-react';
+import { Search, Clock, FileText, User, ChevronRight, Loader2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { stuartClient } from '@/api/stuartClient';
+import { MatchKindBadge } from '@/components/stuart/MatchKindBadge';
 
 function formatTimestamp(seconds) {
   const safe = Number(seconds || 0);
@@ -280,25 +281,9 @@ export default function SessionSearch({
                     </div>
 
                     <div className="p-3 border-t border-slate-100 flex flex-wrap gap-2">
-                      {matchKinds.includes('TITLE_MATCH') && <Badge variant="outline">Title</Badge>}
-                      {matchKinds.includes('ID_MATCH') && (
-                        <Badge variant="outline">
-                          <Hash className="h-3 w-3 mr-1" />
-                          ID
-                        </Badge>
-                      )}
-                      {matchKinds.includes('ATTENDEE_MATCH') && (
-                        <Badge variant="outline">
-                          <User className="h-3 w-3 mr-1" />
-                          Attendee
-                        </Badge>
-                      )}
-                      {matchKinds.includes('MENTION_MATCH') && (
-                        <Badge variant="outline">
-                          <FileText className="h-3 w-3 mr-1" />
-                          Mentioned
-                        </Badge>
-                      )}
+                      {matchKinds.map((k) => (
+                        <MatchKindBadge key={k} kind={k} />
+                      ))}
                     </div>
 
                     {Array.isArray(result.mentions) && result.mentions.length > 0 && (

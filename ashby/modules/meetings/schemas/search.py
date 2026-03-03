@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
+
+
+MatchKind = Literal["TITLE_MATCH", "ID_MATCH", "ATTENDEE_MATCH", "MENTION_MATCH"]
 
 
 @dataclass(frozen=True)
@@ -46,6 +49,7 @@ class SearchResultItem:
     title: Optional[str]
     mode: Optional[str]
     citation: CitationAnchor
+    match_kind: Optional[MatchKind] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -55,6 +59,7 @@ class SearchResultItem:
             "title": self.title,
             "mode": self.mode,
             "citation": self.citation.to_dict(),
+            "match_kind": self.match_kind,
         }
 
 
