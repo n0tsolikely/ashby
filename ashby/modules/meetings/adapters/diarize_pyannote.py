@@ -75,6 +75,9 @@ def diarize_pyannote(run_dir: Path) -> Dict[str, Any]:
 
     if can_pyannote:
         try:
+            # PyTorch >=2.6 defaults torch.load(weights_only=True), but current
+            # pyannote checkpoints still require full-object unpickling.
+            os.environ.setdefault("TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD", "1")
             from pyannote.audio import Pipeline
             # pyannote.audio API drift handling:
             # - older versions: use_auth_token=

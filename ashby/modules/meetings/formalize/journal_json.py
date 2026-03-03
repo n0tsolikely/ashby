@@ -7,14 +7,17 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ashby.core.profile import ExecutionProfile, get_execution_profile
+from ashby.modules.llm import HTTPGatewayLLMService, LLMFormalizeRequest
+from ashby.modules.meetings.formalize.llm_evidence_map import persist_llm_evidence_map
+from ashby.modules.meetings.formalize.llm_text_sanitizer import sanitize_llm_text_fields
+from ashby.modules.meetings.formalize.llm_usage_receipt import write_llm_usage_receipt
 from ashby.modules.meetings.hashing import sha256_file
 from ashby.modules.meetings.schemas.artifacts_v1 import dump_json
 from ashby.modules.meetings.schemas.journal_v1 import validate_journal_v1
-from ashby.modules.meetings.template_registry import load_system_template_text, validate_template
+from ashby.modules.meetings.template_registry import validate_template
 
 
 _REMOTE_ENV_FLAG = "ASHBY_MEETINGS_LLM_ENABLED"
-_DEFAULT_MODEL_ENV = "ASHBY_MEETINGS_FORMALIZER_MODEL"
 
 
 def _load_transcript_segments(run_dir: Path) -> Tuple[str, str, List[Dict[str, Any]], Optional[str]]:
@@ -146,42 +149,6 @@ def _deterministic_journal_payload(
     return payload
 
 
-def _call_openai_journal_json(*, system_prompt: str, user_prompt: str) -> str:
-    """Remote formalization call (OpenAI).
-
-    Intentionally isolated for tests/mocking.
-    """
-    try:
-        from openai import OpenAI  # type: ignore
-    except Exception as e:
-        raise RuntimeError(f"openai package unavailable: {type(e).__name__}: {e}")
-
-    model = (os.environ.get(_DEFAULT_MODEL_ENV) or "gpt-4o-mini").strip()
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-    kwargs: Dict[str, Any] = dict(
-        model=model,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        temperature=0.2,
-    )
-
-    try:
-        kwargs["response_format"] = {"type": "json_object"}
-        resp = client.chat.completions.create(**kwargs)  # type: ignore[arg-type]
-    except TypeError:
-        kwargs.pop("response_format", None)
-        resp = client.chat.completions.create(**kwargs)  # type: ignore[arg-type]
-
-    msg = resp.choices[0].message
-    content = msg.content if hasattr(msg, "content") else None
-    if not isinstance(content, str):
-        raise RuntimeError("OpenAI response missing message content")
-    return content
-
-
 def _assert_citations_reference_real_segments(payload: Dict[str, Any], valid_ids: Set[int]) -> None:
     """Truth guard: any citations present must reference existing segment_id values."""
 
@@ -304,48 +271,27 @@ def formalize_journal_to_journal_json(run_dir: Path, template_id: str, retention
             "warning": f"remote LLM disabled ({_REMOTE_ENV_FLAG} not set)",
         }
 
-    system_template = load_system_template_text("journal", tv.template_id).strip()
-
-    seg_compact = [
-        {
-            "segment_id": int(s.get("segment_id", i)),
-            "speaker": str(s.get("speaker") or "SPEAKER_00"),
-            "text": str(s.get("text") or "").strip(),
-        }
-        for i, s in enumerate(segs)
-        if str(s.get("text") or "").strip()
-    ]
-
-    user_prompt = f"""You are generating Stuart journal formalizations.
-Return ONLY valid JSON for the journal.json v1 schema.
-
-Rules (truth discipline):
-- Do not invent events, actions, commitments, names, dates, places, or amounts.
-- If something is unclear, mark it explicitly as uncertain or omit it.
-- Narrative prose may be subjective and MAY omit citations.
-- Any factual claim (events, plans, commitments, concrete actions, names, places, dates, amounts) MUST be supported by citations.
-- key_points and action_items (if any) MUST be evidence-backed with non-empty citations.
-- Citations are JSON objects: {{ "segment_id": <int> }} referencing REAL segment_id values from the transcript.
-- action_items.assignee must be a speaker label like SPEAKER_00, otherwise null.
-- Include ALL top-level keys (narrative_sections, key_points, action_items, feelings, mood) even if empty.
-
-retention={retention}
-template_id={tv.template_id}
-
-Transcript segments (JSON array):
-{json.dumps(seg_compact, indent=2, sort_keys=True)}
-"""
-
-    system_prompt = (
-        "STUART FORMALIZER (journal.json v1)\n"
-        "You must follow the system template instructions, but output MUST be JSON only.\n\n"
-        + system_template
+    transcript_text = "\n".join(
+        str(s.get("text") or "").strip() for s in segs if str(s.get("text") or "").strip()
     )
-
+    service = HTTPGatewayLLMService()
+    request = LLMFormalizeRequest(
+        transcript_text=transcript_text,
+        mode="journal",
+        template_id=tv.template_id,
+        retention=retention,
+        profile=profile.value,
+    )
     try:
-        raw = _call_openai_journal_json(system_prompt=system_prompt, user_prompt=user_prompt)
+        gateway_resp = service.formalize(request, artifacts_dir=artifacts)
     except Exception as e:
         # Remote unavailable: fall back, but record warning in header.
+        fail = _write_failure_receipt(
+            run_dir,
+            stage="journal_llm",
+            error="gateway_formalize_failed",
+            detail={"exception": f"{type(e).__name__}: {e}"},
+        )
         payload = _deterministic_journal_payload(
             session_id=session_id,
             run_id=run_id,
@@ -366,23 +312,58 @@ Transcript segments (JSON array):
             "sha256": sha256_file(out_path),
             "created_ts": time.time(),
             "engine": "deterministic_fallback_v1",
-            "warning": str(payload.get("header", {}).get("warning") or ""),
+            "warning": f"{payload.get('header', {}).get('warning') or ''}; receipt={fail}",
         }
 
-    # Parse strict JSON
-    try:
-        llm_payload = json.loads(raw)
-    except Exception:
-        raw_path = artifacts / "journal_llm_raw.txt"
-        _write_text_write_once(raw_path, raw)
-        fail = _write_failure_receipt(run_dir, stage="journal_llm", error="non_json_output", detail={"raw_path": str(raw_path)})
-        raise ValueError(f"LLM returned non-JSON journal output; see {raw_path} and {fail}")
+    raw_path = artifacts / "journal_llm_raw.txt"
+    _write_text_write_once(
+        raw_path,
+        json.dumps(
+            {
+                "version": gateway_resp.version,
+                "request_id": gateway_resp.request_id,
+                "output_json": gateway_resp.output_json,
+                "evidence_map": gateway_resp.evidence_map,
+                "usage": gateway_resp.usage,
+                "timing_ms": gateway_resp.timing_ms,
+                "provider": gateway_resp.provider,
+                "model": gateway_resp.model,
+            },
+            sort_keys=True,
+            indent=2,
+        )
+        + "\n",
+    )
+    if not isinstance(gateway_resp.output_json, dict):
+        fail = _write_failure_receipt(
+            run_dir,
+            stage="journal_llm",
+            error="gateway_output_json_not_object",
+            detail={"request_id": gateway_resp.request_id, "raw_path": str(raw_path)},
+        )
+        raise ValueError(f"Gateway output_json must be object; see {fail}")
 
-    if not isinstance(llm_payload, dict):
-        raw_path = artifacts / "journal_llm_raw.txt"
-        _write_text_write_once(raw_path, raw)
-        fail = _write_failure_receipt(run_dir, stage="journal_llm", error="json_not_object", detail={"raw_path": str(raw_path)})
-        raise ValueError(f"LLM returned JSON but not an object; see {raw_path} and {fail}")
+    llm_payload = dict(gateway_resp.output_json)
+    try:
+        llm_payload = sanitize_llm_text_fields(llm_payload, mode="journal")
+    except Exception as e:
+        fail = _write_failure_receipt(
+            run_dir,
+            stage="journal_llm",
+            error="json_string_sanitization_failed",
+            detail={"exception": f"{type(e).__name__}: {e}"},
+        )
+        raise ValueError(f"Gateway journal text sanitization failed; see {fail}") from e
+    try:
+        persist_llm_evidence_map(artifacts_dir=artifacts, evidence_map=gateway_resp.evidence_map)
+    except Exception as e:
+        fail = _write_failure_receipt(
+            run_dir,
+            stage="journal_llm",
+            error="evidence_map_validation_failed",
+            detail={"exception": f"{type(e).__name__}: {e}"},
+        )
+        raise ValueError(f"Gateway evidence_map invalid; see {fail}") from e
 
     # Enforce canonical identity fields
     llm_payload["version"] = 1
@@ -422,11 +403,21 @@ Transcript segments (JSON array):
         raise ValueError(f"LLM journal schema validation failed; see {raw_path} and {fail}") from e
 
     dump_json(out_path, llm_payload, write_once=True)
+    write_llm_usage_receipt(
+        artifacts_dir=artifacts,
+        provider=gateway_resp.provider,
+        model=gateway_resp.model,
+        request_id=gateway_resp.request_id,
+        timing_ms=gateway_resp.timing_ms,
+        usage=gateway_resp.usage,
+        retention=retention,
+    )
     return {
         "kind": "journal_json",
         "path": str(out_path),
         "sha256": sha256_file(out_path),
         "created_ts": time.time(),
-        "engine": "openai",
-        "model": (os.environ.get(_DEFAULT_MODEL_ENV) or "gpt-4o-mini").strip(),
+        "engine": "llm_gateway",
+        "provider": gateway_resp.provider,
+        "model": gateway_resp.model,
     }

@@ -25,6 +25,7 @@ from ashby.modules.meetings.render.export_pdf import export_pdf_stub
 from ashby.modules.meetings.index import ingest_run
 from ashby.modules.meetings.session_state import (
     load_session_state,
+    seed_speaker_overlay_for_new_transcript,
     set_active_speaker_overlay,
     set_active_transcript_version,
 )
@@ -441,6 +442,16 @@ def _emit_transcript_version_for_run(*, run_id: str, session_id: str, run_dir: P
     )
     trv_id = str(payload.get("transcript_version_id") or "")
     if trv_id:
+        prev_active_trv = None
+        current_state = load_session_state(session_id)
+        raw_prev = current_state.get("active_transcript_version_id")
+        if isinstance(raw_prev, str) and raw_prev.strip():
+            prev_active_trv = raw_prev.strip()
+        seed_speaker_overlay_for_new_transcript(
+            session_id,
+            trv_id,
+            source_transcript_version_id=prev_active_trv,
+        )
         set_active_transcript_version(session_id, trv_id)
     return payload
 

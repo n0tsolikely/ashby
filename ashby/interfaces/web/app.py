@@ -33,10 +33,11 @@ from ashby.modules.meetings.mode_registry import validate_mode
 from ashby.modules.meetings.pipeline.job_runner import run_job, poll_progress
 from ashby.modules.meetings.router.router import build_intent_and_plan
 from ashby.modules.meetings.store import create_run, get_run_state
-from ashby.modules.meetings.overlays import create_speaker_map_overlay
+from ashby.modules.meetings.overlays import create_speaker_map_overlay, load_speaker_map_overlay
 from ashby.modules.meetings.session_state import (
+    get_speaker_overlay_for_transcript,
     load_session_state,
-    set_active_speaker_overlay,
+    set_speaker_overlay_for_transcript,
     set_active_transcript_version,
 )
 from ashby.modules.meetings.schemas.plan import SessionContext, AttachmentMeta
@@ -49,6 +50,7 @@ from ashby.modules.meetings.transcript_versions import (
 )
 
 from ashby.modules.meetings.index import sqlite_fts
+from ashby.modules.meetings.index.ingest import refresh_speaker_maps_for_transcript
 from ashby.modules.meetings.export.bundle import export_session_bundle
 
 
@@ -69,11 +71,52 @@ def create_app() -> FastAPI:
 
     @app.get("/api/sessions")
     async def api_sessions(
-        limit: int = 50, offset: int = 0, q: Optional[str] = None, mode: Optional[str] = None
+        limit: int = 50, offset: int = 0, q: Optional[str] = None, mode: Optional[str] = None, attendee: Optional[str] = None
     ) -> Dict[str, Any]:
         sessions_all = list_sessions(limit=100000)
         query = (q or "").strip().lower()
         mode_filter = (mode or "").strip().lower()
+        attendee_query = (attendee or "").strip()
+        attendee_norm = sqlite_fts.normalize_person_name(attendee_query) if attendee_query else ""
+        attendee_session_ids: Optional[set[str]] = None
+
+        if attendee_query and attendee_norm:
+            lay = init_stuart_root()
+            conn = sqlite_fts.connect(sqlite_fts.get_db_path(stuart_root=lay.root))
+            try:
+                sqlite_fts.ensure_schema(conn)
+                matched = sqlite_fts.list_sessions_by_attendee(conn, attendee_query)
+                candidates = {str(row.session_id) for row in matched}
+                filtered: set[str] = set()
+                for sid in candidates:
+                    st = load_session_state(sid)
+                    active_trv = st.get("active_transcript_version_id")
+                    if not isinstance(active_trv, str) or not active_trv.strip():
+                        continue
+                    active_trv = active_trv.strip()
+                    try:
+                        trv = load_transcript_version(sid, active_trv)
+                    except Exception:
+                        continue
+                    active_run_id = str(trv.get("run_id") or "").strip()
+                    if not active_run_id:
+                        continue
+                    row = conn.execute(
+                        """
+                        SELECT 1
+                        FROM speaker_maps
+                        WHERE session_id = ? AND run_id = ? AND speaker_name_norm = ?
+                        LIMIT 1;
+                        """,
+                        (sid, active_run_id, attendee_norm),
+                    ).fetchone()
+                    if row is not None:
+                        filtered.add(sid)
+                attendee_session_ids = filtered
+            finally:
+                conn.close()
+        elif attendee_query:
+            attendee_session_ids = set()
 
         rows: list[Dict[str, Any]] = []
         for s in sessions_all:
@@ -86,12 +129,33 @@ def create_app() -> FastAPI:
             contrib_count = _session_contribution_count(sid)
             has_audio = contrib_count > 0
 
+            runs = _runs_for_session(sid, limit=200)
+            trv_rows = list_transcript_versions(sid)
+            run_ids = [str(r.get("run_id") or "").lower() for r in runs if isinstance(r, dict)]
+            trv_ids = [str(v.get("transcript_version_id") or "").lower() for v in trv_rows if isinstance(v, dict)]
+
+            match_kinds: list[str] = []
+            if query:
+                title_match = query in title_l
+                id_match = (
+                    query in sid.lower()
+                    or any(query in rid for rid in run_ids if rid)
+                    or any(query in tid for tid in trv_ids if tid)
+                )
+                if not title_match and not id_match:
+                    continue
+                if title_match:
+                    match_kinds.append("TITLE_MATCH")
+                if id_match:
+                    match_kinds.append("ID_MATCH")
+
             if mode_filter and smode != mode_filter:
                 continue
-            if query and query not in sid.lower() and query not in title_l:
-                continue
+            if attendee_session_ids is not None:
+                if sid not in attendee_session_ids:
+                    continue
+                match_kinds.append("ATTENDEE_MATCH")
 
-            runs = _runs_for_session(sid, limit=200)
             latest = runs[0] if runs else None
             has_transcript = any(
                 any((a.get("name") in {"transcript.json", "aligned_transcript.json"}) for a in (r.get("artifacts") or []))
@@ -127,6 +191,8 @@ def create_app() -> FastAPI:
                     "has_formalization": has_formalization,
                 }
             )
+            if query or attendee_query:
+                rows[-1]["match_kinds"] = sorted(set(match_kinds))
 
         rows.sort(key=lambda s: (float(s.get("created_ts") or 0.0), str(s.get("session_id") or "")), reverse=True)
         start = max(int(offset), 0)
@@ -257,6 +323,60 @@ def create_app() -> FastAPI:
             }
         )
 
+    def _normalize_speaker_map_input(mapping_raw: Any) -> Dict[str, str]:
+        out: Dict[str, str] = {}
+        if not isinstance(mapping_raw, dict):
+            return out
+        for key, value in mapping_raw.items():
+            if not isinstance(key, str) or not isinstance(value, str):
+                continue
+            label = key.strip().upper()
+            name = value.strip()
+            if not label or not name:
+                continue
+            out[label] = name
+        return out
+
+    def _speaker_map_view_for_transcript(session_id: str, transcript_version_id: str) -> Dict[str, Any]:
+        overlay_id = get_speaker_overlay_for_transcript(session_id, transcript_version_id)
+        mapping: Dict[str, str] = {}
+        if isinstance(overlay_id, str) and overlay_id.strip():
+            try:
+                mapping = load_speaker_map_overlay(session_id, overlay_id.strip())
+                overlay_id = overlay_id.strip()
+            except Exception:
+                overlay_id = None
+                mapping = {}
+        else:
+            overlay_id = None
+        return {"speaker_overlay_id": overlay_id, "speaker_map": mapping}
+
+    def _save_speaker_map_for_transcript(
+        *, session_id: str, transcript_version_id: str, mapping_raw: Any, author: str
+    ) -> Dict[str, Any]:
+        mapping = _normalize_speaker_map_input(mapping_raw)
+        overlay = None
+        overlay_id = None
+        if mapping:
+            overlay = create_speaker_map_overlay(session_id=session_id, mapping=mapping, author=author)
+            overlay_id = str(overlay.get("overlay_id") or "").strip() or None
+
+        session_state = set_speaker_overlay_for_transcript(session_id, transcript_version_id, overlay_id)
+        refresh = refresh_speaker_maps_for_transcript(
+            session_id=session_id,
+            transcript_version_id=transcript_version_id,
+        )
+        view = _speaker_map_view_for_transcript(session_id, transcript_version_id)
+        return {
+            "session_id": session_id,
+            "transcript_version_id": transcript_version_id,
+            "speaker_overlay_id": view["speaker_overlay_id"],
+            "speaker_map": view["speaker_map"],
+            "overlay": overlay,
+            "session_state": session_state,
+            "index_refresh": refresh,
+        }
+
     @app.get("/api/sessions/{session_id}/transcripts")
     async def api_session_transcripts(session_id: str, limit: int = 50, offset: int = 0) -> Dict[str, Any]:
         # QUEST_126: lazily backfill transcript versions for legacy sessions on access.
@@ -335,6 +455,12 @@ def create_app() -> FastAPI:
             return fail("INTERNAL_ERROR", "invalid transcript schema", status=500)
         run_id = str(payload.get("run_id") or "")
         segments = [normalize_segment(seg, idx=i, run_id=run_id) for i, seg in enumerate(segs) if isinstance(seg, dict)]
+        speaker_view = _speaker_map_view_for_transcript(session_id, transcript_version_id)
+        speakers_set = set()
+        for seg in segments:
+            label = seg.get("speaker")
+            if isinstance(label, str) and label.strip():
+                speakers_set.add(label.strip().upper())
         return ok(
             {
                 "transcript": {
@@ -346,10 +472,66 @@ def create_app() -> FastAPI:
                     "asr_engine": str(payload.get("asr_engine") or "default"),
                     "audio_ref": payload.get("audio_ref") if isinstance(payload.get("audio_ref"), dict) else {},
                     "segments": segments,
-                    "speaker_map": {},
+                    "speaker_overlay_id": speaker_view["speaker_overlay_id"],
+                    "speaker_map": speaker_view["speaker_map"],
+                    "speakers": sorted(speakers_set),
                 }
             }
         )
+
+    @app.get("/api/transcripts/{transcript_version_id}/speaker_map")
+    async def api_get_transcript_speaker_map(transcript_version_id: str) -> Dict[str, Any]:
+        resolved = resolve_transcript_version(transcript_version_id)
+        if not resolved:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        session_id = str(resolved.get("session_id") or "")
+        if not session_id:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        try:
+            load_transcript_version(session_id, transcript_version_id)
+        except FileNotFoundError:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        except Exception:
+            return fail("INTERNAL_ERROR", "failed to load transcript version", status=500)
+
+        view = _speaker_map_view_for_transcript(session_id, transcript_version_id)
+        return ok(
+            {
+                "session_id": session_id,
+                "transcript_version_id": transcript_version_id,
+                "speaker_overlay_id": view["speaker_overlay_id"],
+                "speaker_map": view["speaker_map"],
+            }
+        )
+
+    @app.put("/api/transcripts/{transcript_version_id}/speaker_map")
+    async def api_put_transcript_speaker_map(transcript_version_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        resolved = resolve_transcript_version(transcript_version_id)
+        if not resolved:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        session_id = str(resolved.get("session_id") or "")
+        if not session_id:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        try:
+            load_transcript_version(session_id, transcript_version_id)
+        except FileNotFoundError:
+            return fail("NOT_FOUND", "transcript version not found", status=404)
+        except Exception:
+            return fail("INTERNAL_ERROR", "failed to load transcript version", status=500)
+
+        author_raw = payload.get("author")
+        author = author_raw.strip() if isinstance(author_raw, str) and author_raw.strip() else "user"
+        result = _save_speaker_map_for_transcript(
+            session_id=session_id,
+            transcript_version_id=transcript_version_id,
+            mapping_raw=payload.get("mapping"),
+            author=author,
+        )
+        return ok(result)
+
+    @app.post("/api/transcripts/{transcript_version_id}/speaker_map")
+    async def api_post_transcript_speaker_map(transcript_version_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        return await api_put_transcript_speaker_map(transcript_version_id, payload)
 
     @app.patch("/api/sessions/{session_id}/transcripts/active")
     async def api_set_active_transcript(session_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -929,7 +1111,8 @@ def create_app() -> FastAPI:
 
         planner = asdict(out)
         if out.needs_clarification and out.clarify:
-            reply_text = out.clarify.question or "I need clarification before preparing a run."
+            clarify_text = getattr(out.clarify, "message", None) or getattr(out.clarify, "question", None)
+            reply_text = clarify_text or "I need clarification before preparing a run."
         elif out.preview:
             reply_text = out.preview.summary or "Plan preview ready."
         else:
@@ -1160,43 +1343,41 @@ def create_app() -> FastAPI:
 
     @app.post("/api/runs/{run_id}/speaker_map")
     async def api_run_set_speaker_map(run_id: str, payload: Dict[str, Any], background: BackgroundTasks) -> Dict[str, Any]:
-        """Persist a speaker->name mapping overlay for the session and optionally rerender.
+        """Back-compat endpoint that delegates to transcript-scoped speaker map persistence.
 
-        Payload:
-          {
-            "mapping": {"SPEAKER_00": "Greg", ...},
-            "rerender": true|false (default true)
-          }
+        Canonical path is /api/transcripts/{transcript_version_id}/speaker_map.
         """
-        mapping_raw = payload.get("mapping") or {}
-        if not isinstance(mapping_raw, dict) or not mapping_raw:
-            return JSONResponse(status_code=400, content={"ok": False, "error": "mapping (dict) is required"})
-
-        mapping: Dict[str, str] = {}
-        for k, v in mapping_raw.items():
-            if not isinstance(k, str) or not isinstance(v, str):
-                continue
-            kk = k.strip().upper()
-            vv = v.strip()
-            if kk and vv:
-                mapping[kk] = vv
-
-        if not mapping:
-            return JSONResponse(
-                status_code=400,
-                content={"ok": False, "error": "mapping must contain at least one non-empty entry"},
-            )
-
         state = get_run_state(run_id)
         session_id = state.get("session_id")
         if not isinstance(session_id, str) or not session_id:
             return JSONResponse(status_code=404, content={"ok": False, "error": "run not found", "run_id": run_id})
 
+        ensure_legacy_transcript_versions(session_id)
+        transcript_version_id = None
+        for row in list_transcript_versions(session_id):
+            if str(row.get("run_id") or "") == run_id:
+                transcript_version_id = str(row.get("transcript_version_id") or "").strip() or None
+                if transcript_version_id:
+                    break
+        if not transcript_version_id:
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "ok": False,
+                    "error": "transcript version for run not found",
+                    "run_id": run_id,
+                    "session_id": session_id,
+                },
+            )
+
         author_raw = payload.get("author")
         author = author_raw.strip() if isinstance(author_raw, str) and author_raw.strip() else "web"
-
-        overlay = create_speaker_map_overlay(session_id=session_id, mapping=mapping, author=author)
-        session_state = set_active_speaker_overlay(session_id=session_id, overlay_id=overlay.get("overlay_id"))
+        result = _save_speaker_map_for_transcript(
+            session_id=session_id,
+            transcript_version_id=transcript_version_id,
+            mapping_raw=payload.get("mapping"),
+            author=author,
+        )
 
         rerender_flag = payload.get("rerender")
         do_rerender = True if rerender_flag is None else bool(rerender_flag)
@@ -1254,8 +1435,12 @@ def create_app() -> FastAPI:
             "ok": True,
             "run_id": run_id,
             "session_id": session_id,
-            "overlay": overlay,
-            "session_state": session_state,
+            "transcript_version_id": transcript_version_id,
+            "speaker_overlay_id": result.get("speaker_overlay_id"),
+            "speaker_map": result.get("speaker_map"),
+            "overlay": result.get("overlay"),
+            "session_state": result.get("session_state"),
+            "index_refresh": result.get("index_refresh"),
             "rerender_run_id": rerender_run_id,
         }
 

@@ -8,8 +8,9 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from ashby.modules.meetings.init_root import init_stuart_root
 from ashby.modules.meetings.manifests import load_manifest
-from ashby.modules.meetings.session_state import load_session_state
+from ashby.modules.meetings.session_state import load_session_state, get_speaker_overlay_for_transcript
 from ashby.modules.meetings.overlays import load_speaker_map_overlay
+from ashby.modules.meetings.transcript_versions import load_transcript_version
 
 from .sqlite_fts import connect, ensure_schema, get_db_path, normalize_person_name
 
@@ -387,6 +388,101 @@ def ingest_run(run_id: str, *, db_path: Optional[Path] = None) -> Dict[str, Any]
             "run_id": run_id,
             "segments_indexed": len(segs),
             "transcript_path": str(transcript_path),
+        }
+    finally:
+        conn.close()
+
+
+def refresh_speaker_maps_for_transcript(
+    *, session_id: str, transcript_version_id: str, db_path: Optional[Path] = None
+) -> Dict[str, Any]:
+    """Refresh indexed speaker map rows for one transcript version's run.
+
+    Idempotent:
+    - Deletes existing speaker_maps rows for (session_id, run_id).
+    - Re-inserts rows from the transcript-scoped active overlay pointer, if present.
+    """
+    payload = load_transcript_version(session_id, transcript_version_id)
+    run_id = str(payload.get("run_id") or "").strip()
+    if not run_id:
+        raise ValueError("transcript version missing run_id")
+
+    overlay_id = get_speaker_overlay_for_transcript(session_id, transcript_version_id)
+    mapping: Dict[str, str] = {}
+    if isinstance(overlay_id, str) and overlay_id.strip():
+        mapping = load_speaker_map_overlay(session_id, overlay_id.strip())
+        overlay_id = overlay_id.strip()
+    else:
+        overlay_id = None
+
+    lay = init_stuart_root()
+    if db_path is None:
+        db_path = get_db_path(stuart_root=lay.root)
+
+    conn = connect(db_path)
+    try:
+        ensure_schema(conn)
+        session_manifest_path = lay.sessions / session_id / "session.json"
+        session_payload: Dict[str, Any] = {}
+        if session_manifest_path.exists():
+            try:
+                session_payload = load_manifest(session_manifest_path)
+            except Exception:
+                session_payload = {}
+
+        conn.execute(
+            "INSERT OR REPLACE INTO sessions(session_id, created_ts, mode, title) VALUES(?, ?, ?, ?);",
+            (
+                session_id,
+                float(session_payload.get("created_ts")) if session_payload.get("created_ts") is not None else None,
+                session_payload.get("mode"),
+                session_payload.get("title"),
+            ),
+        )
+        conn.execute(
+            "INSERT OR REPLACE INTO runs(run_id, session_id, created_ts, status) VALUES(?, ?, ?, ?);",
+            (
+                run_id,
+                session_id,
+                float(payload.get("created_ts")) if payload.get("created_ts") is not None else None,
+                "succeeded",
+            ),
+        )
+        conn.execute("DELETE FROM speaker_maps WHERE session_id = ? AND run_id = ?;", (session_id, run_id))
+
+        rows: List[Tuple[Any, ...]] = []
+        created_ts = float(payload.get("created_ts")) if payload.get("created_ts") is not None else None
+        for key, value in (mapping or {}).items():
+            if not isinstance(key, str) or not isinstance(value, str):
+                continue
+            speaker_label = key.strip().upper()
+            speaker_name = value.strip()
+            if not speaker_label or not speaker_name:
+                continue
+            speaker_name_norm = normalize_person_name(speaker_name)
+            if not speaker_name_norm:
+                continue
+            rows.append((session_id, run_id, speaker_label, speaker_name, speaker_name_norm, overlay_id, created_ts))
+
+        if rows:
+            conn.executemany(
+                """
+                INSERT INTO speaker_maps(
+                  session_id, run_id, speaker_label,
+                  speaker_name, speaker_name_norm,
+                  overlay_id, created_ts
+                ) VALUES(?, ?, ?, ?, ?, ?, ?);
+                """,
+                rows,
+            )
+        conn.commit()
+        return {
+            "session_id": session_id,
+            "transcript_version_id": transcript_version_id,
+            "run_id": run_id,
+            "overlay_id": overlay_id,
+            "rows_inserted": len(rows),
+            "db_path": str(db_path),
         }
     finally:
         conn.close()

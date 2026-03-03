@@ -3,14 +3,15 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FRONTEND_DIR="$ROOT_DIR/webapp/stuart_frontend/stuart_app"
+VENV_PYTHON="$ROOT_DIR/.venv/bin/python"
 
 BACKEND_HOST="${STUART_BACKEND_HOST:-127.0.0.1}"
 BACKEND_PORT="${STUART_WEB_PORT:-8844}"
 FRONTEND_HOST="${STUART_FRONTEND_HOST:-127.0.0.1}"
 FRONTEND_PORT="${STUART_FRONTEND_PORT:-4173}"
 
-if ! command -v python3 >/dev/null 2>&1; then
-  echo "python3 is required but not found on PATH." >&2
+if [[ ! -x "$VENV_PYTHON" ]]; then
+  echo "Missing $VENV_PYTHON. Run ./Stuart once to create/install runtime dependencies." >&2
   exit 1
 fi
 
@@ -27,7 +28,7 @@ fi
 echo "Starting Stuart backend on http://${BACKEND_HOST}:${BACKEND_PORT}"
 (
   cd "$ROOT_DIR"
-  PYTHONPATH="$ROOT_DIR" STUART_WEB_PORT="$BACKEND_PORT" python3 scripts/stuart_web.py
+  PYTHONPATH="$ROOT_DIR" STUART_WEB_PORT="$BACKEND_PORT" "$VENV_PYTHON" scripts/stuart_web.py
 ) \
   > >(sed 's/^/[backend] /') \
   2> >(sed 's/^/[backend] /' >&2) &
@@ -54,4 +55,3 @@ echo "Starting Stuart frontend on http://${FRONTEND_HOST}:${FRONTEND_PORT}"
 cd "$FRONTEND_DIR"
 VITE_API_PROXY_TARGET="http://${BACKEND_HOST}:${BACKEND_PORT}" \
   npm run dev -- --host "$FRONTEND_HOST" --port "$FRONTEND_PORT"
-

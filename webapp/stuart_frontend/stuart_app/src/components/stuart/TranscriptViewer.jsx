@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown, ChevronUp, Search, Clock, User, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { displaySpeakerName } from "@/lib/speaker_labels";
 
 function formatTimestamp(seconds) {
   const safeSeconds = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
@@ -31,10 +32,6 @@ export default function TranscriptViewer({
     (seg.speaker && speakerMap[seg.speaker]?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const getSpeakerName = (speakerId) => {
-    return speakerMap[speakerId] || speakerId || "Unknown";
-  };
-
   const copySegment = (segment) => {
     const startSeconds =
       Number.isFinite(segment.start_time)
@@ -42,7 +39,7 @@ export default function TranscriptViewer({
         : Number.isFinite(segment.start_ms)
           ? segment.start_ms / 1000
           : 0;
-    const text = `[${formatTimestamp(startSeconds)}] ${getSpeakerName(segment.speaker)}: ${segment.text}`;
+    const text = `[${formatTimestamp(startSeconds)}] ${displaySpeakerName(segment.speaker, speakerMap)}: ${segment.text}`;
     navigator.clipboard.writeText(text);
     setCopiedId(segment.segment_id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -128,7 +125,7 @@ export default function TranscriptViewer({
                       {segment.speaker && (
                         <Badge variant="secondary" className="text-xs px-1.5 py-0">
                           <User className="h-3 w-3 mr-1" />
-                          {getSpeakerName(segment.speaker)}
+                          {displaySpeakerName(segment.speaker, speakerMap)}
                         </Badge>
                       )}
                     </div>

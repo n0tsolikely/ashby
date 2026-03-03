@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from ashby.modules.meetings.formalize.minutes_json import formalize_meeting_to_minutes_json
+from ashby.modules.llm.service import LLMFormalizeResponse
 
 
 def _write_aligned_transcript(run_dir: Path) -> None:
@@ -58,26 +59,35 @@ def test_formalize_minutes_hybrid_uses_llm_when_enabled(tmp_path: Path, monkeypa
     monkeypatch.setenv("ASHBY_EXECUTION_PROFILE", "HYBRID")
     monkeypatch.setenv("ASHBY_MEETINGS_LLM_ENABLED", "1")
 
-    # Mock remote call
+    # Mock gateway call
     from ashby.modules.meetings.formalize import minutes_json as mod
 
-    def fake_call_openai_minutes_json(*, system_prompt: str, user_prompt: str) -> str:
-        # Return a minimal valid minutes.json payload with required keys and citations.
-        payload = {
-            "version": 1,
-            "session_id": "ses_test",
-            "run_id": "run_002",
-            "header": {"title": "T", "mode": "meeting", "retention": "MED", "template_id": "default"},
-            "participants": [{"speaker_label": "SPEAKER_00"}, {"speaker_label": "SPEAKER_01"}],
-            "topics": [{"topic_id": "topic_001", "title": "Plan", "summary": "Do X", "citations": [{"segment_id": 0}]}],
-            "decisions": [{"decision_id": "dec_001", "text": "Do X", "citations": [{"segment_id": 0}]}],
-            "action_items": [{"action_id": "act_001", "text": "Implement X", "assignee": "SPEAKER_00", "due_date": None, "citations": [{"segment_id": 0}]}],
-            "notes": [{"note_id": "note_0000", "text": "We should do X.", "citations": [{"segment_id": 0}]}],
-            "open_questions": [],
-        }
-        return json.dumps(payload)
+    class _FakeGateway:
+        def formalize(self, _request, *, artifacts_dir=None):
+            payload = {
+                "version": 1,
+                "session_id": "ses_test",
+                "run_id": "run_002",
+                "header": {"title": "T", "mode": "meeting", "retention": "MED", "template_id": "default"},
+                "participants": [{"speaker_label": "SPEAKER_00"}, {"speaker_label": "SPEAKER_01"}],
+                "topics": [{"topic_id": "topic_001", "title": "Plan", "summary": "Do X", "citations": [{"segment_id": 0}]}],
+                "decisions": [{"decision_id": "dec_001", "text": "Do X", "citations": [{"segment_id": 0}]}],
+                "action_items": [{"action_id": "act_001", "text": "Implement X", "assignee": "SPEAKER_00", "due_date": None, "citations": [{"segment_id": 0}]}],
+                "notes": [{"note_id": "note_0000", "text": "We should do X.", "citations": [{"segment_id": 0}]}],
+                "open_questions": [],
+            }
+            return LLMFormalizeResponse(
+                version=1,
+                request_id="req_test",
+                output_json=payload,
+                evidence_map={},
+                usage={"char_count": 10},
+                timing_ms=1,
+                provider="gemini",
+                model="gemini-test",
+            )
 
-    monkeypatch.setattr(mod, "_call_openai_minutes_json", fake_call_openai_minutes_json)
+    monkeypatch.setattr(mod, "HTTPGatewayLLMService", _FakeGateway)
 
     art = formalize_meeting_to_minutes_json(run_dir, template_id="default", retention="MED")
     assert art["kind"] == "minutes_json"
@@ -96,10 +106,43 @@ def test_formalize_minutes_hybrid_invalid_json_fails_loud(tmp_path: Path, monkey
 
     from ashby.modules.meetings.formalize import minutes_json as mod
 
-    monkeypatch.setattr(mod, "_call_openai_minutes_json", lambda **kwargs: "NOT JSON")
+    class _BadGateway:
+        def formalize(self, _request, *, artifacts_dir=None):
+            return LLMFormalizeResponse(
+                version=1,
+                request_id="req_bad",
+                output_json=[],  # invalid shape
+                evidence_map={},
+                usage={"char_count": 10},
+                timing_ms=1,
+                provider="gemini",
+                model="gemini-test",
+            )
+
+    monkeypatch.setattr(mod, "HTTPGatewayLLMService", _BadGateway)
 
     with pytest.raises(ValueError):
         formalize_meeting_to_minutes_json(run_dir, template_id="default", retention="MED")
 
     assert (run_dir / "artifacts" / "minutes_llm_raw.txt").exists()
     assert (run_dir / "artifacts" / "minutes_llm_failure.json").exists()
+
+
+def test_formalize_minutes_local_only_never_calls_gateway_even_if_enabled(tmp_path: Path, monkeypatch):
+    run_dir = tmp_path / "run_004"
+    _write_aligned_transcript(run_dir)
+
+    monkeypatch.setenv("ASHBY_EXECUTION_PROFILE", "LOCAL_ONLY")
+    monkeypatch.setenv("ASHBY_MEETINGS_LLM_ENABLED", "1")
+
+    from ashby.modules.meetings.formalize import minutes_json as mod
+
+    class _MustNotCallGateway:
+        def formalize(self, _request, *, artifacts_dir=None):  # pragma: no cover - should never execute
+            raise AssertionError("gateway must not be called in LOCAL_ONLY profile")
+
+    monkeypatch.setattr(mod, "HTTPGatewayLLMService", _MustNotCallGateway)
+
+    art = formalize_meeting_to_minutes_json(run_dir, template_id="default", retention="MED")
+    assert art["kind"] == "minutes_json"
+    assert art["engine"] == "deterministic_fallback_v1"

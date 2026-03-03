@@ -55,8 +55,13 @@ function asArray(payload) {
 
 export const stuartClient = {
   sessions: {
-    async list() {
-      const payload = await request('/sessions');
+    async list(filters = {}) {
+      const query = new URLSearchParams();
+      if (filters?.q) query.set('q', String(filters.q));
+      if (filters?.mode) query.set('mode', String(filters.mode));
+      if (filters?.attendee) query.set('attendee', String(filters.attendee));
+      const suffix = query.toString() ? `?${query.toString()}` : '';
+      const payload = await request(`/sessions${suffix}`);
       return asArray(payload);
     },
     async create(data) {
@@ -150,6 +155,16 @@ export const stuartClient = {
     async get(versionId) {
       return request(`/transcripts/${encodeURIComponent(versionId)}`);
     },
+    async getSpeakerMap(versionId) {
+      return request(`/transcripts/${encodeURIComponent(versionId)}/speaker_map`);
+    },
+    async setSpeakerMap(versionId, data) {
+      return request(`/transcripts/${encodeURIComponent(versionId)}/speaker_map`, {
+        method: 'PUT',
+        headers: JSON_HEADERS,
+        body: JSON.stringify(data),
+      });
+    },
     async setActive(sessionId, transcriptVersionId) {
       return request(`/sessions/${encodeURIComponent(sessionId)}/transcripts/active`, {
         method: 'PATCH',
@@ -163,6 +178,17 @@ export const stuartClient = {
     async list(sessionId) {
       const payload = await requestOrEmpty(`/sessions/${encodeURIComponent(sessionId)}/formalizations`);
       return asArray(payload);
+    },
+  },
+
+  search: {
+    async mentioned(query, options = {}) {
+      const params = new URLSearchParams();
+      params.set('q', String(query || ''));
+      if (options?.session_id) params.set('session_id', String(options.session_id));
+      if (options?.limit) params.set('limit', String(options.limit));
+      const payload = await request(`/search?${params.toString()}`);
+      return asArray(payload?.hits ?? payload);
     },
   },
 

@@ -517,30 +517,38 @@ export default function Stuart() {
   };
 
   const handleSpeakerMapUpdate = async (speakerMap) => {
-    setSelectedSession((prev) => (prev ? { ...prev, speaker_map: speakerMap } : prev));
-
-    if (!activeSpeakerRunId) {
-      toast.success('Speaker mapping saved for this view.');
+    const transcriptVersionId = selectedSessionView?.transcript_version_id || selectedTranscriptVersionId;
+    if (!transcriptVersionId) {
+      toast.error('No transcript version selected');
       return;
     }
 
     try {
-      const res = await stuartClient.runs.setSpeakerMap(activeSpeakerRunId, {
+      const res = await stuartClient.transcripts.setSpeakerMap(transcriptVersionId, {
         mapping: speakerMap,
-        rerender: true,
+        author: 'web',
       });
-      const rerenderRunId = res?.rerender_run_id;
+      const savedMap = res?.speaker_map && typeof res.speaker_map === 'object' ? res.speaker_map : {};
+      queryClient.setQueryData(['transcript-version', transcriptVersionId], (prev) => {
+        if (!prev || typeof prev !== 'object') return prev;
+        const transcript = prev.transcript && typeof prev.transcript === 'object' ? prev.transcript : {};
+        return {
+          ...prev,
+          transcript: {
+            ...transcript,
+            speaker_map: savedMap,
+            speaker_overlay_id: res?.speaker_overlay_id ?? null,
+          },
+        };
+      });
+      setSelectedSession((prev) => (prev ? { ...prev, speaker_map: savedMap } : prev));
+
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['sessions'] }),
         queryClient.invalidateQueries({ queryKey: ['transcripts', selectedSession?.id] }),
-        queryClient.invalidateQueries({ queryKey: ['formalizations', selectedSession?.id] }),
+        queryClient.invalidateQueries({ queryKey: ['transcript-version', transcriptVersionId] }),
       ]);
-      if (rerenderRunId) {
-        setActiveRunId(rerenderRunId);
-        toast.success(`Speaker names saved. Re-render run queued (${rerenderRunId}).`);
-      } else {
-        toast.success('Speaker names saved.');
-      }
+      toast.success('Speaker names saved.');
     } catch (error) {
       toast.error(error.message || 'Failed to save speaker names');
     }

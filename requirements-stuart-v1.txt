@@ -3,8 +3,8 @@
 # Intent:
 # - Make a new-machine install possible without guessing.
 # - Keep versions inside known-safe ranges (upper bounds prevent surprise breakage).
-# - Torch is intentionally NOT hard-installed here because CPU/GPU wheels vary by machine.
-#   Install torch first (or last) with the correct wheel for your platform.
+# - Torch/Torchaudio are pinned to a pyannote-compatible range so ./Stuart can bootstrap
+#   diarization without manual recovery steps.
 #
 # Recommended workflow:
 #   cd Ashby_Engine
@@ -32,6 +32,8 @@ ctranslate2>=4.0,<5.0
 
 # Diarization (requires torch + gated HuggingFace access for some models)
 pyannote.audio>=3.1,<4.0
+torch>=2.8,<2.9
+torchaudio>=2.8,<2.9
 huggingface_hub>=0.20,<1.0  # pyannote compatibility: hf_hub_download(use_auth_token=...) path breaks on hub 1.x
 
 # PDF rendering (requires OS Cairo/Pango stack)

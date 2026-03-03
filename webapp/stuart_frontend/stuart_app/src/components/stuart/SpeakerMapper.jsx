@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { User, Save, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { speakerIdToDisplayLabel } from "@/lib/speaker_labels";
 
 export default function SpeakerMapper({ 
   transcript = [], 
@@ -95,7 +96,7 @@ export default function SpeakerMapper({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge variant="outline" className="text-xs font-mono">
-                    {speakerId}
+                    {speakerIdToDisplayLabel(speakerId)}
                   </Badge>
                   <span className="text-xs text-slate-400">
                     {speakerCounts[speakerId]} segments
