@@ -49,12 +49,14 @@
  */
 import Stuart from './pages/Stuart';
 import Sessions from './pages/Sessions';
+import Templates from './pages/Templates';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Stuart": Stuart,
     "Sessions": Sessions,
+    "Templates": Templates,
 }
 
 export const pagesConfig = {

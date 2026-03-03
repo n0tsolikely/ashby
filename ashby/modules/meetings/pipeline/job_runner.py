@@ -34,6 +34,7 @@ from ashby.modules.meetings.overlays import create_speaker_map_overlay, load_spe
 from ashby.modules.meetings.render.extract_only import extract_only_by_speaker
 from ashby.modules.meetings.truth.gate import gate_formalized_output
 from ashby.modules.meetings.transcript_versions import create_transcript_version, load_transcript_version
+from ashby.modules.meetings.template_registry import load_template_spec
 
 
 @dataclass(frozen=True)
@@ -922,6 +923,22 @@ def run_job(run_id: str) -> RunResult:
 
                     bump("formalize_json")
                     _raise_if_cancelled(run_id, run_dir)
+                    resolved_template_version: Optional[str] = None
+                    if mode in {"meeting", "journal"}:
+                        resolved_template_spec = load_template_spec(mode, str(template_id))
+                        template_id = resolved_template_spec.template_id
+                        resolved_template_version = resolved_template_spec.template_version
+                        update_run_state(
+                            run_id,
+                            artifact={
+                                "kind": "resolved_template",
+                                "mode": mode,
+                                "template_id": template_id,
+                                "template_version": resolved_template_spec.template_version,
+                                "template_title": resolved_template_spec.template_title,
+                                "created_ts": time.time(),
+                            },
+                        )
                     include_citations = params.get("include_citations") if isinstance(params.get("include_citations"), bool) else None
                     show_empty_sections = (
                         params.get("show_empty_sections") if isinstance(params.get("show_empty_sections"), bool) else None
@@ -930,6 +947,7 @@ def run_job(run_id: str) -> RunResult:
                         a_minutes = formalize_meeting_to_minutes_json(
                             run_dir,
                             template_id=template_id,
+                            template_version=resolved_template_version,
                             retention=retention,
                             include_citations=include_citations,
                             show_empty_sections=show_empty_sections,
@@ -939,6 +957,7 @@ def run_job(run_id: str) -> RunResult:
                         a_journal = formalize_journal_to_journal_json(
                             run_dir,
                             template_id=template_id,
+                            template_version=resolved_template_version,
                             retention=retention,
                             include_citations=include_citations,
                             show_empty_sections=show_empty_sections,
@@ -1091,10 +1110,27 @@ def run_job(run_id: str) -> RunResult:
                     if not isinstance(who, str) or not who.strip():
                         raise ValueError("extract_only requires query (speaker name)")
                     # Determine speaker_label from active speaker map
+                    resolved_template_version: Optional[str] = None
+                    if mode in {"meeting", "journal"}:
+                        resolved_template_spec = load_template_spec(mode, str(template_id))
+                        template_id = resolved_template_spec.template_id
+                        resolved_template_version = resolved_template_spec.template_version
+                        update_run_state(
+                            run_id,
+                            artifact={
+                                "kind": "resolved_template",
+                                "mode": mode,
+                                "template_id": template_id,
+                                "template_version": resolved_template_spec.template_version,
+                                "template_title": resolved_template_spec.template_title,
+                                "created_ts": time.time(),
+                            },
+                        )
                     if mode == "meeting":
                         a_minutes = formalize_meeting_to_minutes_json(
                             run_dir,
                             template_id=template_id,
+                            template_version=resolved_template_version,
                             retention=retention,
                         )
                         update_run_state(run_id, artifact=a_minutes)
@@ -1102,6 +1138,7 @@ def run_job(run_id: str) -> RunResult:
                         a_journal = formalize_journal_to_journal_json(
                             run_dir,
                             template_id=template_id,
+                            template_version=resolved_template_version,
                             retention=retention,
                         )
                         update_run_state(run_id, artifact=a_journal)

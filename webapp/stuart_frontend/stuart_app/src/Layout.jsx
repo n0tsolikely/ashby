@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Sparkles, 
   Archive, 
-  Settings,
+  FileText,
   Menu,
   X
 } from "lucide-react";
@@ -13,7 +13,8 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { name: 'Stuart', icon: Sparkles, label: 'Stuart' },
-  { name: 'Sessions', icon: Archive, label: 'Archive' }
+  { name: 'Sessions', icon: Archive, label: 'Archive' },
+  { name: 'Templates', icon: FileText, label: 'Templates' },
 ];
 
 export default function Layout({ children, currentPageName }) {

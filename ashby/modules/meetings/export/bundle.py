@@ -13,6 +13,7 @@ from ashby.modules.meetings.manifests import load_manifest
 from ashby.modules.meetings.overlays import load_speaker_map_overlay
 from ashby.modules.meetings.render.export_pdf import _build_text_pdf_bytes
 from ashby.modules.meetings.session_state import load_session_state
+from ashby.modules.meetings.template_registry import load_template_spec
 from ashby.modules.meetings.transcript_versions import list_transcript_versions, load_transcript_version
 
 
@@ -371,6 +372,26 @@ def _build_entries_for_session(
                     entries[f"dev/formalizations/{rid}/llm_usage_receipt.json"] = llm_usage_path.read_bytes()
                 if raw_json_path and raw_json_path.exists():
                     entries[f"dev/formalizations/{rid}/{json_name}"] = raw_json_path.read_bytes()
+                    try:
+                        out_payload = json.loads(raw_json_path.read_text(encoding="utf-8"))
+                        tpl_id = str(out_payload.get("template_id") or "").strip()
+                        tpl_mode = str(out_payload.get("mode") or mode or "").strip().lower()
+                        tpl_ver = out_payload.get("template_version")
+                        if tpl_id and tpl_mode in {"meeting", "journal"} and tpl_ver is not None:
+                            tpl_spec = load_template_spec(tpl_mode, tpl_id, version=tpl_ver)
+                            tpl_meta = {
+                                "template_id": tpl_spec.template_id,
+                                "template_title": tpl_spec.template_title,
+                                "template_version": tpl_spec.template_version,
+                                "mode": tpl_mode,
+                                "source_path": str(tpl_spec.path),
+                            }
+                            base = f"dev/templates/{rid}/{tpl_spec.template_id}/v{tpl_spec.template_version}"
+                            entries[f"{base}/metadata.json"] = _json_bytes(tpl_meta)
+                            entries[f"{base}/template.md"] = tpl_spec.raw_text.encode("utf-8")
+                    except Exception:
+                        # Dev template capture is best-effort and must not block export.
+                        pass
 
     return entries
 

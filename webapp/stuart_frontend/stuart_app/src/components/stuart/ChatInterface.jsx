@@ -199,8 +199,12 @@ export default function ChatInterface({
                     {Array.isArray(msg?.reply?.actions) && msg.reply.actions.length > 0 && (
                       <div className="mt-3 border-t border-slate-200 pt-2 flex flex-wrap gap-2">
                         {msg.reply.actions.map((a, aIdx) => (
-                          <Button key={`${a.kind}-${a.session_id}-${aIdx}`} type="button" variant="outline" size="sm" onClick={() => onChatAction?.(a)}>
-                            {a.kind === 'open_session' ? `Open ${a.session_id}` : `Jump ${a.segment_id}`}
+                          <Button key={`${a.kind}-${a.session_id || a.template_title || aIdx}-${aIdx}`} type="button" variant="outline" size="sm" onClick={() => onChatAction?.(a)}>
+                            {a.kind === 'open_session'
+                              ? `Open ${a.session_id}`
+                              : a.kind === 'jump_to_segment'
+                                ? `Jump ${a.segment_id}`
+                                : `Preview template: ${a.template_title || 'draft'}`}
                           </Button>
                         ))}
                       </div>

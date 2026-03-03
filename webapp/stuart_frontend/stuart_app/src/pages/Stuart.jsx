@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import { Plus, Archive, Search, Sparkles, WifiOff, Wifi, Cloud, Download, Trash2, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 import AudioUploader from '@/components/stuart/AudioUploader';
 import TranscriptViewer from '@/components/stuart/TranscriptViewer';
@@ -173,6 +174,9 @@ export default function Stuart() {
       content: "Hello! I'm Stuart. Ask a session question or switch to Global to search across sessions.",
     },
   ]);
+  const [activeTemplateDraft, setActiveTemplateDraft] = useState(null);
+  const [showTemplateDraftModal, setShowTemplateDraftModal] = useState(false);
+  const [isSavingTemplateDraft, setIsSavingTemplateDraft] = useState(false);
   const lastRunStatusRef = useRef(null);
   const sessionTitleInputRef = useRef(null);
 
@@ -735,6 +739,39 @@ export default function Stuart() {
         setHighlightedSegments([action.segment_id]);
       }
       setActiveTab('session');
+      return;
+    }
+    if (kind === 'template_draft') {
+      setActiveTemplateDraft({
+        mode: String(action?.mode || 'meeting'),
+        template_title: String(action?.template_title || 'Draft Template'),
+        template_text: String(action?.template_text || ''),
+        defaults: {
+          include_citations: Boolean(action?.defaults?.include_citations),
+          show_empty_sections: Boolean(action?.defaults?.show_empty_sections),
+        },
+      });
+      setShowTemplateDraftModal(true);
+    }
+  };
+
+  const handleSaveTemplateDraft = async () => {
+    if (!activeTemplateDraft) return;
+    setIsSavingTemplateDraft(true);
+    try {
+      await stuartClient.templates.create({
+        mode: activeTemplateDraft.mode,
+        template_title: activeTemplateDraft.template_title,
+        template_text: activeTemplateDraft.template_text,
+        defaults: activeTemplateDraft.defaults || {},
+      });
+      toast.success('Template draft saved.');
+      setShowTemplateDraftModal(false);
+      setActiveTemplateDraft(null);
+    } catch (error) {
+      toast.error(error.message || 'Failed to save template draft');
+    } finally {
+      setIsSavingTemplateDraft(false);
     }
   };
 
@@ -1465,6 +1502,36 @@ export default function Stuart() {
             </Button>
             <Button onClick={handleExportZip} disabled={isExporting}>
               {isExporting ? 'Exporting...' : 'Export'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showTemplateDraftModal} onOpenChange={setShowTemplateDraftModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Template Draft Preview</DialogTitle>
+            <DialogDescription>
+              Review this chat-authored template draft. Save persists it as a new template.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="text-sm text-slate-700">
+              <div><strong>Mode:</strong> {activeTemplateDraft?.mode}</div>
+              <div><strong>Title:</strong> {activeTemplateDraft?.template_title}</div>
+            </div>
+            <div className="max-h-[360px] overflow-auto rounded border bg-white p-3 prose prose-slate max-w-none">
+              <ReactMarkdown>{activeTemplateDraft?.template_text || ''}</ReactMarkdown>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTemplateDraftModal(false)} disabled={isSavingTemplateDraft}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveTemplateDraft} disabled={isSavingTemplateDraft}>
+              {isSavingTemplateDraft ? 'Saving...' : 'Save Template'}
             </Button>
           </DialogFooter>
         </DialogContent>

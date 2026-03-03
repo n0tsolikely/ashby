@@ -38,6 +38,7 @@ huggingface_hub>=0.20,<1.0  # pyannote compatibility: hf_hub_download(use_auth_t
 
 # PDF rendering (requires OS Cairo/Pango stack)
 weasyprint>=60,<63
+pypdf>=5,<6
 # Compatibility pin: WeasyPrint 60-62 is incompatible with pydyf>=0.11
 # (runtime error: "'super' object has no attribute 'transform'")
 pydyf>=0.8,<0.11

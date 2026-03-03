@@ -99,6 +99,7 @@ def _apply_output_metadata(
     *,
     template_id: str,
     template_version: str,
+    template_title: str,
     retention: str,
     include_citations: bool,
     show_empty_sections: bool,
@@ -106,6 +107,7 @@ def _apply_output_metadata(
 ) -> None:
     payload["template_id"] = template_id
     payload["template_version"] = template_version
+    payload["template_title"] = template_title
     payload["retention"] = retention
     payload["include_citations"] = bool(include_citations)
     payload["show_empty_sections"] = bool(show_empty_sections)
@@ -251,6 +253,7 @@ def formalize_journal_to_journal_json(
     template_id: str,
     retention: str,
     *,
+    template_version: Optional[str] = None,
     include_citations: Optional[bool] = None,
     show_empty_sections: Optional[bool] = None,
 ) -> Dict[str, Any]:
@@ -274,7 +277,7 @@ def formalize_journal_to_journal_json(
     tv = validate_template("journal", template_id)
     if not tv.ok or tv.template_id is None:
         raise ValueError(tv.message or "Invalid journal template.")
-    spec = load_template_spec("journal", tv.template_id)
+    spec = load_template_spec("journal", tv.template_id, version=template_version)
 
     session_id, run_id, segs, transcript_version_id = _load_transcript_segments(run_dir)
     valid_seg_ids = _segment_id_set(segs)
@@ -309,6 +312,7 @@ def formalize_journal_to_journal_json(
             payload,
             template_id=tv.template_id,
             template_version=spec.template_version,
+            template_title=spec.template_title,
             retention=retention,
             include_citations=resolved_include_citations,
             show_empty_sections=resolved_show_empty_sections,
@@ -341,6 +345,7 @@ def formalize_journal_to_journal_json(
             payload,
             template_id=tv.template_id,
             template_version=spec.template_version,
+            template_title=spec.template_title,
             retention=retention,
             include_citations=resolved_include_citations,
             show_empty_sections=resolved_show_empty_sections,
@@ -399,6 +404,7 @@ def formalize_journal_to_journal_json(
             payload,
             template_id=tv.template_id,
             template_version=spec.template_version,
+            template_title=spec.template_title,
             retention=retention,
             include_citations=resolved_include_citations,
             show_empty_sections=resolved_show_empty_sections,
@@ -482,6 +488,7 @@ def formalize_journal_to_journal_json(
         llm_payload,
         template_id=tv.template_id,
         template_version=spec.template_version,
+        template_title=spec.template_title,
         retention=retention,
         include_citations=resolved_include_citations,
         show_empty_sections=resolved_show_empty_sections,

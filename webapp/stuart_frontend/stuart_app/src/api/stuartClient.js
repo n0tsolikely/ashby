@@ -57,6 +57,56 @@ function asArray(payload) {
 }
 
 export const stuartClient = {
+  registry: {
+    async get() {
+      return request('/registry');
+    },
+  },
+
+  templates: {
+    async list({ mode, q, limit = 50, offset = 0 } = {}) {
+      const params = new URLSearchParams();
+      if (mode) params.set('mode', String(mode));
+      if (q) params.set('q', String(q));
+      params.set('limit', String(limit));
+      params.set('offset', String(offset));
+      return request(`/templates?${params.toString()}`);
+    },
+    async get({ mode, template_id, version } = {}) {
+      const params = new URLSearchParams();
+      if (mode) params.set('mode', String(mode));
+      if (version != null) params.set('version', String(version));
+      return request(`/templates/${encodeURIComponent(template_id)}?${params.toString()}`);
+    },
+    async versions({ mode, template_id } = {}) {
+      const params = new URLSearchParams();
+      if (mode) params.set('mode', String(mode));
+      return request(`/templates/${encodeURIComponent(template_id)}/versions?${params.toString()}`);
+    },
+    async draft(data) {
+      return request('/templates/draft', {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify(data),
+      });
+    },
+    async create(data) {
+      return request('/templates', {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify(data),
+      });
+    },
+    async remove({ mode, template_id } = {}) {
+      const params = new URLSearchParams();
+      if (mode) params.set('mode', String(mode));
+      params.set('confirm', 'true');
+      return request(`/templates/${encodeURIComponent(template_id)}?${params.toString()}`, {
+        method: 'DELETE',
+      });
+    },
+  },
+
   sessions: {
     async list(filters = {}) {
       const query = new URLSearchParams();

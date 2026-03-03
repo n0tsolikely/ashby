@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from ashby.interfaces.web.registry_api import registry_payload
+from ashby.interfaces.web.templates_api import router as templates_router
 from ashby.interfaces.web.sessions import list_sessions, create_session
 from ashby.interfaces.web.uploads import store_upload, store_upload_bytes
 from ashby.interfaces.web.runs import list_run_artifacts, artifact_response, primary_downloads
@@ -81,6 +82,7 @@ from ashby.modules.meetings.schemas.chat import (
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Stuart Web Door", version="0.3")
+    app.include_router(templates_router, prefix="/api")
 
     base_dir = Path(__file__).resolve().parent
     templates = Jinja2Templates(directory=str(base_dir / "templates"))

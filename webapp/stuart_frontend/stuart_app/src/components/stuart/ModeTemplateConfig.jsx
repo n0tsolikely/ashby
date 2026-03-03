@@ -60,10 +60,30 @@ export const PROFILES = {
   },
 };
 
-export function getTemplatesForMode(mode) {
+function normalizeRegistryTemplates(mode, templatesByMode) {
+  const rows = templatesByMode?.[mode];
+  if (!Array.isArray(rows) || rows.length === 0) return {};
+  const out = {};
+  rows.forEach((row) => {
+    const templateId = String(row?.template_id || '').trim();
+    if (!templateId) return;
+    out[templateId] = {
+      label: String(row?.template_title || templateId),
+      template_id: templateId,
+      template_title: String(row?.template_title || templateId),
+      template_version: String(row?.template_version || '1'),
+      source: String(row?.source || 'system'),
+    };
+  });
+  return out;
+}
+
+export function getTemplatesForMode(mode, templatesByMode = null) {
+  const fromRegistry = normalizeRegistryTemplates(mode, templatesByMode);
+  if (Object.keys(fromRegistry).length > 0) return fromRegistry;
   return MODES[mode]?.templates || {};
 }
 
-export function isValidModeTemplate(mode, template) {
-  return MODES[mode]?.templates?.[template] !== undefined;
+export function isValidModeTemplate(mode, template, templatesByMode = null) {
+  return getTemplatesForMode(mode, templatesByMode)[template] !== undefined;
 }

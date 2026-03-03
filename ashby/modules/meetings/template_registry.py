@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from ashby.modules.meetings.mode_registry import validate_mode
+from ashby.modules.meetings.init_root import init_stuart_root
+from ashby.modules.meetings.templates import store as user_template_store
 
 # v1 ships exactly ONE template per mode: "default"
 _V1_TEMPLATES_BY_MODE: Dict[str, List[str]] = {
@@ -15,7 +17,6 @@ _V1_TEMPLATES_BY_MODE: Dict[str, List[str]] = {
 _THIS_DIR = Path(__file__).resolve().parent
 _TEMPLATES_DIR = _THIS_DIR / "templates"
 _SYSTEM_DIR = _TEMPLATES_DIR / "system"
-_USER_DIR = _TEMPLATES_DIR / "user"
 
 
 @dataclass(frozen=True)
@@ -40,12 +41,22 @@ class TemplateSection:
 class TemplateSpec:
     mode: str
     template_id: str
+    template_title: str
     template_version: str
     defaults: Dict[str, Any]
     sections: List[TemplateSection]
     raw_text: str
     body_text: str
     path: Path
+
+
+@dataclass(frozen=True)
+class TemplateDescriptor:
+    template_id: str
+    template_title: str
+    template_version: str
+    source: Literal["system", "user"]
+    mode: str
 
 
 def templates_dir() -> Path:
@@ -57,14 +68,70 @@ def system_templates_dir() -> Path:
 
 
 def user_templates_dir() -> Path:
-    return _USER_DIR
+    return init_stuart_root().templates / "user"
 
 
-def allowed_templates_for_mode(mode: str) -> List[str]:
+def system_templates_for_mode(mode: str) -> List[TemplateDescriptor]:
     mv = validate_mode(mode)
     if not mv.ok or mv.canonical is None:
         return []
-    return list(_V1_TEMPLATES_BY_MODE.get(mv.canonical, []))
+    out: List[TemplateDescriptor] = []
+    for template_id in _V1_TEMPLATES_BY_MODE.get(mv.canonical, []):
+        path = _SYSTEM_DIR / mv.canonical / f"{template_id}.md"
+        if not path.exists():
+            continue
+        raw_text = path.read_text(encoding="utf-8")
+        try:
+            front, _ = _split_front_matter(raw_text)
+        except Exception:
+            # Descriptor discovery must stay non-throwing; strict parse validation
+            # is enforced by validate_template/load_template_spec.
+            front = {}
+        out.append(
+            TemplateDescriptor(
+                template_id=template_id,
+                template_title=str(front.get("template_title") or template_id),
+                template_version=str(front.get("template_version") or "1"),
+                source="system",
+                mode=mv.canonical,
+            )
+        )
+    return out
+
+
+def user_templates_for_mode(mode: str) -> List[TemplateDescriptor]:
+    mv = validate_mode(mode)
+    if not mv.ok or mv.canonical is None:
+        return []
+    out: List[TemplateDescriptor] = []
+    for rec in user_template_store.list_templates(mv.canonical):
+        out.append(
+            TemplateDescriptor(
+                template_id=rec.template_id,
+                template_title=rec.template_title,
+                template_version=str(rec.version),
+                source="user",
+                mode=mv.canonical,
+            )
+        )
+    return out
+
+
+def template_descriptors_for_mode(mode: str) -> List[TemplateDescriptor]:
+    mv = validate_mode(mode)
+    if not mv.ok or mv.canonical is None:
+        return []
+    merged: Dict[str, TemplateDescriptor] = {d.template_id: d for d in system_templates_for_mode(mv.canonical)}
+    for d in user_templates_for_mode(mv.canonical):
+        # Preserve system default as canonical fallback.
+        if d.template_id == "default" and d.template_id in merged and merged[d.template_id].source == "system":
+            continue
+        merged[d.template_id] = d
+    return list(merged.values())
+
+
+def allowed_templates_for_mode(mode: str) -> List[str]:
+    return [d.template_id for d in template_descriptors_for_mode(mode)]
 
 
 def _parse_scalar(value: str) -> Any:
@@ -158,7 +225,33 @@ def _template_identity(mode: str, template_id: str) -> tuple[str, str, List[str]
     return mv.canonical, tid, allowed
 
 
-def validate_template(mode: str, template_id: str) -> TemplateValidation:
+def _normalize_requested_version(version: Optional[Union[int, str]]) -> Optional[int]:
+    if version is None:
+        return None
+    if isinstance(version, int):
+        if version < 1:
+            raise ValueError("version must be >= 1")
+        return version
+    raw = str(version).strip().lower()
+    if raw.startswith("v"):
+        raw = raw[1:]
+    if not raw.isdigit():
+        raise ValueError("version must be an integer")
+    val = int(raw)
+    if val < 1:
+        raise ValueError("version must be >= 1")
+    return val
+
+
+def _descriptor_for(mode: str, template_id: str) -> Optional[TemplateDescriptor]:
+    tid = (template_id or "").strip().lower()
+    for d in template_descriptors_for_mode(mode):
+        if d.template_id == tid:
+            return d
+    return None
+
+
+def validate_template(mode: str, template_id: str, version: Optional[Union[int, str]] = None) -> TemplateValidation:
     mv = validate_mode(mode)
     allowed: List[str] = allowed_templates_for_mode(mode)
     if not mv.ok or mv.canonical is None:
@@ -185,9 +278,8 @@ def validate_template(mode: str, template_id: str) -> TemplateValidation:
             message=msg,
         )
 
-    # QUEST_160 rail: malformed front matter must fail validation with a clear error.
     try:
-        _ = load_template_spec(mv.canonical, tid)
+        _ = load_template_spec(mv.canonical, tid, version=version)
     except Exception as e:
         return TemplateValidation(
             ok=False,
@@ -219,31 +311,66 @@ def load_system_template_text(mode: str, template_id: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def load_template_spec(mode: str, template_id: str, user_id: Optional[str] = None) -> TemplateSpec:
+def load_template_spec(
+    mode: str,
+    template_id: str,
+    user_id: Optional[str] = None,
+    version: Optional[Union[int, str]] = None,
+) -> TemplateSpec:
     # user_id retained for forward compatibility with user template storage.
     del user_id
-    path = system_template_path(mode, template_id)
-    raw_text = path.read_text(encoding="utf-8")
-    front, body_text = _split_front_matter(raw_text)
-    template_version = str(front.get("template_version") or "1").strip() or "1"
-    defaults = front.get("defaults")
-    if defaults is None:
-        defaults = {}
-    if not isinstance(defaults, dict):
-        raise ValueError("template front matter defaults must be an object")
-    include_citations = defaults.get("include_citations")
-    show_empty_sections = defaults.get("show_empty_sections")
-    normalized_defaults = {
-        "include_citations": bool(include_citations) if isinstance(include_citations, bool) else False,
-        "show_empty_sections": bool(show_empty_sections) if isinstance(show_empty_sections, bool) else False,
-    }
+    mode_canonical, tid, _ = _template_identity(mode, template_id)
+    descriptor = _descriptor_for(mode_canonical, tid)
+    if descriptor is None:
+        raise ValueError(f"Unknown template '{template_id}' for mode '{mode_canonical}'.")
+    requested_version = _normalize_requested_version(version)
+
+    if descriptor.source == "system":
+        path = system_template_path(mode_canonical, tid)
+        raw_text = path.read_text(encoding="utf-8")
+        front, body_text = _split_front_matter(raw_text)
+        template_version = str(front.get("template_version") or "1").strip() or "1"
+        template_title = str(front.get("template_title") or descriptor.template_title or tid).strip() or tid
+        defaults = front.get("defaults")
+        if defaults is None:
+            defaults = {}
+        if not isinstance(defaults, dict):
+            raise ValueError("template front matter defaults must be an object")
+        include_citations = defaults.get("include_citations")
+        show_empty_sections = defaults.get("show_empty_sections")
+        normalized_defaults = {
+            "include_citations": bool(include_citations) if isinstance(include_citations, bool) else False,
+            "show_empty_sections": bool(show_empty_sections) if isinstance(show_empty_sections, bool) else False,
+        }
+    else:
+        versions = user_template_store.list_versions(tid, mode_canonical)
+        if not versions:
+            raise ValueError(f"user template '{tid}' has no versions")
+        target_version = requested_version if requested_version is not None else max(versions)
+        if target_version not in versions:
+            raise ValueError(
+                f"Unknown template version '{target_version}' for '{tid}' (mode='{mode_canonical}'). "
+                f"Allowed: {', '.join(str(v) for v in versions)}"
+            )
+        user_rec = user_template_store.load_template(tid, mode_canonical, target_version)
+        raw_text = user_rec.template_text
+        front, body_text = _split_front_matter(raw_text)
+        template_version = str(user_rec.version)
+        template_title = user_rec.template_title
+        defaults = user_rec.defaults
+        normalized_defaults = {
+            "include_citations": bool(defaults.get("include_citations", False)),
+            "show_empty_sections": bool(defaults.get("show_empty_sections", False)),
+        }
+        path = user_template_store.template_version_dir(mode_canonical, tid, user_rec.version) / "template.md"
+
     sections = _parse_sections(body_text)
     if not sections:
         raise ValueError("template body must include markdown headings for section parsing")
-    mode_canonical, tid, _ = _template_identity(mode, template_id)
     return TemplateSpec(
         mode=mode_canonical,
         template_id=tid,
+        template_title=template_title,
         template_version=template_version,
         defaults=normalized_defaults,
         sections=sections,
@@ -263,4 +390,7 @@ def allowed_templates() -> Dict[str, List[str]]:
     Global template availability map.
     Returns a copy so callers can't mutate internal tables.
     """
-    return {k: list(v) for k, v in _V1_TEMPLATES_BY_MODE.items()}
+    return {
+        "meeting": allowed_templates_for_mode("meeting"),
+        "journal": allowed_templates_for_mode("journal"),
+    }

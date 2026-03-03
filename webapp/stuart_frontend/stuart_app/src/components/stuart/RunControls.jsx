@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,7 @@ import {
 import { Play, Loader2, Shield, Cloud, Wifi, WifiOff, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODES, RETENTION_LEVELS, PROFILES, getTemplatesForMode, isValidModeTemplate } from './ModeTemplateConfig';
+import { useRegistry } from '@/hooks/useRegistry';
 
 export default function RunControls({
   session,
@@ -43,13 +44,23 @@ export default function RunControls({
   const [formalizationTitle, setFormalizationTitle] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const templates = getTemplatesForMode(mode);
+  const { data: registryPayload, isLoading: isRegistryLoading, isError: isRegistryError } = useRegistry();
+  const templatesByMode = registryPayload?.templates_by_mode || null;
+  const templates = useMemo(() => getTemplatesForMode(mode, templatesByMode), [mode, templatesByMode]);
+  const templateEntries = useMemo(() => Object.entries(templates), [templates]);
   const hasAudio = (Number(session?.contributions_count || 0) > 0) || Boolean(session?.has_audio);
   const canRun = Boolean(session?.id && hasAudio);
 
+  useEffect(() => {
+    if (templateEntries.length === 0) return;
+    if (!isValidModeTemplate(mode, template, templatesByMode)) {
+      setTemplate(templateEntries[0][0]);
+    }
+  }, [mode, template, templateEntries, templatesByMode]);
+
   const handleModeChange = (newMode) => {
     setMode(newMode);
-    const newTemplates = getTemplatesForMode(newMode);
+    const newTemplates = getTemplatesForMode(newMode, templatesByMode);
     const templateKeys = Object.keys(newTemplates);
     if (templateKeys.length > 0) {
       setTemplate(templateKeys[0]);
@@ -57,7 +68,7 @@ export default function RunControls({
   };
 
   const handleRunClick = () => {
-    if (!isValidModeTemplate(mode, template)) {
+    if (!isValidModeTemplate(mode, template, templatesByMode)) {
       return;
     }
 
@@ -138,13 +149,22 @@ export default function RunControls({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(templates).map(([key, { label }]) => (
+                {templateEntries.map(([key, info]) => (
                   <SelectItem key={key} value={key}>
-                    {label}
+                    <div className="flex flex-col">
+                      <span>{info?.label || key}</span>
+                      <span className="text-[11px] text-slate-500">{key}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {isRegistryLoading ? (
+              <p className="text-xs text-slate-500">Loading templates…</p>
+            ) : null}
+            {isRegistryError ? (
+              <p className="text-xs text-amber-600">Using fallback templates; registry unavailable.</p>
+            ) : null}
           </div>
 
           {/* Retention Level */}

@@ -11,6 +11,7 @@ class StuartLayout:
     runs: Path
     overlays: Path
     exports: Path
+    templates: Path
 
 def layout_for(root: Path) -> StuartLayout:
     root = Path(root)
@@ -21,6 +22,7 @@ def layout_for(root: Path) -> StuartLayout:
         runs=root / "runs",
         overlays=root / "overlays",
         exports=root / "exports",
+        templates=root / "templates",
     )
 
 def ensure_layout(layout: StuartLayout) -> None:
@@ -31,3 +33,4 @@ def ensure_layout(layout: StuartLayout) -> None:
     layout.runs.mkdir(parents=True, exist_ok=True)
     layout.overlays.mkdir(parents=True, exist_ok=True)
     layout.exports.mkdir(parents=True, exist_ok=True)
+    layout.templates.mkdir(parents=True, exist_ok=True)

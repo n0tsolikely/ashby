@@ -60,7 +60,25 @@ class ChatActionJumpToSegmentV1:
         }
 
 
-ChatActionV1 = Union[ChatActionOpenSessionV1, ChatActionJumpToSegmentV1]
+@dataclass(frozen=True)
+class ChatActionTemplateDraftV1:
+    kind: Literal["template_draft"]
+    mode: str
+    template_title: str
+    template_text: str
+    defaults: Dict[str, bool] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "kind": "template_draft",
+            "mode": self.mode,
+            "template_title": self.template_title,
+            "template_text": self.template_text,
+            "defaults": dict(self.defaults),
+        }
+
+
+ChatActionV1 = Union[ChatActionOpenSessionV1, ChatActionJumpToSegmentV1, ChatActionTemplateDraftV1]
 
 
 def parse_chat_action_v1(payload: Any) -> ChatActionV1:
@@ -84,7 +102,28 @@ def parse_chat_action_v1(payload: Any) -> ChatActionV1:
             transcript_version_id=_require_str(data, "transcript_version_id", name="ChatActionV1"),
             segment_id=seg,
         )
-    raise ValueError("ChatActionV1.kind must be one of: open_session,jump_to_segment")
+    if kind == "template_draft":
+        _reject_unknown(
+            data,
+            allowed={"kind", "mode", "template_title", "template_text", "defaults"},
+            name="ChatActionV1",
+        )
+        defaults = data.get("defaults")
+        if defaults is None:
+            defaults = {}
+        if not isinstance(defaults, dict):
+            raise ValueError("ChatActionV1.defaults must be an object when provided")
+        return ChatActionTemplateDraftV1(
+            kind="template_draft",
+            mode=_require_str(data, "mode", name="ChatActionV1"),
+            template_title=_require_str(data, "template_title", name="ChatActionV1"),
+            template_text=_require_str(data, "template_text", name="ChatActionV1"),
+            defaults={
+                "include_citations": bool(defaults.get("include_citations", False)),
+                "show_empty_sections": bool(defaults.get("show_empty_sections", False)),
+            },
+        )
+    raise ValueError("ChatActionV1.kind must be one of: open_session,jump_to_segment,template_draft")
 
 
 @dataclass(frozen=True)

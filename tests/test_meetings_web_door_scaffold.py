@@ -18,8 +18,11 @@ async def test_web_registry_exposes_modes_and_templates():
     assert "templates_by_mode" in data
     assert "journal" in data["modes"]
     assert "meeting" in data["modes"]
-    assert data["templates_by_mode"]["journal"] == ["default"]
-    assert data["templates_by_mode"]["meeting"] == ["default"]
+    journal = data["templates_by_mode"]["journal"]
+    meeting = data["templates_by_mode"]["meeting"]
+    assert isinstance(journal, list) and isinstance(meeting, list)
+    assert any(row.get("template_id") == "default" for row in journal)
+    assert any(row.get("template_id") == "default" for row in meeting)
 
 
 @pytest.mark.asyncio

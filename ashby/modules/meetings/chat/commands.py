@@ -7,7 +7,9 @@ from ashby.interfaces.web.sessions import list_sessions
 from ashby.modules.meetings.index import sqlite_fts
 from ashby.modules.meetings.init_root import init_stuart_root
 from ashby.modules.meetings.chat.retrieval import resolve_session_ref
-from ashby.modules.meetings.schemas.chat import ChatActionOpenSessionV1, ChatReplyV1
+from ashby.modules.meetings.mode_registry import validate_mode
+from ashby.modules.meetings.schemas.chat import ChatActionOpenSessionV1, ChatActionTemplateDraftV1, ChatReplyV1
+from ashby.modules.meetings.templates.importer import draft_from_source_text
 
 
 @dataclass(frozen=True)
@@ -41,6 +43,7 @@ def _help_text() -> str:
             "/export [full_bundle|transcript_only|formalization_only|dev_bundle]",
             "/map_speakers",
             "/set_speaker <label> <name>",
+            "/new_template <mode> | <title> | <description>",
         ]
     )
 
@@ -171,6 +174,33 @@ def handle_command(
             kind="planner",
             text=f"Planned: set {label} => {name}.",
             planner={"kind": "set_speaker", "label": label, "name": name},
+        )
+
+    if cmd.name == "new_template":
+        raw_tail = cmd.raw[len("/new_template"):].strip()
+        parts = [p.strip() for p in raw_tail.split("|")] if raw_tail else []
+        if len(parts) < 3:
+            return ChatReplyV1(
+                kind="clarify",
+                text="Usage: /new_template <mode> | <title> | <description>",
+                clarify={"fields_needed": ["mode", "title", "description"]},
+            )
+        mode_raw, title, description = parts[0], parts[1], "|".join(parts[2:]).strip()
+        mv = validate_mode(mode_raw)
+        if not mv.ok or mv.canonical is None:
+            return ChatReplyV1(kind="assistant", text=mv.message or "Invalid mode for /new_template.")
+        draft = draft_from_source_text(mv.canonical, title, description)
+        action = ChatActionTemplateDraftV1(
+            kind="template_draft",
+            mode=draft.mode,
+            template_title=draft.template_title,
+            template_text=draft.template_text,
+            defaults=draft.defaults,
+        )
+        return ChatReplyV1(
+            kind="assistant",
+            text=f"Drafted template '{draft.template_title}'. Preview and save when ready.",
+            actions=[action],
         )
 
     return ChatReplyV1(kind="clarify", text=f"Unknown command '/{cmd.name}'. Use /help.")
