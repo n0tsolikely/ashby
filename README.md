@@ -1,273 +1,177 @@
-# Ashby
+# Ashby Engine
 
-Ashby is a **governed AI runtime system** designed to transform transcripts, sessions, and conversations into structured artifacts under strict operational governance.
+Ashby is an **evidence-first, artifact-producing runtime** for turning audio/transcripts/sessions into durable outputs (JSON / Markdown / PDF) without “guessing” or silently fabricating content.
 
-Unlike typical AI applications, Ashby separates **runtime code** from **operational state**.
-The system is controlled through a governance framework called **Synapse**.
+This repository is the **engine**: the code that runs pipelines, APIs, and the Stuart v1 web UI.
 
----
-
-# Repository Layout
-
-Ashby operates as **two repositories**.
-
-## Engine
-
-```
-github.com/n0tsolikely/ashby
-```
-
-Contains the runtime system:
-
-```
-Ashby_Engine/
-```
-
-Core responsibilities:
-
-* API and service runtime
-* transcription and diarization pipeline
-* speaker map management
-* formalization pipelines
-* export bundle generation
-* UI and API interfaces
-
-The engine contains **no persistent operational state**.
+> If you’re looking for the **governance + canon** (Guild Orders / Quests / Snapshots / Audits / Codex / Canonical Vision), that lives in the separate repo: **`Ashby_Data`**.
 
 ---
 
-## Governance / System State
+## Repos (separated on purpose)
 
-```
-github.com/n0tsolikely/Ashby_Data
-```
-
-Contains the canonical system state:
-
-```
-Ashby_Data/
-```
-
-This repository stores the artifacts that govern how the system evolves and executes.
-
-### Major directories
-
-#### Buffs
-
-Startup configuration artifacts that define execution posture and system runtime rules.
-
-#### Codex
-
-Authoritative definition of the system:
-
-* concepts
-* workflows
-* boundaries
-* constraints
-
-The Codex describes the system **as if it already exists**.
-
-#### Quest Board
-
-Work intake queue containing quests awaiting acceptance.
-
-#### Guild Orders
-
-Strategic objectives that define system development direction.
-
-Guild Orders → Dungeons → Quests
-
-#### Snapshots
-
-Immutable historical records of system state and decisions.
-
-Snapshots provide deterministic reconstruction of the system timeline.
-
-#### Audits
-
-Execution evidence generated when quests run.
-
-Audits include logs, outputs, and receipts proving work occurred.
-
-#### Latest Rehydration Pack
-
-Artifacts required to restore the system state in a new session.
-
-Includes:
-
-* Bootstrap Prompt
-* Continuity Lock
-* Buffs
-* Snapshot references
-
-#### Talent Tree
-
-Capability ledger proving system abilities through completed quests.
-
-#### confirmations
-
-Consent Gate artifacts that authorize high-risk operations.
+- **Engine (this repo)**: runtime code  
+  - root corresponds to the `Ashby_Engine/` folder in the Canon.
+- **Governance / Canon / Operational state**: `Ashby_Data` repo  
+  - root corresponds to the `Ashby_Data/` folder in the Canon.
+  - includes:
+    - `Docs/ASHBY_THE_CANONICAL_VISION_2026-01-13.txt`
+    - `Docs/ASHBY_CANONICAL_TECHNICAL_BLUEPRINT_2026-01-13.txt`
+    - `Codex/ASHBY CODEX FULL.txt`
+    - Guild Orders / Quest Board / Snapshots / Audits / etc.
 
 ---
 
-# System Model
+## What’s actually implemented here
 
-Ashby is governed through a structured workflow:
+### Stuart v1 (Ashby Meetings Module)
+Stuart v1 is implemented as an Ashby module at:
 
-```
-Guild Order
-   ↓
-Dungeon
-   ↓
-Quest
-   ↓
-Execution
-   ↓
-Audit
-   ↓
-Snapshot
-```
+- `ashby/modules/meetings/` (meeting/journal pipeline + artifacts)
+- Web API assembly:
+  - `ashby/interfaces/web/app.py`
+- Frontend (Vite):
+  - `webapp/stuart_frontend/stuart_app/`
 
-This structure ensures all system work is:
+Stuart writes runtime session artifacts under **`STUART_ROOT`** (outside the repo):
+- default: `~/ashby_runtime/stuart`
+- config: `ashby/modules/meetings/config.py`
 
-* traceable
-* auditable
-* deterministic
+### LLM Gateway (Gemini)
+The engine includes a small HTTP gateway for LLM calls:
 
----
+- FastAPI app: `ashby/interfaces/llm_gateway/app.py`
+- Provider (Gemini): `ashby/interfaces/llm_gateway/providers/gemini.py`
 
-# Runtime Architecture
-
-The engine follows layered architecture:
-
-```
-ashby/
-├ domain/
-├ services/
-├ adapters/
-├ interfaces/
-└ tests/
-```
-
-### Domain
-
-Core system logic.
-
-### Services
-
-Workflow orchestration and business rules.
-
-### Adapters
-
-External integrations such as:
-
-* LLM providers
-* transcription engines
-* storage systems
-
-### Interfaces
-
-System entry points:
-
-* HTTP APIs
-* UI interfaces
-* gateway endpoints
+Meeting formalization uses the gateway client:
+- `ashby/modules/llm/http_gateway.py`
+- default gateway URL: `http://127.0.0.1:8787` (`STUART_LLM_GATEWAY_URL` to override)
 
 ---
 
-# Formalization
+## Quickstart (Stuart stack)
 
-Ashby converts transcripts into structured artifacts using LLMs.
+### 0) System deps
+You need at minimum:
+- `python3`
+- `npm`
+- `ffmpeg`
 
-Formalization outputs can include:
+Docs: `docs/stuart/SYSTEM_DEPENDENCIES.md`
 
-* meeting minutes
-* structured summaries
-* journals
-* export bundles
-* traceable document packages
+### 1) Boot the full stack (backend + frontend)
+From repo root:
 
-Formalization is performed through a gateway service that connects the runtime to external model APIs such as Gemini.
+```bash
+./Stuart
+```
+
+What it does (see the `Stuart` bash script in repo root):
+- creates `.venv/` if missing
+- installs Python deps from `requirements-stuart-v1.txt`
+- installs frontend deps (`npm install`)
+- starts backend + frontend via `scripts/stuart_up.sh`
+
+Defaults:
+- backend: `http://127.0.0.1:8844` (`STUART_WEB_PORT`)
+- frontend: `http://127.0.0.1:4173` (`STUART_FRONTEND_PORT`)
+
+### 2) Run backend only
+```bash
+PYTHONPATH=. python3 scripts/stuart_web.py
+```
+
+### 3) Preflight checks
+```bash
+python3 scripts/stuart_preflight.py
+# or strict:
+python3 scripts/stuart_preflight.py --strict
+```
+
+Install/verify guide: `docs/stuart/INSTALL_STUART_V1.md`
 
 ---
 
-# Execution Governance
+## Running the Gemini LLM Gateway
 
-Ashby does not execute work directly from prompts.
+Export your key:
 
-Execution requires governance artifacts.
+```bash
+export GEMINI_API_KEY="..."
+# optional:
+export GEMINI_MODEL="gemini-2.5-flash"
+```
 
-Typical execution flow:
+Start the gateway on the default port expected by the meeting formalizer:
 
-1. Control Sync determines scope
-2. Quests are accepted from the Quest Board
-3. Engine executes the work
-4. Audits are written
-5. Snapshots record system state
+```bash
+PYTHONPATH=. uvicorn ashby.interfaces.llm_gateway.app:app --host 127.0.0.1 --port 8787
+```
 
-This approach prevents drift and preserves system continuity.
+Notes:
+- Gateway provider is selected by `LLM_GATEWAY_PROVIDER` (default: `gemini`)
+- If `GEMINI_API_KEY` is missing, the gateway fails fast (by design)
 
 ---
 
-# Running the Engine
+## Execution profiles (network egress gating)
 
-Requirements:
+Ashby uses explicit execution profiles:
 
-* Python 3.10+
-* Linux / WSL recommended
+- `LOCAL_ONLY` (default): **no network egress allowed**
+- `HYBRID`: network egress requires explicit consent record
+- `CLOUD`: network egress allowed
 
-Install:
-
-```
-git clone https://github.com/n0tsolikely/ashby.git
-cd ashby
-
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Start the API:
-
-```
-uvicorn ashby.interfaces.web.app:app --host 0.0.0.0 --port 8000
-```
-
-Docs:
-
-```
-http://localhost:8000/docs
-```
+Code: `ashby/core/profile.py`  
+Env var: `ASHBY_EXECUTION_PROFILE`
 
 ---
 
-# System Smoke Tests
+## Tests and smoke
 
-Ashby includes full system smoke tests verifying:
-
-* session lifecycle
-* transcription pipelines
-* speaker map persistence
-* formalization outputs
-* export integrity
-* UI constraints
-
-Smoke test outputs are stored under:
-
+### Unit tests
+```bash
+PYTHONPATH=. pytest -q
 ```
-docs/smoke_outputs/
-```
+
+### Web API smoke script
+There’s a scripted smoke for the Stuart web API:
+
+- `scripts/smoke_stuart_web_api_v1.sh`
 
 ---
 
-# Project Status
+## Docs worth reading (in this repo)
 
-Ashby is an actively evolving system controlled through Synapse governance.
-
-Development occurs through artifact-driven workflows rather than traditional issue tracking.
+- Ashby Codex (offline/full):
+  - `docs/ashby_codex/ashby_codex_full.txt`
+  - plus `docs/ashby_codex/sections/`
+- Stuart v1 docs:
+  - `docs/stuart/INSTALL_STUART_V1.md`
+  - `docs/stuart/SYSTEM_DEPENDENCIES.md`
+  - `docs/stuart/web_api_contract_v1.md`
+  - `docs/stuart/web_api_route_map_v1.md`
+  - `docs/stuart/transcript_versioning_model_v1.md`
 
 ---
 
-# License
+## Repo map (top-level)
 
+- `ashby/` — core engine package (modules, interfaces, adapters)
+- `webapp/` — FastAPI web door + Vite frontend
+- `scripts/` — boot scripts + smoke scripts
+- `docs/` — codex + Stuart docs
+- `tests/` — test suite
+- `secrets_store/` — **redacted placeholders** (real secrets should never be committed)
+- `runtime/`, `memory/` — local state (gitignored by default)
+
+---
+
+## Non-goals (current)
+- This repo is not the governance OS. Governance artifacts belong in `Ashby_Data`.
+- No silent “magic” execution: explicit runs, explicit outputs, explicit receipts. (If something can’t be verified, it should say so.)
+
+---
+
+## License
 TBD
