@@ -56,6 +56,29 @@ def _json_bytes(payload: Dict[str, object]) -> bytes:
     return (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
 
 
+def _sanitize_json_paths(obj: object, *, root: Path) -> object:
+    if isinstance(obj, dict):
+        return {str(k): _sanitize_json_paths(v, root=root) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize_json_paths(v, root=root) for v in obj]
+    if isinstance(obj, str):
+        s = obj.strip()
+        # Only sanitize likely filesystem absolute paths, not URL paths.
+        if s.startswith("/home/") or s.startswith("/tmp/") or re.match(r"^[A-Za-z]:\\\\", s):
+            try:
+                rel = _safe_rel(root, Path(s))
+            except Exception:
+                rel = None
+            if rel:
+                return rel
+            try:
+                return Path(s).name or s
+            except Exception:
+                return s
+        return obj
+    return obj
+
+
 def _speaker_display(raw: str, mapping: Dict[str, str]) -> str:
     key = str(raw or "").strip().upper()
     if key in mapping and str(mapping[key]).strip():
@@ -332,7 +355,9 @@ def _build_entries_for_session(
                 )
 
             if include_dev:
-                entries[f"dev/transcripts/{trv}/transcript_version.json"] = _json_bytes(payload)
+                entries[f"dev/transcripts/{trv}/transcript_version.json"] = _json_bytes(
+                    _sanitize_json_paths(payload, root=lay.root)  # type: ignore[arg-type]
+                )
 
     if include_formalizations or include_dev:
         for _created, rid, run_state, run_dir in _session_runs(session_id):
@@ -363,15 +388,39 @@ def _build_entries_for_session(
 
             if include_dev and (has_user_output or raw_json_path or evidence_path or llm_usage_path):
                 if run_json_path.exists():
-                    entries[f"dev/formalizations/{rid}/run.json"] = run_json_path.read_bytes()
+                    try:
+                        run_payload = json.loads(run_json_path.read_text(encoding="utf-8"))
+                        entries[f"dev/formalizations/{rid}/run.json"] = _json_bytes(
+                            _sanitize_json_paths(run_payload, root=lay.root)  # type: ignore[arg-type]
+                        )
+                    except Exception:
+                        entries[f"dev/formalizations/{rid}/run.json"] = run_json_path.read_bytes()
                 if events_path.exists():
                     entries[f"dev/formalizations/{rid}/events.jsonl"] = events_path.read_bytes()
                 if evidence_path and evidence_path.exists():
-                    entries[f"dev/formalizations/{rid}/evidence_map.json"] = evidence_path.read_bytes()
+                    try:
+                        evidence_payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+                        entries[f"dev/formalizations/{rid}/evidence_map.json"] = _json_bytes(
+                            _sanitize_json_paths(evidence_payload, root=lay.root)  # type: ignore[arg-type]
+                        )
+                    except Exception:
+                        entries[f"dev/formalizations/{rid}/evidence_map.json"] = evidence_path.read_bytes()
                 if llm_usage_path and llm_usage_path.exists():
-                    entries[f"dev/formalizations/{rid}/llm_usage_receipt.json"] = llm_usage_path.read_bytes()
+                    try:
+                        llm_payload = json.loads(llm_usage_path.read_text(encoding="utf-8"))
+                        entries[f"dev/formalizations/{rid}/llm_usage_receipt.json"] = _json_bytes(
+                            _sanitize_json_paths(llm_payload, root=lay.root)  # type: ignore[arg-type]
+                        )
+                    except Exception:
+                        entries[f"dev/formalizations/{rid}/llm_usage_receipt.json"] = llm_usage_path.read_bytes()
                 if raw_json_path and raw_json_path.exists():
-                    entries[f"dev/formalizations/{rid}/{json_name}"] = raw_json_path.read_bytes()
+                    try:
+                        out_payload = json.loads(raw_json_path.read_text(encoding="utf-8"))
+                        entries[f"dev/formalizations/{rid}/{json_name}"] = _json_bytes(
+                            _sanitize_json_paths(out_payload, root=lay.root)  # type: ignore[arg-type]
+                        )
+                    except Exception:
+                        entries[f"dev/formalizations/{rid}/{json_name}"] = raw_json_path.read_bytes()
                     try:
                         out_payload = json.loads(raw_json_path.read_text(encoding="utf-8"))
                         tpl_id = str(out_payload.get("template_id") or "").strip()
@@ -379,12 +428,13 @@ def _build_entries_for_session(
                         tpl_ver = out_payload.get("template_version")
                         if tpl_id and tpl_mode in {"meeting", "journal"} and tpl_ver is not None:
                             tpl_spec = load_template_spec(tpl_mode, tpl_id, version=tpl_ver)
+                            safe_source_path = _safe_rel(lay.root, tpl_spec.path) or tpl_spec.path.name
                             tpl_meta = {
                                 "template_id": tpl_spec.template_id,
                                 "template_title": tpl_spec.template_title,
                                 "template_version": tpl_spec.template_version,
                                 "mode": tpl_mode,
-                                "source_path": str(tpl_spec.path),
+                                "source_path": safe_source_path,
                             }
                             base = f"dev/templates/{rid}/{tpl_spec.template_id}/v{tpl_spec.template_version}"
                             entries[f"{base}/metadata.json"] = _json_bytes(tpl_meta)

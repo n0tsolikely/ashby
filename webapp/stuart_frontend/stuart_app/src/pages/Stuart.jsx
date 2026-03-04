@@ -237,6 +237,22 @@ export default function Stuart() {
     }
   }, [sessions, selectedSession]);
 
+  useEffect(() => {
+    if (!selectedSession?.id) return;
+    emitUiAction(
+      {
+        event: 'ui.session_loaded',
+        summary: 'Session loaded in UI',
+        sessionId: selectedSession.id,
+        runId: null,
+        data: {
+          session_title: selectedSession.title || null,
+        },
+      },
+      stuartClient.telemetry.createCorrelationId(),
+    );
+  }, [selectedSession?.id]);
+
   const { data: formalizationsRaw = [] } = useQuery({
     queryKey: ['formalizations', selectedSession?.id],
     queryFn: () => stuartClient.formalizations.list(selectedSession.id),
@@ -304,6 +320,57 @@ export default function Stuart() {
       },
     };
   }, [selectedSession, transcriptVersions, selectedTranscriptVersionId, selectedTranscriptPayload]);
+
+  const formalizationConfig = useMemo(() => {
+    const runConfig =
+      selectedFormalization?.run_config && typeof selectedFormalization.run_config === 'object'
+        ? selectedFormalization.run_config
+        : {};
+    const profileRaw = String(
+      selectedFormalization?.processing_profile ||
+        selectedFormalization?.profile ||
+        selectedSession?.profile ||
+        'HYBRID',
+    ).toUpperCase();
+    const profile = profileRaw === 'CLOUD' ? 'HYBRID' : profileRaw;
+    return {
+      profile,
+      mode: String(runConfig.mode || selectedFormalization?.mode || selectedSession?.mode || 'meeting'),
+      template: String(runConfig.template || runConfig.template_id || selectedFormalization?.template || 'default'),
+      retention: String(
+        runConfig.retention_level ||
+          runConfig.retention ||
+          selectedFormalization?.retention_level ||
+          'MED',
+      ),
+    };
+  }, [selectedFormalization, selectedSession?.profile, selectedSession?.mode]);
+
+  const chatDebugEnabled = useMemo(() => {
+    if (import.meta.env.DEV) return true;
+    try {
+      return localStorage.getItem('stuart_chat_debug') === '1';
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const emitUiAction = async ({ event, summary, sessionId = null, runId = null, data = {} }, correlationId = null) => {
+    try {
+      await stuartClient.telemetry.emitUiEvent(
+        {
+          event,
+          summary,
+          session_id: sessionId,
+          run_id: runId,
+          data,
+        },
+        correlationId,
+      );
+    } catch (_) {
+      // best effort
+    }
+  };
 
   const { data: activeRunStatus } = useQuery({
     queryKey: ['run-status', activeRunId],
@@ -453,6 +520,20 @@ export default function Stuart() {
       { step: 'transcribe', status: 'running', message: 'Submitting transcribe run...', timestamp: new Date() },
     ]);
     let submittedRunId = null;
+    const correlationId = stuartClient.telemetry.createCorrelationId();
+    await emitUiAction(
+      {
+        event: 'ui.click_run',
+        summary: 'User started transcribe run',
+        sessionId: selectedSession.id,
+        runId: null,
+        data: {
+          mode: config?.mode || 'meeting',
+          diarization_enabled: config?.diarization_enabled !== false,
+        },
+      },
+      correlationId,
+    );
     try {
       const resp = await stuartClient.transcribe({
         session_id: selectedSession.id,
@@ -552,6 +633,21 @@ export default function Stuart() {
     ]);
 
     let submittedRunId = null;
+    const correlationId = stuartClient.telemetry.createCorrelationId();
+    await emitUiAction(
+      {
+        event: 'ui.click_run',
+        summary: 'User started formalization run',
+        sessionId: selectedSession.id,
+        runId: null,
+        data: {
+          mode: config?.mode || selectedSession?.mode || 'meeting',
+          profile: config?.profile || 'HYBRID',
+          template: config?.template || 'default',
+        },
+      },
+      correlationId,
+    );
     try {
       const runResponse = await stuartClient.runs.create({
         session_id: selectedSession.id,
@@ -674,11 +770,28 @@ export default function Stuart() {
 
     setIsProcessing(true);
     try {
+      const correlationId = stuartClient.telemetry.createCorrelationId();
       const scope = options?.scope === 'global' ? 'global' : 'session';
       if (scope === 'session' && !selectedSession?.id) {
         onResponse({ text: 'Please select a session first.' });
         return;
       }
+      const textSha256 = await stuartClient.telemetry.hashText(text);
+      await emitUiAction(
+        {
+          event: 'ui.chat_send',
+          summary: 'Chat message sent',
+          sessionId: selectedSession?.id || null,
+          runId: null,
+          data: {
+            scope,
+            text_len: text.length,
+            text_sha256: textSha256,
+            prefix_len: 0,
+          },
+        },
+        correlationId,
+      );
       const historyTail = (chatMessages || [])
         .slice(-12)
         .map((m) => ({
@@ -701,17 +814,44 @@ export default function Stuart() {
       const requestPayload = {
         session_id: selectedSession?.id || null,
         text: message,
+        correlationId,
         ui_state: uiState,
         history_tail: historyTail,
         attachments: Array.isArray(options?.attachments) ? options.attachments : [],
       };
+      if (chatDebugEnabled) {
+        console.info('[stuart:chat] request', {
+          scope,
+          session_id: requestPayload.session_id,
+          text_length: text.length,
+          history_count: historyTail.length,
+          attachments_count: requestPayload.attachments.length,
+          ui_state: uiState,
+        });
+      }
       const response =
         scope === 'global'
           ? await stuartClient.chat.global(requestPayload)
           : await stuartClient.chat.session(requestPayload);
+      if (chatDebugEnabled) {
+        console.info('[stuart:chat] response', {
+          scope,
+          session_id: requestPayload.session_id,
+          reply_text_length: String(response?.reply?.text || response?.text || '').length,
+          citations_count: Array.isArray(response?.reply?.citations) ? response.reply.citations.length : 0,
+          actions_count: Array.isArray(response?.reply?.actions) ? response.reply.actions.length : 0,
+        });
+      }
       onResponse(response);
     } catch (error) {
       const msg = String(error?.message || '');
+      if (chatDebugEnabled) {
+        console.error('[stuart:chat] error', {
+          message: msg,
+          status: error?.status,
+          body: error?.body || null,
+        });
+      }
       onResponse({ text: msg || 'I encountered an error processing your request.' });
     } finally {
       setIsProcessing(false);
@@ -795,6 +935,7 @@ export default function Stuart() {
     selectedType,
     selectedTranscriptFormats,
     selectedFormalizationFormats,
+    correlationId = null,
   }) => {
     if (!selectedSession?.id) {
       throw new Error('No session selected');
@@ -811,7 +952,10 @@ export default function Stuart() {
       params.formalization_formats = selectedFormalizationFormats.join(',');
     }
 
-    const blob = await stuartClient.exportSession(selectedSession.id, params);
+    const blob = await stuartClient.exportSession(selectedSession.id, {
+      ...params,
+      correlationId,
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     const titleSlug = sanitizeExportTitle(selectedSession.title || '');
@@ -843,10 +987,26 @@ export default function Stuart() {
 
     try {
       setIsExporting(true);
+      const correlationId = stuartClient.telemetry.createCorrelationId();
+      await emitUiAction(
+        {
+          event: 'ui.export_clicked',
+          summary: 'User requested export',
+          sessionId: selectedSession.id,
+          runId: null,
+          data: {
+            export_type: exportType,
+            transcript_formats: transcriptFormats,
+            formalization_formats: formalizationFormats,
+          },
+        },
+        correlationId,
+      );
       await downloadSessionExport({
         selectedType: exportType,
         selectedTranscriptFormats: transcriptFormats,
         selectedFormalizationFormats: formalizationFormats,
+        correlationId,
       });
       setExportModalOpen(false);
       toast.success('Export complete');

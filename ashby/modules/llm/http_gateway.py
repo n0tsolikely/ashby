@@ -3,12 +3,14 @@ from __future__ import annotations
 import json
 import os
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 import httpx
 
 from ashby.modules.llm.service import LLMChatRequest, LLMChatResponse, LLMFormalizeRequest, LLMFormalizeResponse
+from ashby.modules.meetings.observability import events as obs_events
 
 _DEFAULT_GATEWAY_URL = "http://127.0.0.1:8787"
 _ENV_GATEWAY_URL = "STUART_LLM_GATEWAY_URL"
@@ -67,6 +69,22 @@ class HTTPGatewayLLMService:
         payload = request.to_payload()
         raw_body = ""
         status_code: Optional[int] = None
+        run_id = artifacts_dir.parent.name if artifacts_dir is not None and artifacts_dir.parent is not None else None
+        cid = f"llm:{run_id}" if run_id else str(uuid.uuid4())
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.call",
+            summary="Calling LLM formalize gateway",
+            correlation_id=cid,
+            session_id=None,
+            run_id=run_id,
+            trace_id=cid,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"provider": "http_gateway", "model": "formalize"},
+        )
 
         try:
             response = self._client.post(f"{self._base_url}/v1/formalize", json=payload)
@@ -74,6 +92,34 @@ class HTTPGatewayLLMService:
             raw_body = response.text
             response.raise_for_status()
         except Exception as exc:
+            obs_events.emit_event(
+                level="ERROR",
+                source="backend",
+                component="llm",
+                event="llm.error",
+                summary="LLM formalize gateway call failed",
+                correlation_id=cid,
+                session_id=None,
+                run_id=run_id,
+                trace_id=cid,
+                span_id=str(uuid.uuid4()),
+                parent_span_id=None,
+                data={"status_code": status_code, "reason": f"{type(exc).__name__}: {exc}"},
+            )
+            obs_events.emit_alert(
+                level="ERROR",
+                source="backend",
+                component="llm",
+                event="alert.llm_error",
+                summary="LLM formalize gateway call failed",
+                correlation_id=cid,
+                session_id=None,
+                run_id=run_id,
+                trace_id=cid,
+                span_id=str(uuid.uuid4()),
+                parent_span_id=None,
+                data={"status_code": status_code},
+            )
             fail = _write_gateway_failure(
                 artifacts_dir,
                 error="gateway_http_error",
@@ -128,6 +174,26 @@ class HTTPGatewayLLMService:
 
         evidence_map = parsed.get("evidence_map")
         usage = parsed.get("usage")
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.response",
+            summary="LLM formalize gateway response received",
+            correlation_id=cid,
+            session_id=None,
+            run_id=run_id,
+            trace_id=cid,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={
+                "provider": str(parsed.get("provider") or ""),
+                "model": str(parsed.get("model") or ""),
+                "status_code": int(status_code or 200),
+                "timing_ms": int(parsed.get("timing_ms") or 0),
+                "usage": usage if isinstance(usage, dict) else {},
+            },
+        )
         return LLMFormalizeResponse(
             version=1,
             request_id=request_id,
@@ -143,6 +209,23 @@ class HTTPGatewayLLMService:
         payload = request.to_payload()
         raw_body = ""
         status_code: Optional[int] = None
+        ui_state = payload.get("ui_state") if isinstance(payload.get("ui_state"), dict) else {}
+        session_id = str(ui_state.get("selected_session_id") or "").strip() or None
+        cid = str(ui_state.get("correlation_id") or "").strip() or str(uuid.uuid4())
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.call",
+            summary="Calling LLM chat gateway",
+            correlation_id=cid,
+            session_id=session_id,
+            run_id=None,
+            trace_id=cid,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"provider": "http_gateway", "model": "chat"},
+        )
 
         try:
             response = self._client.post(f"{self._base_url}/v1/chat", json=payload)
@@ -150,6 +233,34 @@ class HTTPGatewayLLMService:
             raw_body = response.text
             response.raise_for_status()
         except Exception as exc:
+            obs_events.emit_event(
+                level="ERROR",
+                source="backend",
+                component="llm",
+                event="llm.error",
+                summary="LLM chat gateway call failed",
+                correlation_id=cid,
+                session_id=session_id,
+                run_id=None,
+                trace_id=cid,
+                span_id=str(uuid.uuid4()),
+                parent_span_id=None,
+                data={"status_code": status_code, "reason": f"{type(exc).__name__}: {exc}"},
+            )
+            obs_events.emit_alert(
+                level="ERROR",
+                source="backend",
+                component="llm",
+                event="alert.llm_error",
+                summary="LLM chat gateway call failed",
+                correlation_id=cid,
+                session_id=session_id,
+                run_id=None,
+                trace_id=cid,
+                span_id=str(uuid.uuid4()),
+                parent_span_id=None,
+                data={"status_code": status_code},
+            )
             fail = _write_gateway_failure(
                 artifacts_dir,
                 error="gateway_http_error",
@@ -203,6 +314,26 @@ class HTTPGatewayLLMService:
             raise ValueError("Gateway response missing output_json object")
 
         usage = parsed.get("usage")
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.response",
+            summary="LLM chat gateway response received",
+            correlation_id=cid,
+            session_id=session_id,
+            run_id=None,
+            trace_id=cid,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={
+                "provider": str(parsed.get("provider") or ""),
+                "model": str(parsed.get("model") or ""),
+                "status_code": int(status_code or 200),
+                "timing_ms": int(parsed.get("timing_ms") or 0),
+                "usage": usage if isinstance(usage, dict) else {},
+            },
+        )
         return LLMChatResponse(
             version=1,
             request_id=request_id,

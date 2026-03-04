@@ -3,6 +3,26 @@ const API_BASE = (import.meta.env.VITE_STUART_API_BASE || '/api').replace(/\/$/,
 const JSON_HEADERS = {
   'Content-Type': 'application/json',
 };
+const SECRET_RE = /(bearer\s+[A-Za-z0-9\-\._~\+/=]+|sk-[A-Za-z0-9]{8,}|AIza[0-9A-Za-z\-_]{16,}|ya29\.[0-9A-Za-z\-_]+)/gi;
+
+function createCorrelationId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `cid_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+async function sha256Hex(text) {
+  const value = String(text || '');
+  if (typeof crypto !== 'undefined' && crypto?.subtle && typeof TextEncoder !== 'undefined') {
+    const bytes = new TextEncoder().encode(value);
+    const digest = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(digest))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+  return `sha256_unavailable_len_${value.length}`;
+}
 
 function buildUrl(path) {
   return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
@@ -17,14 +37,80 @@ function errorFromResponse(response, body, url) {
   return new Error(message);
 }
 
+function redactText(value, maxLen = 400) {
+  const src = String(value || '').replace(SECRET_RE, '[REDACTED]');
+  return src.length > maxLen ? `${src.slice(0, maxLen)}...` : src;
+}
+
 async function request(path, options = {}) {
   const url = buildUrl(path);
-  const response = await fetch(url, options);
+  const started = (typeof performance !== 'undefined' && typeof performance.now === 'function')
+    ? performance.now()
+    : Date.now();
+  const correlationId = options?.correlationId || createCorrelationId();
+  const mergedHeaders = {
+    ...(options?.headers || {}),
+    'X-Correlation-Id': correlationId,
+  };
+  const metaSessionId = options?.sessionId ?? options?.session_id ?? null;
+  const metaRunId = options?.runId ?? options?.run_id ?? null;
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: mergedHeaders,
+    });
+  } catch (error) {
+    const ended = (typeof performance !== 'undefined' && typeof performance.now === 'function')
+      ? performance.now()
+      : Date.now();
+    if (!String(path || '').startsWith('/ui/event')) {
+      await postUiEvent(
+        {
+          event: 'ui.fetch_failed',
+          summary: 'Network request failed',
+          session_id: metaSessionId,
+          run_id: metaRunId,
+          data: {
+            route: path,
+            duration_ms: Math.max(0, Math.round(ended - started)),
+            reason: redactText(error?.message || 'network_error'),
+          },
+        },
+        correlationId,
+      );
+    }
+    throw error;
+  }
   const contentType = response.headers.get('content-type') || '';
   const isJson = contentType.includes('application/json');
   const body = isJson ? await response.json() : await response.text();
 
   if (!response.ok) {
+    const ended = (typeof performance !== 'undefined' && typeof performance.now === 'function')
+      ? performance.now()
+      : Date.now();
+    if (!String(path || '').startsWith('/ui/event')) {
+      await postUiEvent(
+        {
+          event: 'ui.fetch_failed',
+          summary: 'HTTP request failed',
+          session_id: metaSessionId,
+          run_id: metaRunId,
+          data: {
+            route: path,
+            status: Number(response.status || 0),
+            duration_ms: Math.max(0, Math.round(ended - started)),
+            reason: redactText(
+              typeof body === 'string'
+                ? body
+                : body?.detail || body?.message || body?.error || `HTTP ${response.status}`,
+            ),
+          },
+        },
+        correlationId,
+      );
+    }
     const err = errorFromResponse(response, body, url);
     err.status = response.status;
     err.body = body;
@@ -32,6 +118,22 @@ async function request(path, options = {}) {
   }
 
   return body;
+}
+
+async function postUiEvent(eventPayload = {}, correlationId = null) {
+  try {
+    const cid = correlationId || createCorrelationId();
+    await fetch(buildUrl('/ui/event'), {
+      method: 'POST',
+      headers: {
+        ...JSON_HEADERS,
+        'X-Correlation-Id': cid,
+      },
+      body: JSON.stringify(eventPayload),
+    });
+  } catch (_) {
+    // Best effort only; UI telemetry must never block product behavior.
+  }
 }
 
 async function requestOrEmpty(path) {
@@ -57,6 +159,26 @@ function asArray(payload) {
 }
 
 export const stuartClient = {
+  telemetry: {
+    createCorrelationId,
+    async hashText(text) {
+      return sha256Hex(text);
+    },
+    async emitUiEvent({ event, summary = null, session_id = null, run_id = null, data = {} } = {}, correlationId = null) {
+      if (!event) return;
+      await postUiEvent(
+        {
+          event,
+          summary,
+          session_id,
+          run_id,
+          data,
+        },
+        correlationId,
+      );
+    },
+  },
+
   registry: {
     async get() {
       return request('/registry');
@@ -121,6 +243,7 @@ export const stuartClient = {
       return request('/sessions', {
         method: 'POST',
         headers: JSON_HEADERS,
+        sessionId: data?.session_id || null,
         body: JSON.stringify(data),
       });
     },
@@ -139,6 +262,21 @@ export const stuartClient = {
   },
 
   async upload(file, options = {}) {
+    const correlationId = options?.correlationId || createCorrelationId();
+    await postUiEvent(
+      {
+        event: 'ui.upload_started',
+        summary: 'Audio upload started',
+        session_id: options?.sessionId || null,
+        run_id: null,
+        data: {
+          filename: file?.name || '',
+          size_bytes: Number(file?.size || 0),
+        },
+      },
+      correlationId,
+    );
+
     const query = new URLSearchParams();
     if (options.sessionId) query.set('session_id', options.sessionId);
     if (options.mode) query.set('mode', options.mode);
@@ -146,10 +284,25 @@ export const stuartClient = {
     const suffix = query.toString() ? `?${query.toString()}` : '';
     const formData = new FormData();
     formData.append('file', file);
-    return request(`/upload${suffix}`, {
+    const result = await request(`/upload${suffix}`, {
       method: 'POST',
       body: formData,
+      correlationId,
     });
+    await postUiEvent(
+      {
+        event: 'ui.upload_finished',
+        summary: 'Audio upload finished',
+        session_id: result?.session_id || options?.sessionId || null,
+        run_id: null,
+        data: {
+          filename: file?.name || '',
+          size_bytes: Number(file?.size || 0),
+        },
+      },
+      correlationId,
+    );
+    return result;
   },
 
   runs: {
@@ -208,6 +361,7 @@ export const stuartClient = {
     return request('/transcribe', {
       method: 'POST',
       headers: JSON_HEADERS,
+      sessionId: data?.session_id || null,
       body: JSON.stringify(data),
     });
   },
@@ -265,10 +419,13 @@ export const stuartClient = {
 
   chat: {
     async session(data) {
+      const correlationId = data?.correlationId || createCorrelationId();
       try {
         const modern = await request('/chat', {
           method: 'POST',
           headers: JSON_HEADERS,
+          correlationId,
+          sessionId: data?.session_id || null,
           body: JSON.stringify({
             text: data?.text || data?.message || '',
             session_id: data?.session_id,
@@ -285,6 +442,8 @@ export const stuartClient = {
         const legacy = await request('/message', {
           method: 'POST',
           headers: JSON_HEADERS,
+          correlationId,
+          sessionId: data?.session_id || null,
           body: JSON.stringify({
             text: data?.text || data?.message || '',
             session_id: data?.session_id,
@@ -297,9 +456,12 @@ export const stuartClient = {
       }
     },
     async global(data) {
+      const correlationId = data?.correlationId || createCorrelationId();
       return request('/chat/global', {
         method: 'POST',
         headers: JSON_HEADERS,
+        correlationId,
+        sessionId: data?.session_id || null,
         body: JSON.stringify({
           text: data?.text || data?.message || '',
           ui: data?.ui_state || data?.ui || {},
@@ -312,9 +474,15 @@ export const stuartClient = {
   },
 
   async exportSession(sessionId, options = {}) {
-    const query = new URLSearchParams(options).toString();
+    const correlationId = options?.correlationId || createCorrelationId();
+    const { correlationId: _ignoreCorrelation, ...queryOptions } = options || {};
+    const query = new URLSearchParams(queryOptions).toString();
     const path = `/sessions/${encodeURIComponent(sessionId)}/export${query ? `?${query}` : ''}`;
-    const response = await fetch(buildUrl(path));
+    const response = await fetch(buildUrl(path), {
+      headers: {
+        'X-Correlation-Id': correlationId,
+      },
+    });
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || `Export failed (${response.status})`);

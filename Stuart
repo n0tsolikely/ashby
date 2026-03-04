@@ -38,12 +38,19 @@ if [[ ! -x "$PIP_BIN" ]]; then
 fi
 
 # Runtime defaults (caller env can override any of these).
-: "${ASHBY_EXECUTION_PROFILE:=LOCAL_ONLY}"
+# If GEMINI_API_KEY is present, default to gateway-enabled mode.
+if [[ -n "${GEMINI_API_KEY:-}" ]]; then
+  : "${ASHBY_EXECUTION_PROFILE:=HYBRID}"
+  : "${ASHBY_MEETINGS_LLM_ENABLED:=1}"
+  : "${STUART_LLM_GATEWAY_URL:=http://127.0.0.1:8787}"
+else
+  : "${ASHBY_EXECUTION_PROFILE:=LOCAL_ONLY}"
+  : "${ASHBY_MEETINGS_LLM_ENABLED:=0}"
+fi
 : "${ASHBY_ASR_ENABLE:=1}"
 : "${ASHBY_ASR_MODEL:=small}"
 : "${ASHBY_ASR_DEVICE:=cpu}"
 : "${ASHBY_ASR_COMPUTE_TYPE:=int8}"
-: "${ASHBY_MEETINGS_LLM_ENABLED:=0}"
 
 export ASHBY_EXECUTION_PROFILE
 export ASHBY_ASR_ENABLE
@@ -51,6 +58,7 @@ export ASHBY_ASR_MODEL
 export ASHBY_ASR_DEVICE
 export ASHBY_ASR_COMPUTE_TYPE
 export ASHBY_MEETINGS_LLM_ENABLED
+export STUART_LLM_GATEWAY_URL
 
 echo "[Stuart] Checking Python dependency versions"
 PY_DEPS_OK=1

@@ -52,8 +52,10 @@ export default function ChatInterface({
 
   const appendMessages = (rows) => {
     const nextRows = Array.isArray(rows) ? rows : [rows];
-    const merged = [...safeMessages, ...nextRows];
-    onMessagesChange?.(merged);
+    onMessagesChange?.((prev) => {
+      const base = Array.isArray(prev) ? prev : [];
+      return [...base, ...nextRows];
+    });
   };
 
   const handleSend = async () => {

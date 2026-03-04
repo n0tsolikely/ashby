@@ -5,6 +5,8 @@ import shutil
 import time
 import hashlib
 import threading
+import os
+import uuid
 
 from dataclasses import asdict
 from pathlib import Path
@@ -78,11 +80,125 @@ from ashby.modules.meetings.schemas.chat import (
     ChatReplyV1,
     parse_chat_request_v1,
 )
+from ashby.modules.meetings.observability import events as obs_events
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Stuart Web Door", version="0.3")
     app.include_router(templates_router, prefix="/api")
+
+    @app.middleware("http")
+    async def observability_middleware(request: Request, call_next):
+        correlation_id = (request.headers.get("X-Correlation-Id") or "").strip() or str(uuid.uuid4())
+        trace_id = correlation_id
+        span_id = str(uuid.uuid4())
+        request.state.correlation_id = correlation_id
+        request.state.trace_id = trace_id
+        request.state.span_id = span_id
+        request.state.parent_span_id = None
+
+        session_id = request.query_params.get("session_id")
+        run_id = request.query_params.get("run_id")
+        path = request.url.path
+        method = request.method.upper()
+
+        started = time.perf_counter()
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="api",
+            event="api.request_received",
+            summary=f"{method} {path}",
+            correlation_id=correlation_id,
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=trace_id,
+            span_id=span_id,
+            parent_span_id=None,
+            data={"method": method, "path": path},
+        )
+
+        try:
+            response = await call_next(request)
+        except Exception as exc:
+            duration_ms = int((time.perf_counter() - started) * 1000)
+            safe_msg = f"{type(exc).__name__}: {exc}"
+            obs_events.emit_event(
+                level="ERROR",
+                source="backend",
+                component="api",
+                event="api.error",
+                summary=f"Unhandled exception during {method} {path}",
+                correlation_id=correlation_id,
+                session_id=session_id,
+                run_id=run_id,
+                trace_id=trace_id,
+                span_id=str(uuid.uuid4()),
+                parent_span_id=span_id,
+                duration_ms=duration_ms,
+                data={"method": method, "path": path, "error": safe_msg},
+            )
+            obs_events.emit_alert(
+                level="ERROR",
+                source="backend",
+                component="api",
+                event="alert.backend_exception",
+                summary=f"Unhandled exception during {method} {path}",
+                correlation_id=correlation_id,
+                session_id=session_id,
+                run_id=run_id,
+                trace_id=trace_id,
+                span_id=str(uuid.uuid4()),
+                parent_span_id=span_id,
+                duration_ms=duration_ms,
+                data={"method": method, "path": path, "error": safe_msg},
+            )
+            raise
+
+        duration_ms = int((time.perf_counter() - started) * 1000)
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="api",
+            event="api.response_sent",
+            summary=f"{method} {path} -> {response.status_code}",
+            correlation_id=correlation_id,
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=trace_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=span_id,
+            duration_ms=duration_ms,
+            data={"method": method, "path": path, "status_code": int(response.status_code)},
+        )
+        return response
+
+    @app.on_event("startup")
+    async def observability_startup_event() -> None:
+        configured = any(
+            bool((os.environ.get(k) or "").strip())
+            for k in ("GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY")
+        )
+        root = obs_events.get_stuart_root()
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="system",
+            event="system.start",
+            summary="Stuart backend started",
+            correlation_id=str(uuid.uuid4()),
+            session_id=None,
+            run_id=None,
+            trace_id="",
+            span_id="",
+            parent_span_id=None,
+            data={
+                "logging_enabled": obs_events.is_enabled(),
+                "stuart_root": str(root),
+                "llm_provider_configured": configured,
+                "version": app.version,
+            },
+        )
 
     base_dir = Path(__file__).resolve().parent
     templates = Jinja2Templates(directory=str(base_dir / "templates"))
@@ -1710,6 +1826,84 @@ def create_app() -> FastAPI:
             return {"ok": True, "hits": [asdict(h) for h in hits]}
         finally:
             conn.close()
+
+    @app.post("/api/ui/event")
+    async def api_ui_event(request: Request) -> Dict[str, Any]:
+        try:
+            payload = await request.json()
+        except Exception:
+            return fail("INVALID_REQUEST", "invalid JSON body", status=400)
+        if not isinstance(payload, dict):
+            return fail("INVALID_REQUEST", "invalid payload", status=400)
+
+        event_name = str(payload.get("event") or "").strip()
+        if not event_name:
+            return fail("INVALID_REQUEST", "event is required", status=400)
+
+        session_val = payload.get("session_id")
+        run_val = payload.get("run_id")
+        session_id = str(session_val).strip() if session_val is not None else None
+        run_id = str(run_val).strip() if run_val is not None else None
+        summary = str(payload.get("summary") or event_name).strip() or event_name
+        data_obj = payload.get("data")
+        if not isinstance(data_obj, dict):
+            data_obj = {}
+
+        correlation_id = (request.headers.get("X-Correlation-Id") or "").strip() or str(uuid.uuid4())
+        trace_id = correlation_id
+        span_id = str(uuid.uuid4())
+
+        level = "INFO"
+        if event_name in {"ui.error", "ui.fetch_failed"}:
+            level = "ERROR"
+
+        obs_events.emit_event(
+            level=level,
+            source="frontend",
+            component="ui",
+            event=event_name,
+            summary=summary,
+            correlation_id=correlation_id,
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=trace_id,
+            span_id=span_id,
+            parent_span_id=getattr(request.state, "span_id", None),
+            data=data_obj,
+        )
+
+        if event_name == "ui.error":
+            obs_events.emit_alert(
+                level="ERROR",
+                source="frontend",
+                component="ui",
+                event="alert.ui_error",
+                summary=summary,
+                correlation_id=correlation_id,
+                session_id=session_id,
+                run_id=run_id,
+                trace_id=trace_id,
+                span_id=str(uuid.uuid4()),
+                parent_span_id=span_id,
+                data=data_obj,
+            )
+        elif event_name == "ui.fetch_failed":
+            obs_events.emit_alert(
+                level="ERROR",
+                source="frontend",
+                component="ui",
+                event="alert.ui_fetch_failed",
+                summary=summary,
+                correlation_id=correlation_id,
+                session_id=session_id,
+                run_id=run_id,
+                trace_id=trace_id,
+                span_id=str(uuid.uuid4()),
+                parent_span_id=span_id,
+                data=data_obj,
+            )
+
+        return ok({"accepted": True, "event": event_name})
 
     return app
 

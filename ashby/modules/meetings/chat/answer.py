@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from typing import Any, Dict, List, Optional, Tuple
+import uuid
 
 from ashby.modules.llm import HTTPGatewayLLMService, LLMChatEvidenceSegment, LLMChatRequest
+from ashby.modules.meetings.observability import events as obs_events
 from ashby.modules.meetings.chat.retrieval import EvidenceSegment, RetrievedHit
 from ashby.modules.meetings.schemas.chat import (
     ChatHitV1,
@@ -112,6 +114,8 @@ def answer_with_evidence(
 ) -> ChatReplyV1:
     ui = dict(ui_state or {})
     focus_session_id = str(ui.get("selected_session_id") or "").strip() or None
+    correlation_id = str(ui.get("correlation_id") or "").strip() or str(uuid.uuid4())
+    run_id = str(ui.get("active_run_id") or "").strip() or None
 
     evidence_by_key = {_anchor_key(s.session_id, s.run_id, int(s.segment_id)): s for s in evidence_segments}
 
@@ -121,6 +125,34 @@ def answer_with_evidence(
     # Local-only profile short-circuits LLM synthesis.
     profile = str(ui.get("profile") or ui.get("selected_profile") or "").strip().upper()
     if profile == "LOCAL_ONLY":
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.disabled",
+            summary="LLM disabled for LOCAL_ONLY chat profile",
+            correlation_id=correlation_id,
+            session_id=focus_session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": "LOCAL_ONLY"},
+        )
+        obs_events.emit_alert(
+            level="WARNING",
+            source="backend",
+            component="llm",
+            event="alert.llm_disabled_on_chat",
+            summary="LLM disabled while handling chat request",
+            correlation_id=correlation_id,
+            session_id=focus_session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": "LOCAL_ONLY"},
+        )
         return ChatReplyV1(
             kind="assistant",
             text=_retrieval_only_text(question, evidence_segments),
@@ -130,6 +162,20 @@ def answer_with_evidence(
         )
 
     if not evidence_segments:
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.fallback",
+            summary="No evidence segments available; returning retrieval-only response",
+            correlation_id=correlation_id,
+            session_id=focus_session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": "no_evidence_segments"},
+        )
         return ChatReplyV1(
             kind="assistant",
             text=_retrieval_only_text(question, evidence_segments),
@@ -149,9 +195,84 @@ def answer_with_evidence(
             history_tail=list(history_tail or []),
             evidence_segments=evidence_segments,
         )
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.call",
+            summary="Invoking LLM chat gateway",
+            correlation_id=correlation_id,
+            session_id=focus_session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"provider": "http_gateway", "model": "gateway_chat"},
+        )
         llm_resp = service.chat(req)
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.response",
+            summary="LLM chat response received",
+            correlation_id=correlation_id,
+            session_id=focus_session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={
+                "provider": llm_resp.provider,
+                "model": llm_resp.model,
+                "timing_ms": int(llm_resp.timing_ms or 0),
+                "usage": llm_resp.usage if isinstance(llm_resp.usage, dict) else {},
+            },
+        )
         text, raw_citations, raw_actions = _extract_output(llm_resp.output_json)
-    except Exception:
+    except Exception as exc:
+        obs_events.emit_event(
+            level="ERROR",
+            source="backend",
+            component="llm",
+            event="llm.error",
+            summary="LLM chat call failed",
+            correlation_id=correlation_id,
+            session_id=focus_session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": f"{type(exc).__name__}: {exc}"},
+        )
+        obs_events.emit_alert(
+            level="ERROR",
+            source="backend",
+            component="llm",
+            event="alert.llm_error",
+            summary="LLM chat call failed",
+            correlation_id=correlation_id,
+            session_id=focus_session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": f"{type(exc).__name__}: {exc}"},
+        )
+        obs_events.emit_event(
+            level="WARNING",
+            source="backend",
+            component="llm",
+            event="llm.fallback",
+            summary="Fallback to retrieval-only chat response",
+            correlation_id=correlation_id,
+            session_id=focus_session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": "llm_error"},
+        )
         return ChatReplyV1(
             kind="assistant",
             text=_retrieval_only_text(question, evidence_segments),

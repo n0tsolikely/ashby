@@ -3,6 +3,7 @@ import json
 import os
 
 import time
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -35,6 +36,7 @@ from ashby.modules.meetings.render.extract_only import extract_only_by_speaker
 from ashby.modules.meetings.truth.gate import gate_formalized_output
 from ashby.modules.meetings.transcript_versions import create_transcript_version, load_transcript_version
 from ashby.modules.meetings.template_registry import load_template_spec
+from ashby.modules.meetings.observability import events as obs_events
 
 
 @dataclass(frozen=True)
@@ -73,7 +75,27 @@ def _step_kind(step: Dict[str, Any]) -> str:
 def _get_run_artifact_path(run_id: str, filename: str) -> Optional[Path]:
     lay = init_stuart_root()
     p = lay.runs / run_id / "artifacts" / filename
-    return p if p.exists() else None
+    exists = p.exists()
+    cid = f"run:{run_id}"
+    obs_events.emit_event(
+        level="INFO" if exists else "WARNING",
+        source="backend",
+        component="storage",
+        event="storage.lookup" if exists else "storage.lookup_miss",
+        summary=f"Artifact lookup {'hit' if exists else 'miss'}: {filename}",
+        correlation_id=cid,
+        session_id=None,
+        run_id=run_id,
+        trace_id=cid,
+        span_id=str(uuid.uuid4()),
+        parent_span_id=None,
+        data={
+            "requested_item": filename,
+            "searched_locations": [str(p)],
+            "outcome": bool(exists),
+        },
+    )
+    return p if exists else None
 
 
 def _first_formalize_reuse_run_id(steps: List[Dict[str, Any]]) -> Optional[str]:
@@ -538,6 +560,40 @@ def run_job(run_id: str) -> RunResult:
     resolved = None
     if formalize_transcript_version_id is None and formalize_reuse_run_id is None:
         resolved = resolve_input_contribution(session_id=session_id, layout=lay, contribution_id=explicit_cid)
+        src_exists = Path(resolved.source_path).exists()
+        obs_events.emit_event(
+            level="INFO" if src_exists else "ERROR",
+            source="backend",
+            component="pipeline",
+            event="audio.loaded" if src_exists else "audio.missing",
+            summary="Resolved input contribution path",
+            correlation_id=f"run:{run_id}",
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=f"run:{run_id}",
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={
+                "path": str(resolved.source_path),
+                "source_kind": str(resolved.source_kind),
+                "outcome": bool(src_exists),
+            },
+        )
+        if not src_exists:
+            obs_events.emit_alert(
+                level="ERROR",
+                source="backend",
+                component="pipeline",
+                event="alert.audio_missing",
+                summary="Resolved input audio path missing",
+                correlation_id=f"run:{run_id}",
+                session_id=session_id,
+                run_id=run_id,
+                trace_id=f"run:{run_id}",
+                span_id=str(uuid.uuid4()),
+                parent_span_id=None,
+                data={"path": str(resolved.source_path)},
+            )
 
         inputs_dir = run_dir / "inputs"
         inputs_dir.mkdir(parents=True, exist_ok=True)
@@ -636,6 +692,21 @@ def run_job(run_id: str) -> RunResult:
                 start_pct = int(bounds[i])
                 end_pct = int(bounds[i + 1])
                 step_label = kind or f"step_{i+1}"
+                step_started = time.perf_counter()
+                obs_events.emit_event(
+                    level="INFO",
+                    source="backend",
+                    component="pipeline",
+                    event="pipeline.step_start",
+                    summary=f"Pipeline step started: {step_label}",
+                    correlation_id=f"run:{run_id}",
+                    session_id=session_id,
+                    run_id=run_id,
+                    trace_id=f"run:{run_id}",
+                    span_id=str(uuid.uuid4()),
+                    parent_span_id=None,
+                    data={"step": step_label},
+                )
 
                 # Step-start state (prevents "jump-to-end" feel)
                 update_run_state(run_id, stage=step_label, progress=start_pct)
@@ -1168,6 +1239,21 @@ def run_job(run_id: str) -> RunResult:
 
                 # step-end state
                 update_run_state(run_id, stage=step_label, progress=end_pct)
+                obs_events.emit_event(
+                    level="INFO",
+                    source="backend",
+                    component="pipeline",
+                    event="pipeline.step_end",
+                    summary=f"Pipeline step finished: {step_label}",
+                    correlation_id=f"run:{run_id}",
+                    session_id=session_id,
+                    run_id=run_id,
+                    trace_id=f"run:{run_id}",
+                    span_id=str(uuid.uuid4()),
+                    parent_span_id=None,
+                    duration_ms=int((time.perf_counter() - step_started) * 1000),
+                    data={"step": step_label},
+                )
 
         end = time.time()
         final_state = get_run_state(run_id)
@@ -1195,6 +1281,20 @@ def run_job(run_id: str) -> RunResult:
         except Exception:
             prog_i = 0
         update_run_state(run_id, status="failed", stage="failed", progress=prog_i, ended_ts=end, error=err)
+        obs_events.emit_alert(
+            level="ERROR",
+            source="backend",
+            component="pipeline",
+            event="alert.pipeline_degraded",
+            summary="Pipeline execution failed",
+            correlation_id=f"run:{run_id}",
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=f"run:{run_id}",
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"error_type": err.get("type"), "message": err.get("message")},
+        )
         return RunResult(ok=False, run_id=run_id, status="failed", message=str(e))
 
 

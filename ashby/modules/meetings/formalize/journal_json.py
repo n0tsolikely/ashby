@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -18,6 +19,7 @@ from ashby.modules.meetings.schemas.artifacts_v1 import dump_json
 from ashby.modules.meetings.schemas.journal_v1 import validate_journal_v1
 from ashby.modules.meetings.session_state import load_session_state
 from ashby.modules.meetings.template_registry import load_template_spec, validate_template
+from ashby.modules.meetings.observability import events as obs_events
 
 
 _REMOTE_ENV_FLAG = "ASHBY_MEETINGS_LLM_ENABLED"
@@ -295,9 +297,38 @@ def formalize_journal_to_journal_json(
     )
 
     profile = get_execution_profile()
+    correlation_id = f"run:{run_id}" if run_id else str(uuid.uuid4())
 
     # LOCAL_ONLY => deterministic always
     if profile == ExecutionProfile.LOCAL_ONLY:
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.disabled",
+            summary="LLM disabled for LOCAL_ONLY journal formalization",
+            correlation_id=correlation_id,
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": "LOCAL_ONLY"},
+        )
+        obs_events.emit_event(
+            level="WARNING",
+            source="backend",
+            component="llm",
+            event="llm.fallback",
+            summary="Using deterministic fallback journal formalization",
+            correlation_id=correlation_id,
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": "LOCAL_ONLY"},
+        )
         payload = _deterministic_journal_payload(
             session_id=session_id,
             run_id=run_id,
@@ -331,6 +362,34 @@ def formalize_journal_to_journal_json(
 
     # HYBRID/CLOUD only attempt remote LLM when explicitly enabled
     if not _enabled_remote_llm():
+        obs_events.emit_event(
+            level="INFO",
+            source="backend",
+            component="llm",
+            event="llm.disabled",
+            summary="Remote LLM disabled for journal formalization",
+            correlation_id=correlation_id,
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": f"{_REMOTE_ENV_FLAG}_unset"},
+        )
+        obs_events.emit_event(
+            level="WARNING",
+            source="backend",
+            component="llm",
+            event="llm.fallback",
+            summary="Using deterministic fallback journal formalization",
+            correlation_id=correlation_id,
+            session_id=session_id,
+            run_id=run_id,
+            trace_id=correlation_id,
+            span_id=str(uuid.uuid4()),
+            parent_span_id=None,
+            data={"reason": "remote_llm_disabled"},
+        )
         payload = _deterministic_journal_payload(
             session_id=session_id,
             run_id=run_id,

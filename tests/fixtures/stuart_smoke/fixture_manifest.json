@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "fixtures": [
+    {
+      "file": "meeting_fixture_3speakers_36s.wav",
+      "mode": "meeting",
+      "duration_seconds": 36,
+      "speaker_profile": "3 synthetic alternating bands"
+    },
+    {
+      "file": "journal_fixture_1speaker_42s.wav",
+      "mode": "journal",
+      "duration_seconds": 42,
+      "speaker_profile": "single synthetic band"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+# D12 artifacts list
+generated_utc=2026-03-04T03:43:44Z
+/tmp/d12_chat_global.json	10109
+/tmp/d12_chat_global_request.json	47
+/tmp/d12_chat_session_grounded.json	314
+/tmp/d12_chat_session_grounded_request.json	189
+/tmp/d12_chat_session_lock.json	314
+/tmp/d12_export_dev_bundle.zip	295480
+/tmp/d12_export_user_formalization_only.zip	268142
+/tmp/d12_export_user_full.zip	260989
+/tmp/d12_export_user_transcript_only.zip	257903
+/tmp/d12_journal_formalize_run.json	8243
+/tmp/d12_meeting_formalize_run.json	7595
+/tmp/d12_root_ui.html	597
+/tmp/d12_run_on_status.json	3946
+/tmp/d12_search_probe.json	756
+/tmp/d12_speaker_map_get.json	263
+/tmp/d12_transcript_detail.json	1104
+/tmp/d12_transcripts_meeting.json	767
+/tmp/d12_upload_journal.json	791
+/tmp/d12_upload_meeting.json	803
+docs/smoke_outputs/2026-03-04/run.log	2793
