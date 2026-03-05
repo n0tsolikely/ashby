@@ -1,45 +1,212 @@
-# Ashby Engine
+# Ashby
 
-Ashby is a **local-first agentic platform** that turns intelligence into reliable operations by enforcing **truth, state, policy, and execution contracts** across removable modules and swappable adapters.
+Ashby is a **local-first AI home brain and modular agent platform**.
 
-Ashby is not “an assistant that talks.” Ashby is an operating system for agency: interpret intent, constrain with policy, execute through controlled interfaces, verify outcomes, update durable state + artifacts, and speak only what evidence supports.
+It allows a single conversational intelligence to control real-world systems, software services, and specialized AI modules while maintaining persistent state and evidence-based responses.
 
-This repository is the **engine**: the code that runs pipelines, APIs, and the Stuart v1 web UI.
+Ashby is designed to run **inside your home on your own hardware**, keeping your data private and under your control.
 
-**Stuart** is a meetings module implemented in this engine; it turns audio/transcripts/sessions into durable outputs (JSON / Markdown / PDF) without “guessing” or silently fabricating content.
+This repository is the **Ashby engine**: the runtime codebase. Today, the primary implemented module here is **Stuart** (meetings transcription + analysis).
 
-> If you’re looking for the **Codex + governance + operational state** (Guild Orders / Quests / Snapshots / Audits / Canonical Vision), that lives in the separate repo: **`Ashby_Data`**.
-
----
-
-## Repos (separated on purpose)
-
-- **Engine (this repo)**: runtime code  
-  - root corresponds to the `Ashby_Engine/` folder in the Canon.
-- **Governance / Canon / Operational state**: `Ashby_Data` repo  
-  - root corresponds to the `Ashby_Data/` folder in the Canon.
-  - includes:
-    - `Docs/ASHBY_THE_CANONICAL_VISION_2026-01-13.txt`
-    - `Docs/ASHBY_CANONICAL_TECHNICAL_BLUEPRINT_2026-01-13.txt`
-    - `Codex/ASHBY CODEX FULL.txt`
-    - Guild Orders / Quest Board / Snapshots / Audits / etc.
+> Canonical vision, Codex, governance, and operational state live in the separate repo: **`Ashby_Data`**.
 
 ---
 
-## What Ashby Is / Is Not (Canonical Vision summary)
+## What Ashby Is
 
-Ashby is not:
-- a wrapper around a large language model
-- a chatbot with plugins
-- a bundle of scripts glued together by vibes
-- a monolithic god-file
-- a vendor-controlled cloud service pretending to be local
-- a system that guesses when uncertain
+Ashby is a **brand-agnostic AI control layer for environments**.
 
-## What’s actually implemented here
+Most smart home ecosystems today suffer from three major problems:
 
-### Stuart v1 (Ashby Meetings Module)
-Stuart v1 is implemented as an Ashby module at:
+- Vendor lock-in
+- Rigid command syntax
+- Lack of persistent system state
+
+Examples:
+
+- Smart lights require brand-specific apps.
+- Voice assistants require very specific phrasing.
+- Most systems organize devices strictly by rooms.
+
+Ashby introduces a different approach.
+Instead of rigid commands, you interact with a system that understands natural language and the state of your environment.
+
+Example:
+
+```text
+User:
+"Ash, it's dark in here."
+
+Ashby:
+Turning on nearby lights.
+
+User:
+"These lights are burning my retinas."
+
+Ashby:
+Dimming lights.
+```
+
+---
+
+## Why Ashby Exists
+
+Modern smart homes are fragmented.
+
+Typical setups involve:
+
+- multiple apps
+- incompatible ecosystems
+- vendor lock-in
+- cloud dependencies
+
+Ashby attempts to unify everything under a **single intelligent system** that coordinates devices and AI modules through conversation.
+
+---
+
+## Local-First AI Home Brain
+
+Ashby is designed to run locally.
+
+This means:
+
+- camera data can remain inside your home
+- device state remains private
+- automation does not depend on external cloud services
+
+Ashby can still communicate externally when necessary, but the system itself is designed to function locally.
+
+---
+
+## Zones Instead of Rooms
+
+Most smart home platforms organize devices strictly by rooms.
+
+Humans do not think this way.
+People think in zones.
+
+Examples of zones:
+
+- Downstairs
+- Entertainment area
+- Night mode
+- Work area
+
+Ashby introduces **Zones**, allowing:
+
+- rooms to belong to multiple zones
+- devices to belong to multiple zones
+- zones to span arbitrary spaces
+
+Example:
+
+```text
+Zone: Downstairs
+  Living Room
+  Kitchen
+  Hallway
+
+Zone: Night Mode
+  Bedroom Lights
+  Hallway Lights
+```
+
+This allows Ashby to reason about environments more naturally.
+
+---
+
+## Modular Architecture
+
+Ashby is not a single AI.
+It is a **platform for specialized AI modules**.
+
+Each module performs a specific task.
+
+Examples of modules include:
+
+| Module | Purpose |
+|------|------|
+| Stuart | Meeting transcription and analysis |
+| Camera Module | Computer vision for cameras |
+| Inventory Module | Household inventory tracking |
+| Energy Module | Energy monitoring |
+| Environment Module | Lighting and climate control |
+
+Ashby acts as the **central coordinator**.
+
+Users talk to Ashby.
+Ashby calls modules.
+Modules return structured results.
+
+---
+
+## Architecture
+
+```text
+User
+ |
+ v
+Ashby Core
+ |
+ +-- Stuart Module
+ |
+ +-- Camera Module
+ |
+ +-- Inventory Module
+ |
+ +-- Energy Module
+ |
+ +-- Device Adapters
+      +-- Zigbee
+      +-- Tuya
+      +-- Home Assistant
+      +-- Local APIs
+```
+
+Ashby coordinates modules and device adapters.
+Modules provide specialized intelligence.
+Adapters interact with hardware.
+
+---
+
+## Example Interaction
+
+```text
+User:
+"Ash, I'm home."
+
+Ashby:
+"Welcome back. Turning on the living room lights."
+
+User:
+"Whoa those are bright."
+
+Ashby:
+"Sorry about that. Dimming them."
+
+User:
+"Way more."
+
+Ashby:
+"Dimming to 20%."
+```
+
+---
+
+## Stuart (Meetings) Is The First Ashby Module
+
+The first module being developed for Ashby is **Stuart**.
+
+Stuart is an AI meeting assistant capable of:
+
+- speaker diarization
+- transcript generation
+- meeting summaries
+- structured decision extraction
+
+Stuart is being built first because it is a **self-contained module that can ship independently** while the Ashby platform continues evolving.
+
+### Where Stuart Lives (in this repo)
 
 - `ashby/modules/meetings/` (meeting/journal pipeline + artifacts)
 - Web API assembly:
@@ -52,6 +219,7 @@ Stuart writes runtime session artifacts under **`STUART_ROOT`** (outside the rep
 - config: `ashby/modules/meetings/config.py`
 
 ### LLM Gateway (Gemini)
+
 The engine includes a small HTTP gateway for LLM calls:
 
 - FastAPI app: `ashby/interfaces/llm_gateway/app.py`
@@ -63,7 +231,7 @@ Meeting formalization uses the gateway client:
 
 ---
 
-## Quickstart (Stuart stack)
+## Running the Stuart Module
 
 ### 0) System deps
 You need at minimum:
@@ -106,7 +274,7 @@ Install/verify guide: `docs/stuart/INSTALL_STUART_V1.md`
 
 ---
 
-## Running the Gemini LLM Gateway
+### Running the Gemini LLM Gateway
 
 Export your key:
 
@@ -128,7 +296,7 @@ Notes:
 
 ---
 
-## Execution profiles (network egress gating)
+### Execution profiles (network egress gating)
 
 Ashby uses explicit execution profiles:
 
@@ -141,21 +309,21 @@ Env var: `ASHBY_EXECUTION_PROFILE`
 
 ---
 
-## Tests and smoke
+### Tests and smoke
 
-### Unit tests
+#### Unit tests
 ```bash
 PYTHONPATH=. pytest -q
 ```
 
-### Web API smoke script
+#### Web API smoke script
 There’s a scripted smoke for the Stuart web API:
 
 - `scripts/smoke_stuart_web_api_v1.sh`
 
 ---
 
-## Docs worth reading (in this repo)
+### Docs worth reading (in this repo)
 
 - Ashby Codex (developer mirror):
   - `docs/ashby_codex/ashby_codex_full.txt`
@@ -170,7 +338,7 @@ There’s a scripted smoke for the Stuart web API:
 
 ---
 
-## Repo map (top-level)
+### Repo map (top-level)
 
 - `ashby/` — core engine package (modules, interfaces, adapters)
 - `webapp/` — FastAPI web door + Vite frontend
@@ -185,6 +353,56 @@ There’s a scripted smoke for the Stuart web API:
 ## Non-goals (current)
 - This repo is not the governance OS. Governance artifacts belong in `Ashby_Data`.
 - No silent “magic” execution: explicit runs, explicit outputs, explicit receipts. (If something can’t be verified, it should say so.)
+
+---
+
+## Roadmap
+
+Future development plans include:
+
+Core Platform
+
+- stable Ashby runtime
+- persistent environment state
+- zone-based environment model
+
+Modules
+
+- camera intelligence
+- inventory tracking
+- energy monitoring
+- environment control
+
+Adapters
+
+- Zigbee integrations
+- Tuya integrations
+- Home Assistant integrations
+- direct IoT APIs
+
+Interfaces
+
+- voice interaction
+- messaging interfaces
+- mobile interfaces
+
+---
+
+## Contributing
+
+Ashby is currently under active development.
+Contributions will become easier once the runtime stabilizes.
+
+---
+
+## Philosophy
+
+Ashby is built around one idea:
+
+AI assistants should not just answer questions.
+They should **operate systems**.
+
+Ashby attempts to create a platform where AI can interact with the physical and digital world through structured modules and adapters.
 
 ---
 
