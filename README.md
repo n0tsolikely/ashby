@@ -1,7 +1,9 @@
 # Ashby Engine
 
 Ashby is an **evidence-first, stateful, truth-bound platform** designed for **correct action over time**.
-It turns audio/transcripts/sessions into durable outputs (JSON / Markdown / PDF) without “guessing” or silently fabricating content.
+It enforces action-gated truth and durable state so the system can operate honestly over long time horizons.
+
+**Stuart** is a meetings module implemented in this engine; it turns audio/transcripts/sessions into durable outputs (JSON / Markdown / PDF) without “guessing” or silently fabricating content.
 
 This repository is the **engine**: the code that runs pipelines, APIs, and the Stuart v1 web UI.
 
