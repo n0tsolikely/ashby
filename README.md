@@ -1,10 +1,11 @@
 # Ashby Engine
 
-Ashby is an **evidence-first, artifact-producing runtime** for turning audio/transcripts/sessions into durable outputs (JSON / Markdown / PDF) without “guessing” or silently fabricating content.
+Ashby is an **evidence-first, stateful, truth-bound platform** designed for **correct action over time**.
+It turns audio/transcripts/sessions into durable outputs (JSON / Markdown / PDF) without “guessing” or silently fabricating content.
 
 This repository is the **engine**: the code that runs pipelines, APIs, and the Stuart v1 web UI.
 
-> If you’re looking for the **governance + canon** (Guild Orders / Quests / Snapshots / Audits / Codex / Canonical Vision), that lives in the separate repo: **`Ashby_Data`**.
+> If you’re looking for the **Codex + governance + operational state** (Guild Orders / Quests / Snapshots / Audits / Canonical Vision), that lives in the separate repo: **`Ashby_Data`**.
 
 ---
 
@@ -21,6 +22,21 @@ This repository is the **engine**: the code that runs pipelines, APIs, and the S
     - Guild Orders / Quest Board / Snapshots / Audits / etc.
 
 ---
+
+## What Ashby Is / Is Not (Codex summary)
+
+Ashby is defined (at a high level) by five properties:
+- **Stateful**: maintains a persistent world model that degrades honestly.
+- **Truth-bound**: does not claim outcomes without evidence.
+- **Modular**: capabilities live in removable modules beyond the sacred core.
+- **Scope-aware**: actions/state/authority exist inside scopes.
+- **Platform-first**: products are built from profiles; no single use case defines Ashby.
+
+Ashby is not:
+- a chatbot, “assistant wrapper”, or a conversational interface with side effects
+- a vendor ecosystem
+- cloud-required
+- flexible at the core (truth/state/scope law are not optional)
 
 ## What’s actually implemented here
 
@@ -143,9 +159,10 @@ There’s a scripted smoke for the Stuart web API:
 
 ## Docs worth reading (in this repo)
 
-- Ashby Codex (offline/full):
+- Ashby Codex (developer mirror):
   - `docs/ashby_codex/ashby_codex_full.txt`
   - plus `docs/ashby_codex/sections/`
+  - canonical Codex + governance artifacts live in `Ashby_Data`
 - Stuart v1 docs:
   - `docs/stuart/INSTALL_STUART_V1.md`
   - `docs/stuart/SYSTEM_DEPENDENCIES.md`
