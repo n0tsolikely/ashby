@@ -122,45 +122,6 @@ def answer_with_evidence(
     hit_rows = [_hit_to_chat_hit(h) for h in hits]
     fallback_citations = [_evidence_anchor(s) for s in evidence_segments[:5]]
 
-    # Local-only profile short-circuits LLM synthesis.
-    profile = str(ui.get("profile") or ui.get("selected_profile") or "").strip().upper()
-    if profile == "LOCAL_ONLY":
-        obs_events.emit_event(
-            level="INFO",
-            source="backend",
-            component="llm",
-            event="llm.disabled",
-            summary="LLM disabled for LOCAL_ONLY chat profile",
-            correlation_id=correlation_id,
-            session_id=focus_session_id,
-            run_id=run_id,
-            trace_id=correlation_id,
-            span_id=str(uuid.uuid4()),
-            parent_span_id=None,
-            data={"reason": "LOCAL_ONLY"},
-        )
-        obs_events.emit_alert(
-            level="WARNING",
-            source="backend",
-            component="llm",
-            event="alert.llm_disabled_on_chat",
-            summary="LLM disabled while handling chat request",
-            correlation_id=correlation_id,
-            session_id=focus_session_id,
-            run_id=run_id,
-            trace_id=correlation_id,
-            span_id=str(uuid.uuid4()),
-            parent_span_id=None,
-            data={"reason": "LOCAL_ONLY"},
-        )
-        return ChatReplyV1(
-            kind="assistant",
-            text=_retrieval_only_text(question, evidence_segments),
-            citations=fallback_citations,
-            hits=hit_rows,
-            actions=[],
-        )
-
     if not evidence_segments:
         obs_events.emit_event(
             level="INFO",

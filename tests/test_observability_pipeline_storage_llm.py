@@ -137,9 +137,9 @@ async def test_chat_llm_disabled_and_error_alerts(tmp_path: Path, monkeypatch) -
 
     events = _read_jsonl(tmp_path / "rt" / "realtime_log" / "events.jsonl")
     alerts = _read_jsonl(tmp_path / "rt" / "realtime_log" / "alerts.jsonl")
-    assert any(r.get("event") == "llm.disabled" for r in events)
+    assert any(r.get("event") == "llm.call" for r in events)
     assert any(r.get("event") == "llm.error" for r in events)
-    assert any(r.get("event") == "alert.llm_disabled_on_chat" for r in alerts)
+    assert not any(r.get("event") == "alert.llm_disabled_on_chat" for r in alerts)
     assert any(r.get("event") == "alert.llm_error" for r in alerts)
 
 

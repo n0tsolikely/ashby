@@ -805,7 +805,7 @@ export default function Stuart() {
         selected_session_title: selectedSession?.title || null,
         active_transcript_version_id: selectedTranscriptVersionId || null,
         active_overlay_id: selectedSessionView?.speaker_overlay_id || null,
-        selected_profile: formalizationConfig?.profile || 'HYBRID',
+        selected_profile: 'HYBRID',
         selected_mode: formalizationConfig?.mode || selectedSession?.mode || 'meeting',
         selected_template: formalizationConfig?.template || 'default',
         retention: formalizationConfig?.retention || 'MED',

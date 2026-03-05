@@ -41,13 +41,30 @@ export default function ChatInterface({
   const [attachments, setAttachments] = useState([]);
   const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
   const scrollRef = useRef(null);
+  const viewportRef = useRef(null);
   const textareaRef = useRef(null);
   const fileRef = useRef(null);
 
   const safeMessages = useMemo(() => (Array.isArray(messages) ? messages : []), [messages]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    const host = scrollRef.current;
+    if (!host) return;
+    const viewport = host.querySelector?.('[data-radix-scroll-area-viewport]') || host;
+    viewportRef.current = viewport;
+  }, []);
+
+  const scrollToBottom = () => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      scrollToBottom();
+    });
+    return () => cancelAnimationFrame(id);
   }, [safeMessages, isProcessing]);
 
   const appendMessages = (rows) => {
