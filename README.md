@@ -1,11 +1,12 @@
 # Ashby Engine
 
-Ashby is an **evidence-first, stateful, truth-bound platform** designed for **correct action over time**.
-It enforces action-gated truth and durable state so the system can operate honestly over long time horizons.
+Ashby is a **local-first agentic platform** that turns intelligence into reliable operations by enforcing **truth, state, policy, and execution contracts** across removable modules and swappable adapters.
 
-**Stuart** is a meetings module implemented in this engine; it turns audio/transcripts/sessions into durable outputs (JSON / Markdown / PDF) without “guessing” or silently fabricating content.
+Ashby is not “an assistant that talks.” Ashby is an operating system for agency: interpret intent, constrain with policy, execute through controlled interfaces, verify outcomes, update durable state + artifacts, and speak only what evidence supports.
 
 This repository is the **engine**: the code that runs pipelines, APIs, and the Stuart v1 web UI.
+
+**Stuart** is a meetings module implemented in this engine; it turns audio/transcripts/sessions into durable outputs (JSON / Markdown / PDF) without “guessing” or silently fabricating content.
 
 > If you’re looking for the **Codex + governance + operational state** (Guild Orders / Quests / Snapshots / Audits / Canonical Vision), that lives in the separate repo: **`Ashby_Data`**.
 
@@ -25,20 +26,15 @@ This repository is the **engine**: the code that runs pipelines, APIs, and the S
 
 ---
 
-## What Ashby Is / Is Not (Codex summary)
-
-Ashby is defined (at a high level) by five properties:
-- **Stateful**: maintains a persistent world model that degrades honestly.
-- **Truth-bound**: does not claim outcomes without evidence.
-- **Modular**: capabilities live in removable modules beyond the sacred core.
-- **Scope-aware**: actions/state/authority exist inside scopes.
-- **Platform-first**: products are built from profiles; no single use case defines Ashby.
+## What Ashby Is / Is Not (Canonical Vision summary)
 
 Ashby is not:
-- a chatbot, “assistant wrapper”, or a conversational interface with side effects
-- a vendor ecosystem
-- cloud-required
-- flexible at the core (truth/state/scope law are not optional)
+- a wrapper around a large language model
+- a chatbot with plugins
+- a bundle of scripts glued together by vibes
+- a monolithic god-file
+- a vendor-controlled cloud service pretending to be local
+- a system that guesses when uncertain
 
 ## What’s actually implemented here
 
