@@ -8,7 +8,7 @@ Ashby is designed to run **inside your home on your own hardware**, keeping your
 
 This repository is the **Ashby engine**: the runtime codebase. Today, the primary implemented module here is **Stuart** (meetings transcription + analysis).
 
-> Canonical vision, Codex, governance, and operational state live in the separate repo: **`Ashby_Data`**.
+> For the canonical system documentation (Canonical Vision, Ashby Codex, Stuart Codex) and Synapse-governed build state/logs, see **Ashby_Data**: https://github.com/n0tsolikely/Ashby_Data
 
 ---
 
